@@ -14,7 +14,7 @@ fe = get_fuzz_eval() # -> a list of tasks (each is a dict)
 # "base_input" is the test inputs.
 ```
 
-> **Note**
+> **Warning**
 > The "reference" field is incomplete for some tasks (i.e., `    pass`). Check before use!
 
 ## Development
