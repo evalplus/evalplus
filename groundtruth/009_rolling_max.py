@@ -7,7 +7,7 @@ def rolling_max(numbers: List[int]) -> List[int]:
     >>> rolling_max([1, 2, 3, 2, 3, 4, 2])
     [1, 2, 3, 3, 3, 4, 4]
     """
-    pass
+    return [max(numbers[:(i+1)]) for i in range(len(numbers))]
 
 
 
