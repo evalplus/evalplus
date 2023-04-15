@@ -14,7 +14,14 @@ def parse_music(music_string: str) -> List[int]:
     >>> parse_music('o o| .| o| o| .| .| .| .| o o')
     [4, 2, 1, 2, 2, 1, 1, 1, 1, 4, 4]
     """
-    pass
+
+    def count_beats(note: str) -> int:
+        if note == "o": return 4
+        elif note == "o|": return 2
+        elif note == ".|": return 1
+    
+    if music_string == "": return []
+    return list(map(count_beats, music_string.split(" ")))
 
 
 
