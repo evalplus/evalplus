@@ -8,7 +8,7 @@ def filter_integers(values: List[Any]) -> List[int]:
     >>> filter_integers([1, 2, 3, 'abc', {}, []])
     [1, 2, 3]
     """
-    pass
+    return list(filter(lambda x: type(x) == int, values))
 
 
 
