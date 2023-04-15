@@ -19,12 +19,12 @@ def get_fuzz_eval() -> List[Dict[str, str]]:
     Notes:
         "task_id" is the identifier string for the task.
         "prompt" is the function signature with docstring.
-        "signature" is the function signature.
+        "isignature" is the function's input signature.
         "docstring" is the docstring.
         "reference" is the ground-truth implementation for diff-testing.
         "base_input" is the test inputs.
     """
-    fuzz_eval = open(FUZZEVAL_PATH, "r").read() if not fuzz_eval else fuzz_eval
+    fuzz_eval = open(FUZZEVAL_PATH, "r").read()
     fuzz_eval = fuzz_eval.split("\n")
     fuzz_eval = [json.loads(line) for line in fuzz_eval if line]
     return fuzz_eval
