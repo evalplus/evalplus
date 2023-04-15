@@ -8,7 +8,7 @@ def concatenate(strings: List[str]) -> str:
     >>> concatenate(['a', 'b', 'c'])
     'abc'
     """
-    pass
+    return "".join(strings)
 
 
 
