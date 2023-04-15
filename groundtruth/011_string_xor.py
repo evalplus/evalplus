@@ -7,7 +7,7 @@ def string_xor(a: str, b: str) -> str:
     >>> string_xor('010', '110')
     '100'
     """
-    pass
+    return "".join(str(int(a[i]) ^ int(b[i])) for i in range(len(a)))
 
 
 
