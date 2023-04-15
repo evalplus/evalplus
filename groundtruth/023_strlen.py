@@ -7,7 +7,7 @@ def strlen(string: str) -> int:
     >>> strlen('abc')
     3
     """
-    pass
+    return len(string)
 
 
 
