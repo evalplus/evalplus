@@ -7,7 +7,10 @@ def rescale_to_unit(numbers: List[float]) -> List[float]:
     >>> rescale_to_unit([1.0, 2.0, 3.0, 4.0, 5.0])
     [0.0, 0.25, 0.5, 0.75, 1.0]
     """
-    pass
+    length = len(numbers)
+    delta = 1 / (length - 1)
+    sorted_numbers = sorted(numbers)
+    return [sorted_numbers.index(number) * delta for number in numbers]
 
 
 
