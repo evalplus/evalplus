@@ -7,7 +7,7 @@ def greatest_common_divisor(a: int, b: int) -> int:
     >>> greatest_common_divisor(25, 15)
     5
     """
-    pass
+    return a if b == 0 else greatest_common_divisor(b, a % b)
 
 
 
