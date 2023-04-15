@@ -12,7 +12,16 @@ def factorize(n: int) -> List[int]:
     >>> factorize(70)
     [2, 5, 7]
     """
-    pass
+    results, is_prime, n_copy = [], [True] * (n + 1), n
+    for i in range(2, n + 1):
+        if is_prime[i]:
+            while n_copy % i == 0:
+                results.append(i)
+                n_copy //= i
+            for j in range(i + i, n + 1, i):
+                is_prime[j] = False
+        if n_copy == 1: break
+    return results
 
 
 
