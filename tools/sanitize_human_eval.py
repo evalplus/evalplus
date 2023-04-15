@@ -21,9 +21,9 @@ perfect, but we will either manually or automatically fix/complete it later.
 
 import json
 import pathlib
-
 from inspect import signature
-from fuzz_eval.utils import get_human_eval, FUZZEVAL_PATH
+
+from fuzz_eval.utils import FUZZEVAL_PATH, get_human_eval
 
 
 def extract_sig_and_docstr(entry_point, prompt) -> str:
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         new = {}
         for old in human_eval:
             new["task_id"] = old["task_id"]
-            new["promt"] = old["prompt"]
+            new["prompt"] = old["prompt"]
             new["entry_point"] = old["entry_point"]
 
             new["isignature"], new["docstring"] = extract_sig_and_docstr(
