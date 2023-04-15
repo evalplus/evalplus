@@ -13,8 +13,8 @@ if __name__ == "__main__":
 
     os.mkdir(GT_DIR)
 
-    human_eval = get_human_eval()
-    for i, task in enumerate(human_eval):
+    fuzz_eval = get_human_eval()
+    for i, task in enumerate(fuzz_eval):
         incomplete = (
             task["prompt"]
             + "    pass"
