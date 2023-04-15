@@ -7,7 +7,7 @@ def string_sequence(n: int) -> str:
     >>> string_sequence(5)
     '0 1 2 3 4 5'
     """
-    pass
+    return " ".join(map(str, range(n + 1)))
 
 
 
