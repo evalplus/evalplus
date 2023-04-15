@@ -9,6 +9,7 @@ from model import Decoder
 def code_generate(args, model: Decoder, problems):
     for p_name, problem in problems.items():
         p_name = p_name.replace("/", "_")
+        os.makedirs(os.path.join(args.folder, p_name), exist_ok=True)
         print("generating for {} ...".format(p_name))
         for l_samples in range(args.n_samples, 0, -args.bs):
             generations = model.generate(problem["prompt"], num_samples=l_samples)
@@ -16,7 +17,8 @@ def code_generate(args, model: Decoder, problems):
                 with open(
                     os.path.join(
                         args.folder,
-                        "{}_{}.py".format(p_name, args.n_samples - l_samples + i),
+                        p_name,
+                        "{}.py".format(args.n_samples - l_samples + i),
                     ),
                     "w",
                 ) as f:

@@ -113,10 +113,11 @@ class Decoder(object):
             outputs = []
             # removes eof tokens.
             for output in t_outputs:
-                min_index = float("inf")
+                min_index = None
                 for eof_string in EOF_STRINGS:
                     if eof_string in output:
-                        min_index = min(output.index(eof_string), min_index)
+                        min_index = output.index(eof_string)
+                        break
                 outputs.append(prompt + output[:min_index])
         return outputs
 
