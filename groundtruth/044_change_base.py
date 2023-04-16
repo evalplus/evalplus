@@ -11,7 +11,15 @@ def change_base(x: int, base: int):
     >>> change_base(7, 2)
     '111'
     """
-    pass
+    assert x >= 0, "invalid inputs"
+    assert 2 <= base <= 9, "invalid inputs"
+
+    if x == 0: return "0"
+    ret = ""
+    while x != 0:
+        ret = str(x % base) + ret
+        x //= base
+    return ret
 
 
 
