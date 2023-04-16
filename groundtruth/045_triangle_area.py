@@ -5,7 +5,9 @@ def triangle_area(a, h):
     >>> triangle_area(5, 3)
     7.5
     """
-    pass
+    assert a > 0 and h > 0, "invalid inputs"
+
+    return a * h / 2
 
 
 

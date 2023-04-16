@@ -12,7 +12,7 @@ def is_palindrome(text: str):
     >>> is_palindrome('zbcd')
     False
     """
-    pass
+    return text == text[::-1]
 
 
 

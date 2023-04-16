@@ -7,10 +7,11 @@ def rescale_to_unit(numbers: List[float]) -> List[float]:
     >>> rescale_to_unit([1.0, 2.0, 3.0, 4.0, 5.0])
     [0.0, 0.25, 0.5, 0.75, 1.0]
     """
-    length = len(numbers)
-    delta = 1 / (length - 1)
-    sorted_numbers = sorted(numbers)
-    return [sorted_numbers.index(number) * delta for number in numbers]
+    assert len(numbers) >= 2, "invalid inputs"
+    assert max(numbers) > min(numbers), "invalid inputs"
+    ma, mi = max(numbers), min(numbers)
+    k = 1 / (ma - mi)
+    return list(map(lambda x: (x - mi) * k, numbers))
 
 
 

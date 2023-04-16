@@ -9,6 +9,8 @@ def how_many_times(string: str, substring: str) -> int:
     >>> how_many_times('aaaa', 'aa')
     3
     """
+    assert substring != "", "invalid inputs"
+
     occurences = 0
     for i in range(len(string)):
         if string[i:].startswith(substring):

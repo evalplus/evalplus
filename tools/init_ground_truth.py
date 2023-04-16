@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-from fuzz_eval.utils import get_human_eval
+from eval_plus.utils import get_human_eval
 
 if __name__ == "__main__":
     # check existance of ground truth folder
@@ -13,8 +13,8 @@ if __name__ == "__main__":
 
     os.mkdir(GT_DIR)
 
-    fuzz_eval = get_human_eval()
-    for i, task in enumerate(fuzz_eval):
+    human_eval = get_human_eval()
+    for i, task in enumerate(human_eval):
         incomplete = (
             task["prompt"]
             + "    pass"

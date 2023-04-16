@@ -12,7 +12,9 @@ def car_race_collision(n: int):
 
     This function outputs the number of such collisions.
     """
-    pass
+    assert n >= 1, "invalid inputs"
+
+    return n ** 2
 
 
 

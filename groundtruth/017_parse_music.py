@@ -19,6 +19,7 @@ def parse_music(music_string: str) -> List[int]:
         if note == "o": return 4
         elif note == "o|": return 2
         elif note == ".|": return 1
+        else: raise Exception("invalid inputs")
     
     if music_string == "": return []
     return list(map(count_beats, music_string.split(" ")))

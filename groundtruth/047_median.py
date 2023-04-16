@@ -7,7 +7,13 @@ def median(l: list):
     >>> median([-10, 4, 6, 1000, 10, 20])
     15.0
     """
-    pass
+    assert len(l) > 0, "invalid inputs"
+
+    sorted_l = sorted(l)
+    if len(l) % 2 == 1:
+        return sorted_l[len(l) // 2]
+    else:
+        return (sorted_l[len(l) // 2 - 1] + sorted_l[len(l) // 2]) / 2
 
 
 

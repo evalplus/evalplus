@@ -1,33 +1,34 @@
-import os
-import tempdir
 import gzip
 import json
-from typing import List, Dict
+import os
 import pathlib
+from typing import Dict, List
 
+import tempdir
 import wget
 from appdirs import user_cache_dir
 
-FUZZEVAL_PATH = pathlib.Path(__file__).parent.parent / "FuzzEval.jsonl"
-CACHE_DIR = user_cache_dir("fuzz-eval")
+HUMANEVAL_PLUS_PATH = pathlib.Path(__file__).parent.parent / "HumanEvalPlus.jsonl"
+CACHE_DIR = user_cache_dir("eval-plus")
 
 
-def get_fuzz_eval() -> List[Dict[str, str]]:
-    """Get FuzzEval locally.
+def get_human_eval_plus() -> List[Dict[str, str]]:
+    """Get HumanEvalPlus locally.
     Returns:
-        List[Dict[str, str]]: List of dicts with keys "task_id", "prompt", "signature", "docstring", "reference", "base_input", "fuzz_input"
+        List[Dict[str, str]]: List of dicts with keys "task_id", "prompt", "contract", "isignature", "docstring", "reference", "base_input", "fuzz_input"
     Notes:
         "task_id" is the identifier string for the task.
         "prompt" is the function signature with docstring.
+        "contract" is the assertions for the function's input (validity).
         "isignature" is the function's input signature.
         "docstring" is the docstring.
         "reference" is the ground-truth implementation for diff-testing.
         "base_input" is the test inputs.
     """
-    fuzz_eval = open(FUZZEVAL_PATH, "r").read()
-    fuzz_eval = fuzz_eval.split("\n")
-    fuzz_eval = [json.loads(line) for line in fuzz_eval if line]
-    return fuzz_eval
+    human_eval_plus = open(HUMANEVAL_PLUS_PATH, "r").read()
+    human_eval_plus = human_eval_plus.split("\n")
+    human_eval_plus = [json.loads(line) for line in human_eval_plus if line]
+    return human_eval_plus
 
 
 def get_human_eval() -> List[Dict[str, str]]:

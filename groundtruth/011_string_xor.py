@@ -7,6 +7,8 @@ def string_xor(a: str, b: str) -> str:
     >>> string_xor('010', '110')
     '100'
     """
+    assert len(a) == len(b), "invalid inputs"
+    assert set(a).issubset({"0", "1"}) and set(b).issubset({"0", "1"}), "invalid inputs"
     return "".join(str(int(a[i]) ^ int(b[i])) for i in range(len(a)))
 
 

@@ -8,8 +8,7 @@ def filter_by_substring(strings: List[str], substring: str) -> List[str]:
     >>> filter_by_substring(['abc', 'bacd', 'cde', 'array'], 'a')
     ['abc', 'bacd', 'array']
     """
-    pass
-
+    return list(filter(lambda s: substring in s, strings))
 
 
 METADATA = {
