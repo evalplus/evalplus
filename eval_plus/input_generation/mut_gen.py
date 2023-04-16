@@ -3,10 +3,12 @@ import random
 import string
 from typing import List
 
+from eval_plus.input_generation.base_gen import InputGen
 
-class MutateGen(object):
+
+class MutateGen(InputGen):
     def __init__(self, inputs: List):
-        self.seed_pool = inputs
+        super().__init__(inputs)
         self.seed_hash = set([hash(str(x)) for x in self.seed_pool])
         self.new_inputs = []
 
