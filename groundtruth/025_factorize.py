@@ -12,6 +12,8 @@ def factorize(n: int) -> List[int]:
     >>> factorize(70)
     [2, 5, 7]
     """
+    assert n >= 2, "invalid inputs"
+
     results, is_prime, n_copy = [], [True] * (n + 1), n
     for i in range(2, n + 1):
         if is_prime[i]:
