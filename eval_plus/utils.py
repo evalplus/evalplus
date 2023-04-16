@@ -15,10 +15,11 @@ CACHE_DIR = user_cache_dir("eval-plus")
 def get_human_eval_plus() -> List[Dict[str, str]]:
     """Get HumanEvalPlus locally.
     Returns:
-        List[Dict[str, str]]: List of dicts with keys "task_id", "prompt", "signature", "docstring", "reference", "base_input", "fuzz_input"
+        List[Dict[str, str]]: List of dicts with keys "task_id", "prompt", "contract", "isignature", "docstring", "reference", "base_input", "fuzz_input"
     Notes:
         "task_id" is the identifier string for the task.
         "prompt" is the function signature with docstring.
+        "contract" is the assertions for the function's input (validity).
         "isignature" is the function's input signature.
         "docstring" is the docstring.
         "reference" is the ground-truth implementation for diff-testing.

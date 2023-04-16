@@ -22,11 +22,12 @@ perfect, but we will either manually or automatically fix/complete it later.
 import json
 import pathlib
 from inspect import signature
+from typing import Tuple
 
 from eval_plus.utils import HUMANEVAL_PLUS_PATH, get_human_eval
 
 
-def extract_sig_and_docstr(entry_point, prompt) -> str:
+def extract_sig_and_docstr(entry_point, prompt) -> Tuple[str, str]:
     ldict = {}
     fn_text = prompt + "    pass"
     exec(fn_text, globals(), ldict)
@@ -73,7 +74,7 @@ def {entry_point}(*args):
     return globals()["_inputs"]
 
 
-def get_reference(task_id, entry_point, promt) -> str:
+def get_contract_and_ref(task_id, entry_point, promt) -> Tuple[str, str]:
     fname = (
         pathlib.Path(__file__).parent.parent
         / "groundtruth"
@@ -88,7 +89,23 @@ def get_reference(task_id, entry_point, promt) -> str:
             break
 
     assert code
-    return code
+
+    # split code to contract and impl
+    contract = ""
+    impl = ""
+
+    reading_contract = True
+    for line in code.strip("\n").split("\n"):
+        if reading_contract and line.startswith("    assert "):
+            contract += line + "\n"
+        else:
+            reading_contract = False
+            impl += line + "\n"
+
+    if contract:
+        contract = "\n" + contract
+
+    return contract, "\n" + impl + "\n"
 
 
 if __name__ == "__main__":
@@ -105,7 +122,7 @@ if __name__ == "__main__":
             new["isignature"], new["docstring"] = extract_sig_and_docstr(
                 old["entry_point"], old["prompt"]
             )
-            new["reference"] = get_reference(
+            new["contract"], new["reference"] = get_contract_and_ref(
                 old["task_id"].split("/")[-1], old["entry_point"], old["prompt"]
             )
             new["base_input"] = instrument_inputs(
