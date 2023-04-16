@@ -9,7 +9,19 @@ def separate_paren_groups(paren_string: str) -> List[str]:
     >>> separate_paren_groups('( ) (( )) (( )( ))')
     ['()', '(())', '(()())']
     """
-    pass
+    cnt, group, results = 0, "", []
+    for ch in paren_string:
+        if ch not in ["(", ")", " "]:
+            raise Exception("invalid inputs")
+        if ch == "(": cnt += 1
+        if ch == ")": cnt -= 1
+        if cnt < 0:
+            raise Exception("invalid inputs")
+        if ch != " ": group += ch
+        if cnt == 0:
+            if group != "": results.append(group)
+            group = ""
+    return results
 
 
 
