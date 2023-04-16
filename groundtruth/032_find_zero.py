@@ -21,14 +21,11 @@ def find_zero(xs: list):
     >>> round(find_zero([-6, 11, -6, 1]), 2) # (x - 1) * (x - 2) * (x - 3) = -6 + 11x - 6x^2 + x^3
     1.0
     """
-    import numpy as np
-
-    coefs = np.array(xs[::-1])
-
+    dxs = [xs[i] * i for i in range(1, len(xs))]
     def func(x):
-        return np.polyval(coefs, x)
+        return poly(xs, x)
     def derivative(x):
-        return np.polyval(np.polyder(coefs), x)
+        return poly(dxs, x)
     
     x, tol = 0, 1e-5
     for _ in range(1000):
