@@ -9,7 +9,9 @@ def truncate_number(number: float) -> float:
     >>> truncate_number(3.5)
     0.5
     """
-    pass
+    assert number > 0, "invalid inputs"
+
+    return number - int(number)
 
 
 
