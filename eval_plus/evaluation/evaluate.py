@@ -2,18 +2,18 @@ import argparse
 import glob
 import itertools
 import multiprocessing
-from typing import Dict, List, Union
+from typing import List, Union
 
 import numpy as np
 
-from fuzz_eval.evaluation.evaluate_helpers import (
+from eval_plus.evaluation.evaluate_helpers import (
     TimeoutException,
     create_tempdir,
     reliability_guard,
     swallow_io,
     time_limit,
 )
-from fuzz_eval.utils import get_fuzz_eval
+from eval_plus.utils import get_human_eval_plus
 
 
 # unbiased estimator from https://github.com/openai/human-eval
@@ -166,7 +166,7 @@ def main():
     if args.dataset not in ["humaneval"]:
         raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
 
-    problems = get_fuzz_eval()
+    problems = get_human_eval_plus()
     evaluate(args, problems)
 
 
