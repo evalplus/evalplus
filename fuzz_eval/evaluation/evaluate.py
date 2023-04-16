@@ -13,6 +13,7 @@ from fuzz_eval.evaluation.evaluate_helpers import (
     swallow_io,
     time_limit,
 )
+from fuzz_eval.input_generation.mut_gen import MutateGen
 from fuzz_eval.utils import get_fuzz_eval
 
 
@@ -113,7 +114,7 @@ def evaluate_files(files: List[str], inputs, outputs, entry_point: str) -> List[
 
 
 def evaluate(args, problems):
-    base_total, base_correct = [], []
+    base_total, base_correct, new_correct = [], [], []
     for problem in problems:
         if (
             problem["reference"].strip().startswith("pass")
@@ -137,19 +138,37 @@ def evaluate(args, problems):
             gen_files, problem["base_input"], gd_results, problem["entry_point"]
         )
         print(f"Total Gen: {len(gen_files)}, Base Success Files: {len(base_suc_files)}")
-
         base_total.append(len(gen_files))
         base_correct.append(len(base_suc_files))
 
         if args.more_eval:
-            # where we would apply the additional testcases.
-            raise NotImplementedError("More evaluation has not been implemented")
+            input_gen = MutateGen(problem["base_input"]).generate(100)
+            new_inputs, gd_new_results = [], []
+            for new_input in input_gen:
+                o = execute(code, new_input, problem["entry_point"])
+                if o != "timed out" and o != "thrown exception":
+                    new_inputs.append(new_input)
+                    gd_new_results.append(o)
+            new_suc_files = evaluate_files(
+                base_suc_files, new_inputs, gd_new_results, problem["entry_point"]
+            )
+            print(
+                f"Total Gen: {len(gen_files)}, New Success Files: {len(new_suc_files)}"
+            )
+            new_correct.append(len(new_suc_files))
 
     # Calculate pass@k.
     total = np.array(base_total)
     correct = np.array(base_correct)
+    new_correct = np.array(new_correct)
     pass_at_k = {
         f"pass@{k}": estimate_pass_at_k(total, correct, k).mean()
+        for k in [1, 10, 100]
+        if (total >= k).all()
+    }
+    print(pass_at_k)
+    pass_at_k = {
+        f"pass@{k}": estimate_pass_at_k(total, new_correct, k).mean()
         for k in [1, 10, 100]
         if (total >= k).all()
     }
