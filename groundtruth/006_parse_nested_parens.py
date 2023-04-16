@@ -9,7 +9,18 @@ def parse_nested_parens(paren_string: str) -> List[int]:
     >>> parse_nested_parens('(()()) ((())) () ((())()())')
     [2, 3, 1, 3]
     """
-    pass
+    res, cnt, max_depth = [], 0, 0
+    for ch in paren_string:
+        assert ch in ["(", ")", " "], "invalid inputs"
+        if ch == "(": cnt += 1
+        if ch == ")": cnt -= 1
+        assert cnt >= 0, "invalid inputs"
+        max_depth = max(max_depth, cnt)
+        if cnt == 0:
+            if max_depth != 0:
+                res.append(max_depth)
+                max_depth = 0
+    return res
 
 
 
