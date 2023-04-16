@@ -1,3 +1,5 @@
+# Adopted from https://github.com/openai/human-eval
+
 import contextlib
 import faulthandler
 import io
