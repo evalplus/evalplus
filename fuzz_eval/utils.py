@@ -1,10 +1,10 @@
-import os
-import tempdir
 import gzip
 import json
-from typing import List, Dict
+import os
 import pathlib
+from typing import Dict, List
 
+import tempdir
 import wget
 from appdirs import user_cache_dir
 
