@@ -31,6 +31,7 @@ def main():
     parser.add_argument("--folder", required=True, type=str)
     parser.add_argument("--model", required=True, type=str)
     parser.add_argument("--bs", required=True, type=int)
+    parser.add_argument("--temperature", required=True, type=float)
     parser.add_argument("--n_samples", required=True, type=int)
     args = parser.parse_args()
 

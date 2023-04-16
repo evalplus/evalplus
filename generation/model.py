@@ -56,7 +56,13 @@ class EndOfFunctionCriteria(StoppingCriteria):
 
 
 class Decoder(object):
-    def __init__(self, batch_size: int = 1, pretrained: str = "gpt2", weight=None):
+    def __init__(
+        self,
+        batch_size: int = 1,
+        pretrained: str = "gpt2",
+        temperature: float = 0.8,
+        weight=None,
+    ):
         print("Initializing a decoder model: {} ...".format(pretrained))
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -101,6 +107,7 @@ class Decoder(object):
                 stopping_criteria=sc,
                 do_sample=do_sample,
                 top_p=0.95,
+                top_k=None,
                 temperature=0.8,
                 output_scores=True,
                 return_dict_in_generate=True,
