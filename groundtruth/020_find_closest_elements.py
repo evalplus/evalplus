@@ -9,7 +9,17 @@ def find_closest_elements(numbers: List[float]) -> Tuple[float, float]:
     >>> find_closest_elements([1.0, 2.0, 3.0, 4.0, 5.0, 2.0])
     (2.0, 2.0)
     """
-    pass
+    assert len(numbers) >= 2, "invalid inputs"  # $_CONTRACT_$
+
+    numbers.sort()
+    min_diff = float("inf")
+    min_pair = None
+    for l, r in zip(numbers[:-1], numbers[1:]):
+        diff = r - l
+        if diff < min_diff:
+            min_diff = diff
+            min_pair = (l, r)
+    return min_pair
 
 
 
