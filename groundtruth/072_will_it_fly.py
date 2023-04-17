@@ -17,7 +17,7 @@ def will_it_fly(q,w):
     will_it_fly([3], 5) ➞ True
     # 3 is less than the maximum possible weight, and it's balanced.
     '''
-    pass
+    return q == q[::-1] and sum(q) <= w
 
 def check(candidate):
 
