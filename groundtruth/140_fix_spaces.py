@@ -10,7 +10,10 @@ def fix_spaces(text):
     fix_spaces(" Example 2") == "_Example_2"
     fix_spaces(" Example   3") == "_Example-3"
     """
-    pass
+    ans = text
+    for i in range(3, len(text)):
+        ans = ans.replace(" " * i, "-")
+    return ans.replace(" ", "_")
 
 def check(candidate):
 
