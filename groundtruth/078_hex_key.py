@@ -17,7 +17,9 @@ def hex_key(num):
     For num = "123456789ABCDEF0" the output should be 6.
     For num = "2020" the output should be 2.
     """
-    pass
+    assert all(x in "0123456789ABCDEF" for x in num), "invalid inputs" # $_CONTRACT_$
+    
+    return len(list(filter(lambda x: x in "2367BD", num)))
 
 def check(candidate):
 
