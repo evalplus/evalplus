@@ -15,7 +15,11 @@ def bf(planet1, planet2):
     bf("Earth", "Mercury") ==> ("Venus")
     bf("Mercury", "Uranus") ==> ("Venus", "Earth", "Mars", "Jupiter", "Saturn")
     '''
-    pass
+    planets = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]
+    if planet1 not in planets or planet2 not in planets: return tuple()
+    i1, i2 = planets.index(planet1), planets.index(planet2)
+    if i1 > i2: i1, i2 = i2, i1
+    return tuple(planets[i1 + 1 : i2])
 
 def check(candidate):
 
