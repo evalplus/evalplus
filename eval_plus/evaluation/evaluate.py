@@ -46,11 +46,16 @@ def estimate_pass_at_k(
     )
 
 
+# hacky way to handle \n\r, etc in strings
+def to_raw(string):
+    return string.encode("unicode-escape").decode().replace("\\\\", "\\")
+
+
 def construct_inputs_sig(inputs: list) -> str:
     str_builder = ""
     for x in inputs:
         if type(x) == str:
-            str_builder += f"'{x}',"
+            str_builder += f"'{to_raw(x)}',"
         else:
             str_builder += f"{x},"
     return str_builder[:-1]
