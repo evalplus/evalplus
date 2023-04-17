@@ -12,7 +12,11 @@ def exchange(lst1, lst2):
     exchange([1, 2, 3, 4], [1, 5, 3, 4]) => "NO"
     It is assumed that the input lists will be non-empty.
     """
-    pass
+    assert len(lst1) > 0 and len(lst2) > 0, "invalid inputs" # $_CONTRACT_$
+
+    cnt_odd = len(list(filter(lambda x: x % 2 == 1, lst1)))
+    cnt_even = len(list(filter(lambda x: x % 2 == 0, lst2)))
+    return "YES" if cnt_odd <= cnt_even else "NO"
 
 def check(candidate):
 
