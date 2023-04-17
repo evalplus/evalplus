@@ -21,8 +21,9 @@ perfect, but we will either manually or automatically fix/complete it later.
 
 import json
 import pathlib
-from inspect import signature
+from inspect import signature, getsource
 from typing import Tuple
+from importlib import import_module
 
 from eval_plus.utils import HUMANEVAL_PLUS_PATH, get_human_eval
 
@@ -74,21 +75,18 @@ def {entry_point}(*args):
     return globals()["_inputs"]
 
 
-def get_contract_and_ref(task_id, entry_point, promt) -> Tuple[str, str]:
-    fname = (
-        pathlib.Path(__file__).parent.parent
-        / "groundtruth"
-        / f"{task_id.zfill(3)}_{entry_point}.py"
-    )
-    code = None
-    for p in open(fname, "r").read().split("\n\n\n"):
-        p = p.strip()
-        prefix = promt.split("\n\n\n")[-1].strip()
-        if p.startswith(prefix):
-            code = p.split(prefix)[-1]
-            break
+def get_contract_and_ref(task_id, entry_point) -> Tuple[str, str]:
+    mod = import_module(f"groundtruth.{task_id.zfill(3)}_{entry_point}")
+    fn = getattr(mod, entry_point)
 
-    assert code
+    code = (
+        getsource(fn)
+        .replace(fn.__doc__, "")
+        .replace("''''''", '""""""')
+        .split('""""""\n')[-1]
+    )
+    assert code, f"Something wrong with {task_id}!"
+    assert code[:3] != "def", f"Something wrong with the {task_id}!"
 
     # split code to contract and impl
     contract = ""
@@ -123,7 +121,7 @@ if __name__ == "__main__":
                 old["entry_point"], old["prompt"]
             )
             new["contract"], new["reference"] = get_contract_and_ref(
-                old["task_id"].split("/")[-1], old["entry_point"], old["prompt"]
+                old["task_id"].split("/")[-1], old["entry_point"]
             )
             new["base_input"] = instrument_inputs(
                 old["entry_point"], old["prompt"], old["test"]
