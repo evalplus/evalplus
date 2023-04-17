@@ -12,7 +12,14 @@ def skjkasdkd(lst):
     For lst = [0,81,12,3,1,21] the output should be 3
     For lst = [0,8,1,2,1,7] the output should be 7
     """
-    pass
+    def is_prime(a): # $_CONTRACT_$
+        return not (a < 2 or any(a % x == 0 for x in range(2, int(a ** 0.5) + 1))) # $_CONTRACT_$
+    assert any(is_prime(x) for x in lst), "invalid inputs" # $_CONTRACT_$
+
+    sorted_list = sorted(lst)[::-1]
+    for x in sorted_list:
+        if is_prime(x):
+            return sum(map(lambda ch: int(ch), str(x)))
 
 def check(candidate):
 
