@@ -72,4 +72,10 @@ def get_human_eval() -> List[Dict[str, str]]:
     human_eval = open(human_eval_path, "r").read() if not human_eval else human_eval
     human_eval = human_eval.split("\n")
     human_eval = [json.loads(line) for line in human_eval if line]
+
+    # Handle 115_max_fill.py to make its docstring well-formed
+    human_eval[114]["prompt"] = "import math\n" + human_eval[114]["prompt"].replace(
+        "import math\n", ""
+    )
+
     return human_eval
