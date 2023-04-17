@@ -24,7 +24,37 @@ def numerical_letter_grade(grades):
     Example:
     grade_equation([4.0, 3, 1.7, 2, 3.5]) ==> ['A+', 'B', 'C-', 'C', 'A-']
     """
-    pass
+    assert all(0.0 <= x <= 4.0 for x in grades), "invalid inputs" # $_CONTRACT_$
+
+    def to_letter_grade(score):
+      if score == 4.0:
+        return "A+"
+      elif score > 3.7:
+        return "A"
+      elif score > 3.3:
+        return "A-"
+      elif score > 3.0:
+        return "B+"
+      elif score > 2.7:
+        return "B"
+      elif score > 2.3:
+        return "B-"
+      elif score > 2.0:
+        return "C+"
+      elif score > 1.7:
+        return "C"
+      elif score > 1.3:
+        return "C-"
+      elif score > 1.0:
+        return "D+"
+      elif score > 0.7:
+        return "D"
+      elif score > 0.0:
+        return "D-"
+      else:
+        return "E"
+    
+    return [to_letter_grade(x) for x in grades]
 
 def check(candidate):
 
