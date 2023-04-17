@@ -20,7 +20,6 @@ perfect, but we will either manually or automatically fix/complete it later.
 """
 
 import json
-import pathlib
 from inspect import signature, getsource
 from typing import Tuple
 from importlib import import_module

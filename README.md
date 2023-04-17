@@ -13,13 +13,12 @@ fe = get_human_eval_plus() # -> a list of tasks (each is a dict)
 # "docstring" is the docstring.
 # "reference" is the ground-truth implementation for diff-testing.
 # "base_input" is the test inputs.
-
-# To build a HumanEval prompt: use "prompt"
-# To build a prompt with contracts: use "prompt" + "contract"
 ```
 
-> **Warning**
-> The "reference" field is incomplete for some tasks (i.e., `    pass`). Check before use!
+> **Note**:
+> + To build a HumanEval prompt: use `prompt`
+> + To build a prompt with contracts: use `prompt` + `contract`
+> + The program should work without `contract` (Run `python tools/check_ground_truth.py` to check)
 
 ## Development
 

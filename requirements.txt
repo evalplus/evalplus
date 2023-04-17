@@ -3,3 +3,4 @@ appdirs
 pre-commit
 tempdir
 openai
+rich
