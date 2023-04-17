@@ -11,7 +11,19 @@ def simplify(x, n):
     simplify("1/6", "2/1") = False
     simplify("7/10", "10/2") = False
     """
-    pass
+    def parse(x): # $_CONTRACT_$
+        x_list = x.split("/") # $_CONTRACT_$
+        if len(x_list) != 2: return None, None # $_CONTRACT_$
+        try: # $_CONTRACT_$
+            a, b = int(x_list[0]), int(x_list[1]) # $_CONTRACT_$
+        except: return None, None # $_CONTRACT_$
+        if b == 0: return None, None # $_CONTRACT_$
+        return a, b # $_CONTRACT_$
+    x1, y1 = parse(x) # $_CONTRACT_$
+    x2, y2 = parse(n) # $_CONTRACT_$
+    assert x1 != None and y1 != None and x2 != None and y2 != None, "invalid inputs" # $_CONTRACT_$
+
+    return (x1 * x2) % (y1 * y2) == 0
 
 def check(candidate):
 
