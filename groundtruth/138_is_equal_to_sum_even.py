@@ -6,7 +6,7 @@ def is_equal_to_sum_even(n):
     is_equal_to_sum_even(6) == False
     is_equal_to_sum_even(8) == True
     """
-    pass
+    return n >= 8 and n % 2 == 0
 
 def check(candidate):
     assert candidate(4) == False
