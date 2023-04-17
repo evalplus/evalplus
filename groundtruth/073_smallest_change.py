@@ -10,7 +10,11 @@ def smallest_change(arr):
     smallest_change([1, 2, 3, 4, 3, 2, 2]) == 1
     smallest_change([1, 2, 3, 2, 1]) == 0
     """
-    pass
+    arr_reversed, cnt = arr[::-1], 0
+    for i in range(len(arr) // 2):
+        if arr[i] != arr_reversed[i]:
+            cnt += 1
+    return cnt
 
 def check(candidate):
 
