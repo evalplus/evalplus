@@ -16,7 +16,17 @@ def tri(n):
     Examples:
     tri(3) = [1, 3, 2, 8]
     """
-    pass
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
+
+    if n == 0: return [1]
+    if n == 1: return [1, 3]
+    ans = [1, 3]
+    for i in range(2, n + 1):
+        if i % 2 == 0:
+            ans.append(1 + i / 2)
+        else:
+            ans.append(ans[-1] + ans[-2] + 1 + (i + 1) / 2)
+    return ans
 
 def check(candidate):
 
