@@ -7,7 +7,7 @@ def below_threshold(l: list, t: int):
     >>> below_threshold([1, 20, 4, 10], 5)
     False
     """
-    pass
+    return all(x < t for x in l)
 
 
 
