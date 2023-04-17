@@ -7,7 +7,7 @@ def add(x: int, y: int):
     >>> add(5, 7)
     12
     """
-    pass
+    return x + y
 
 
 
