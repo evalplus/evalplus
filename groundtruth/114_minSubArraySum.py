@@ -7,7 +7,15 @@ def minSubArraySum(nums):
     minSubArraySum([2, 3, 4, 1, 2, 4]) == 1
     minSubArraySum([-1, -2, -3]) == -6
     """
-    pass
+    assert len(nums) > 0, "invalid inputs" # $_CONTRACT_$
+
+    if all(x >= 0 for x in nums): return min(nums)
+    s, ans = 0, 0
+    for x in nums:
+        s += x
+        ans = min(ans, s)
+        if s >= 0: s = 0
+    return ans
 
 def check(candidate):
 
