@@ -12,7 +12,22 @@ def histogram(test):
     histogram('') == {}
 
     """
-    pass
+    words = test.split(" ") # $_CONTRACT_$
+    for word in words: # $_CONTRACT_$
+        if word != "": # $_CONTRACT_$
+            assert len(word) == 1 and word.islower(), "invalid inputs" # $_CONTRACT_$
+
+    if test == "": return {}    
+    count, ans = dict(), dict()
+    for word in words:
+        if word != "":
+            if word not in count: count[word] = 0
+            count[word] += 1
+    mx = max(list(count.values()))
+    for ch, c in count.items():
+        if c == mx:
+            ans[ch] = c
+    return ans
 
 def check(candidate):
 
