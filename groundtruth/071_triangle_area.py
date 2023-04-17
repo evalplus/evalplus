@@ -10,7 +10,11 @@ def triangle_area(a, b, c):
     triangle_area(3, 4, 5) == 6.00
     triangle_area(1, 2, 10) == -1
     '''
-    pass
+    assert a > 0 and b > 0 and c > 0, "invalid inputs" # $_CONTRACT_$
+
+    if a + b <= c or a + c <= b or b + c <= a: return -1
+    p = (a + b + c) / 2
+    return round((p * (p - a) * (p - b) * (p - c)) ** 0.5, 2)
 
 def check(candidate):
 
