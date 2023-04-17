@@ -9,8 +9,6 @@ from eval_plus.input_generation.base_gen import InputGen
 class MutateGen(InputGen):
     def __init__(self, inputs: List):
         super().__init__(inputs)
-        self.seed_hash = set([hash(str(x)) for x in self.seed_pool])
-        self.new_inputs = []
 
     def seed_selection(self):
         # random for now.
