@@ -11,25 +11,18 @@ def compare_one(a, b):
     compare_one("5,1", "6") ➞ "6"
     compare_one("1", 1) ➞ None
     """
-    def to_val(x): # $_CONTRACT_$
-        if type(x) == int or type(x) == float: # $_CONTRACT_$
-            return float(x) # $_CONTRACT_$
-        if type(x) == str: # $_CONTRACT_$
-            std_x = x.replace(",", ".") # $_CONTRACT_$
-            try: 
-                _ = float(std_x)
-            except: return None
-            return float(std_x)
-        return None
-    num_a, num_b = to_val(a), to_val(b) # $_CONTRACT_$
-    assert num_a != None and num_b != None, "invalid inputs" # $_CONTRACT_$
+    assert isinstance(a, (int, float, str)), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(b, (int, float, str)), "invalid inputs" # $_CONTRACT_$
+    try: # $_CONTRACT_$
+        float(str(a).replace(",", ".")) # $_CONTRACT_$
+        float(str(b).replace(",", ".")) # $_CONTRACT_$
+    except ValueError: raise Exception("invalid inputs") # $_CONTRACT_$
 
-    if num_a > num_b:
-        return a
-    elif num_a == num_b:
+    num_a = float(str(a).replace(",", "."))
+    num_b = float(str(b).replace(",", "."))
+    if num_a == num_b:
         return None
-    else:
-        return b
+    return a if num_a > num_b else b
 
 def check(candidate):
 

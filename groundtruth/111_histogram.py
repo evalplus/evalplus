@@ -19,7 +19,7 @@ def histogram(test):
 
     if test == "": return {}    
     count, ans = dict(), dict()
-    for word in words:
+    for word in test.split(" "):
         if word != "":
             if word not in count: count[word] = 0
             count[word] += 1

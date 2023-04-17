@@ -16,6 +16,8 @@ def fruit_distribution(s,n):
     assert len(words) == 5, "invalid inputs" # $_CONTRACT_$
     assert words[1] == "apples" and words[2] == "and" and words[4] == "oranges", "invalid inputs" # $_CONTRACT_$
     assert words[0].isdigit() and words[3].isdigit(), "invalid inputs" # $_CONTRACT_$
+
+    words = s.split(" ")
     c1, c2 = int(words[0]), int(words[3])
     assert n - c1 - c2 >= 0, "invalid inputs" # $_CONTRACT_$
     

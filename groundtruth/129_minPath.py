@@ -30,10 +30,10 @@ def minPath(grid, k):
         Output: [1]
     """
     assert k > 0, "invalid inputs" # $_CONTRACT_$
-    N = len(grid) # $_CONTRACT_$
-    assert N >= 2, "invalid inputs" # $_CONTRACT_$
-    assert all(len(l) == N for l in grid), "invalid inputs" # $_CONTRACT_$
+    assert len(grid) >= 2, "invalid inputs" # $_CONTRACT_$
+    assert all(len(l) == len(grid) for l in grid), "invalid inputs" # $_CONTRACT_$
 
+    N = len(grid)
     x, y = 0, 0
     for i in range(N):
         for j in range(N):

@@ -18,7 +18,8 @@ def closest_integer(value):
     return 15 and closest_integer("-14.5") should return -15.
     '''
     try: # $_CONTRACT_$
-        val = float(value) # $_CONTRACT_$
+        assert isinstance(value, str) # $_CONTRACT_$
+        float(value) # $_CONTRACT_$
     except: # $_CONTRACT_$
         raise Exception("invalid inputs") # $_CONTRACT_$
 
@@ -29,7 +30,7 @@ def closest_integer(value):
             return int(val) + 1
         else:
             return int(val) - 1
-    return rounding(val)
+    return rounding(float(value))
 
 def check(candidate):
 
