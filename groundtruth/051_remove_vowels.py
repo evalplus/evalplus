@@ -16,7 +16,7 @@ def remove_vowels(text):
     >>> remove_vowels('zbcd')
     'zbcd'
     """
-    pass
+    return "".join(list(filter(lambda ch: ch not in "aeiouAEIOU", text)))
 
 
 
