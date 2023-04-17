@@ -19,7 +19,11 @@ def get_row(lst, x):
     get_row([], 1) == []
     get_row([[], [1], [1, 2, 3]], 3) == [(2, 2)]
     """
-    pass
+    res = []
+    for i, l in enumerate(lst):
+        for j in range(len(l) - 1, -1, -1):
+            if l[j] == x: res.append((i, j))
+    return res
 
 def check(candidate):
 
