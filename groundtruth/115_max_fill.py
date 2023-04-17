@@ -34,7 +34,18 @@ def max_fill(grid, capacity):
         * grid[i][j] -> 0 | 1
         * 1 <= capacity <= 10
     """
-    pass
+    assert 1 <= len(grid) <= 100, "invalid inputs" # $_CONTRACT_$
+    lens = list(map(len, grid)) # $_CONTRACT_$
+    assert max(lens) == min(lens) and 1 <= max(lens) <= 100, "invalid inputs" # $_CONTRACT_$
+    for l in grid: # $_CONTRACT_$
+        for x in l: # $_CONTRACT_$
+            assert x == 0 or x == 1, "invalid inputs" # $_CONTRACT_$
+    assert 1 <= capacity <= 10, "invalid inputs" # $_CONTRACT_$
+
+    ans = 0    
+    for l in grid:
+        ans += math.ceil(sum(l) / capacity)
+    return ans
 
 def check(candidate):
 
