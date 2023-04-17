@@ -12,7 +12,10 @@ def iscube(a):
     iscube(0) ==> True
     iscube(180) ==> False
     '''
-    pass
+    for i in range(-abs(a), abs(a) + 1):
+        if i ** 3 == a:
+            return True
+    return False
 
 def check(candidate):
 
