@@ -22,7 +22,16 @@ def even_odd_palindrome(n):
         1. 1 <= n <= 10^3
         2. returned tuple has the number of even and odd integer palindromes respectively.
     """
-    pass
+    assert 1 <= n <= 1000, "invalid inputs" # $_CONTRACT_$
+
+    odd_cnt, even_cnt = 0, 0
+    for i in range(1, n + 1):
+        if str(i) == str(i)[::-1]:
+            if i % 2 == 1:
+                odd_cnt += 1
+            else:
+                even_cnt += 1
+    return even_cnt, odd_cnt
 
 def check(candidate):
 
