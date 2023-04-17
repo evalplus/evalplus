@@ -9,7 +9,9 @@ def derivative(xs: list):
     >>> derivative([1, 2, 3])
     [2, 6]
     """
-    pass
+    assert len(xs) > 0, "invalid inputs" # $_CONTRACT_$
+
+    return [xs[i] * i for i in range(1, len(xs))]
 
 
 
