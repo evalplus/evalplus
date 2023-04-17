@@ -10,7 +10,11 @@ def next_smallest(lst):
     next_smallest([]) == None
     next_smallest([1, 1]) == None
     """
-    pass
+    if len(lst) <= 1: return None
+    sorted_list = sorted(lst)
+    for x in sorted_list:
+        if x != sorted_list[0]:
+            return x 
 
 def check(candidate):
 
