@@ -15,7 +15,14 @@ def is_sorted(lst):
     is_sorted([1, 2, 2, 3, 3, 4]) ➞ True
     is_sorted([1, 2, 2, 2, 3, 4]) ➞ False
     '''
-    pass
+    assert all(x >= 0 for x in lst), "invalid inputs" # $_CONTRACT_$
+
+    count = dict()
+    for x in lst:
+        if x not in count: count[x] = 0
+        count[x] += 1
+        if count[x] > 2: return False
+    return lst == sorted(lst)
 
 def check(candidate):
 
