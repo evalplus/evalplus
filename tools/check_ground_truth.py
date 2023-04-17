@@ -4,6 +4,7 @@
 
 import pathlib
 
+import multiprocessing as mp
 from rich.progress import track
 
 from eval_plus.utils import get_human_eval_plus
@@ -20,5 +21,14 @@ if __name__ == "__main__":
         print(fname)
         code = open(fname, "r").read()
         if task["contract"]:
+            assert task["contract"] in code
             code = code.replace(task["contract"], "\n")
-        exec(code, globals())
+
+        # run the code in a subprocess
+        p = mp.Process(target=exec, args=(code, globals()))
+        p.start()
+        p.join(timeout=2)
+        assert not p.is_alive(), f"Timeout for {fname}!"
+        p.terminate()
+        p.join()
+        assert p.exitcode == 0, f"Error for {fname}! {code}"
