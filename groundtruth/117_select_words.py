@@ -12,7 +12,15 @@ def select_words(s, n):
     select_words("Hello world", 4) ==> ["world"]
     select_words("Uncle sam", 3) ==> ["Uncle"]
     """
-    pass
+    assert all(ch == " " or ch.isalpha() for ch in s), "invalid inputs" # $_CONTRACT_$
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
+
+    ans = []
+    for word in s.split(" "):
+        if word != "":
+            c_cnt = len(list(filter(lambda ch: ch not in "aeiouAEIOU", word)))
+            if c_cnt == n: ans.append(word)
+    return ans
 
 def check(candidate):
 
