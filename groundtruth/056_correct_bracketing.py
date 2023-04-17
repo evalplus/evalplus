@@ -13,7 +13,14 @@ def correct_bracketing(brackets: str):
     >>> correct_bracketing("><<>")
     False
     """
-    pass
+    assert all(x in "<>" for x in brackets) # $_CONTRACT_$
+
+    cnt = 0
+    for x in brackets:
+        if x == "<": cnt += 1
+        if x == ">": cnt -= 1
+        if cnt < 0: return False
+    return cnt == 0
 
 
 
