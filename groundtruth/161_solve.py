@@ -10,7 +10,17 @@ def solve(s):
     solve("ab") = "AB"
     solve("#a@C") = "#A@c"
     """
-    pass
+    ans, has_letter = "", False
+    for ch in s:
+        if ch.isalpha():
+            has_letter = True
+            if ch.islower():
+                ans += chr(ord(ch) - ord("a") + ord("A"))
+            else:
+                ans += chr(ord(ch) - ord("A") + ord("a"))
+        else:
+            ans += ch
+    return ans if has_letter else s[::-1]
 
 def check(candidate):
 
