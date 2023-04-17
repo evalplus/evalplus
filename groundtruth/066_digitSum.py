@@ -12,7 +12,7 @@ def digitSum(s):
         digitSum("woArBld") => 131
         digitSum("aAaaaXa") => 153
     """
-    pass
+    return sum([ord(ch) for ch in s if ch.isupper()])
 
 def check(candidate):
 
