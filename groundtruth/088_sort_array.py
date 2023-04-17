@@ -14,7 +14,13 @@ def sort_array(array):
     * sort_array([2, 4, 3, 0, 1, 5]) => [0, 1, 2, 3, 4, 5]
     * sort_array([2, 4, 3, 0, 1, 5, 6]) => [6, 5, 4, 3, 2, 1, 0]
     """
-    pass
+    assert all(x >= 0 for x in array), "invalid inputs" # $_CONTRACT_$
+
+    if array == []: return []
+    arr = sorted(list(array))
+    if (arr[0] + arr[-1]) % 2 == 0:
+        arr = arr[::-1]
+    return arr
 
 def check(candidate):
 
