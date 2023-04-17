@@ -10,7 +10,18 @@ def search(lst):
         search([1, 2, 2, 3, 3, 3, 4, 4, 4]) == 3
         search([5, 5, 4, 4, 4]) == -1
     '''
-    pass
+    assert min(lst) > 0, "invalid inputs" # $_CONTRACT_$
+
+    count = dict()
+    for num in lst:
+        if num not in count:
+            count[num] = 0
+        count[num] += 1
+    ans = -1
+    for num, cnt in count.items():
+        if cnt >= num:
+            ans = max(ans, num)
+    return ans
 
 def check(candidate):
 
