@@ -26,7 +26,14 @@ def move_one_ball(arr):
                 array by performing any number of right shift operations.
                 
     """
-    pass
+    assert len(set(arr)) == len(arr), "invalid inputs" # $_CONTRACT_$
+    
+    sorted_arr = sorted(arr)
+    if arr == sorted_arr: return True
+    for i in range(1, len(arr)):
+        if arr[i:] + arr[:i] == sorted_arr:
+            return True
+    return False
 
 def check(candidate):
 
