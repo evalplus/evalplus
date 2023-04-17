@@ -14,7 +14,17 @@ def match_parens(lst):
     match_parens(['()(', ')']) == 'Yes'
     match_parens([')', ')']) == 'No'
     '''
-    pass
+    assert len(lst) == 2, "invalid inputs" # $_CONTRACT_$
+    assert all(ch == "(" or ch == ")" for ch in lst[0]), "invalid inputs" # $_CONTRACT_$
+    assert all(ch == "(" or ch == ")" for ch in lst[1]), "invalid inputs" # $_CONTRACT_$
+
+    def valid_parens(s: str) -> bool:
+        cnt = 0
+        for ch in s:
+            cnt = cnt + 1 if ch == "(" else cnt - 1
+            if cnt < 0: return False
+        return cnt == 0
+    return "Yes" if valid_parens(lst[0] + lst[1]) or valid_parens(lst[1] + lst[0]) else "No"
 
 def check(candidate):
 
