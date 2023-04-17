@@ -8,7 +8,7 @@ def common(l1: list, l2: list):
     [2, 3]
 
     """
-    pass
+    return sorted(list(set(l1).intersection(set(l2))))
 
 
 
