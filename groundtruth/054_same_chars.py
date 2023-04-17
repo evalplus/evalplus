@@ -16,7 +16,7 @@ def same_chars(s0: str, s1: str):
     >>> same_chars('eabcdzzzz', 'dddzzzzzzzddddabc')
     False
     """
-    pass
+    return set(s0) == set(s1)
 
 
 
