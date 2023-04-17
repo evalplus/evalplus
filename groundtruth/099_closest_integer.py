@@ -17,7 +17,19 @@ def closest_integer(value):
     farthest from zero. For example closest_integer("14.5") should
     return 15 and closest_integer("-14.5") should return -15.
     '''
-    pass
+    try: # $_CONTRACT_$
+        val = float(value) # $_CONTRACT_$
+    except: # $_CONTRACT_$
+        raise Exception("invalid inputs") # $_CONTRACT_$
+
+    def rounding(val):
+        if abs(val - int(val)) != 0.5:
+            return round(val)
+        if val > 0:
+            return int(val) + 1
+        else:
+            return int(val) - 1
+    return rounding(val)
 
 def check(candidate):
 
