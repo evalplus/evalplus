@@ -12,7 +12,15 @@ def sum_squares(lst):
     For lst = []  the output should be 0
     For lst = [-1,-5,2,-1,-5]  the output should be -126
     """
-    pass
+    ans = 0
+    for i, num in enumerate(lst):
+        if i % 3 == 0:
+            ans += num ** 2
+        elif i % 4 == 0:
+            ans += num ** 3
+        else:
+            ans += num
+    return ans
 
 def check(candidate):
 
