@@ -12,7 +12,8 @@ def anti_shuffle(s):
     anti_shuffle('hello') returns 'ehllo'
     anti_shuffle('Hello World!!!') returns 'Hello !!!Wdlor'
     """
-    pass
+    words = s.split(" ")
+    return " ".join(map(lambda x: "".join(sorted(x, key=lambda ch: ord(ch))), words))
 
 def check(candidate):
 
