@@ -9,12 +9,17 @@ def separate_paren_groups(paren_string: str) -> List[str]:
     >>> separate_paren_groups('( ) (( )) (( )( ))')
     ['()', '(())', '(()())']
     """
+    cnt = 0 # $_CONTRACT_$
+    for ch in paren_string: # $_CONTRACT_$
+        assert ch in ["(", ")", " "], "invalid inputs"  # $_CONTRACT_$
+        if ch == "(": cnt += 1 # $_CONTRACT_$
+        if ch == ")": cnt -= 1 # $_CONTRACT_$
+        assert cnt >= 0, "invalid inputs" # $_CONTRACT_$
+
     cnt, group, results = 0, "", []
     for ch in paren_string:
-        assert ch in ["(", ")", " "], "invalid inputs"
         if ch == "(": cnt += 1
         if ch == ")": cnt -= 1
-        assert cnt >= 0, "invalid inputs"
         if ch != " ": group += ch
         if cnt == 0:
             if group != "": results.append(group)

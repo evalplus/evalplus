@@ -15,7 +15,7 @@ def fib4(n: int):
     >>> fib4(7)
     14
     """
-    assert n >= 0, "invalid inputs"
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
     
     if n == 0:
         return 0

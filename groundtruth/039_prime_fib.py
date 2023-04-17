@@ -14,8 +14,9 @@ def prime_fib(n: int):
     >>> prime_fib(5)
     89
     """
-    import random
+    assert 1 <= n <= 12, "invalid inputs" # $_CONTRACT_$
 
+    import random
     def miller_rabin(n, k=10):
         """Test if n is prime using the Miller-Rabin primality test."""
         if n < 2:

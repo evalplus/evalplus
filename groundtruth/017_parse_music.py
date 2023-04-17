@@ -14,7 +14,7 @@ def parse_music(music_string: str) -> List[int]:
     >>> parse_music('o o| .| o| o| .| .| .| .| o o')
     [4, 2, 1, 2, 2, 1, 1, 1, 1, 4, 4]
     """
-    assert music_string == "" or all(map(lambda x: x in ["o", "o|", ".|"], music_string.split(" "))), "invalid inputs"
+    assert music_string == "" or all(map(lambda x: x in ["o", "o|", ".|"], music_string.split(" "))), "invalid inputs" # $_CONTRACT_$
 
     def count_beats(note: str) -> int:
         if note == "o": return 4

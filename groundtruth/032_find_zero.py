@@ -21,7 +21,7 @@ def find_zero(xs: list):
     >>> round(find_zero([-6, 11, -6, 1]), 2) # (x - 1) * (x - 2) * (x - 3) = -6 + 11x - 6x^2 + x^3
     1.0
     """
-    assert len(xs) > 0 and len(xs) % 2 == 0, "invalid inputs"
+    assert len(xs) > 0 and len(xs) % 2 == 0, "invalid inputs" # $_CONTRACT_$
 
     dxs = [xs[i] * i for i in range(1, len(xs))]
     def func(x):

@@ -11,8 +11,8 @@ def change_base(x: int, base: int):
     >>> change_base(7, 2)
     '111'
     """
-    assert x >= 0, "invalid inputs"
-    assert 2 <= base <= 9, "invalid inputs"
+    assert x >= 0, "invalid inputs" # $_CONTRACT_$
+    assert 2 <= base <= 9, "invalid inputs" # $_CONTRACT_$
 
     if x == 0: return "0"
     ret = ""

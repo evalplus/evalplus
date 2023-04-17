@@ -11,7 +11,7 @@ def decode_shift(s: str):
     """
     takes as input string encoded with encode_shift function. Returns decoded string.
     """
-    assert s == "" or s.islower(), "invalid inputs"
+    assert s == "" or s.islower(), "invalid inputs" # $_CONTRACT_$
 
     return "".join([chr((ord(ch) - ord("a") - 5 + 26) % 26 + ord("a")) for ch in s])
 

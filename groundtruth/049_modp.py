@@ -13,7 +13,7 @@ def modp(n: int, p: int):
     >>> modp(100, 101)
     1
     """
-    assert n >= 0 and p >= 1, "invalid inputs"
+    assert n >= 0 and p >= 1, "invalid inputs" # $_CONTRACT_$
 
     res, x = 1, 2
     while n != 0:

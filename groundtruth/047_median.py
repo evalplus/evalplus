@@ -7,7 +7,7 @@ def median(l: list):
     >>> median([-10, 4, 6, 1000, 10, 20])
     15.0
     """
-    assert len(l) > 0, "invalid inputs"
+    assert len(l) > 0, "invalid inputs" # $_CONTRACT_$
 
     sorted_l = sorted(l)
     if len(l) % 2 == 1:
