@@ -2,3 +2,4 @@ wget
 appdirs
 pre-commit
 tempdir
+openai
