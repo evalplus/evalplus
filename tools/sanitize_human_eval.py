@@ -75,16 +75,20 @@ def {entry_point}(*args):
     return globals()["_inputs"]
 
 
-def get_contract_and_ref(task_id, entry_point) -> Tuple[str, str]:
+def get_contract_and_ref(task_id: str, entry_point) -> Tuple[str, str]:
     mod = import_module(f"groundtruth.{task_id.zfill(3)}_{entry_point}")
     fn = getattr(mod, entry_point)
 
+    doc = fn.__doc__
+    if task_id == "51":
+        doc = doc.replace("bcdf\nghjklm", r"bcdf\nghjklm").replace(
+            "abcdef\nghijklm", r"abcdef\nghijklm"
+        )
+
     code = (
-        getsource(fn)
-        .replace(fn.__doc__, "")
-        .replace("''''''", '""""""')
-        .split('""""""\n')[-1]
+        getsource(fn).replace(doc, "").replace("''''''", '""""""').split('""""""\n')[-1]
     )
+
     assert code, f"Something wrong with {task_id}!"
     assert code[:3] != "def", f"Something wrong with the {task_id}!"
 
