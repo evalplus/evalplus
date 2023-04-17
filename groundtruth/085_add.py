@@ -6,7 +6,13 @@ def add(lst):
     Examples:
         add([4, 2, 6, 7]) ==> 2 
     """
-    pass
+    assert len(lst) > 0, "invalid inputs" # $_CONTRACT_$
+
+    s = 0
+    for i in range(1, len(lst), 2):
+        if lst[i] % 2 == 0:
+            s += lst[i]
+    return s
 
 def check(candidate):
 
