@@ -13,7 +13,13 @@ def make_a_pile(n):
     >>> make_a_pile(3)
     [3, 5, 7]
     """
-    pass
+    assert n >= 1, "invalid inputs" # $_CONTRACT_$
+
+    ans, num = [], n
+    for _ in range(n):
+        ans.append(num)
+        num += 2
+    return ans
 
 def check(candidate):
 
