@@ -13,7 +13,9 @@ def sum_to_n(n: int):
     >>> sum_to_n(1)
     1
     """
-    pass
+    assert n >= 1, "invalid inputs" # $_CONTRACT_$
+
+    return (n + 1) * n // 2
 
 
 
