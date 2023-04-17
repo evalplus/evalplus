@@ -11,7 +11,13 @@ def odd_count(lst):
     ["the number of odd elements 1n the str1ng 1 of the 1nput.",
      "the number of odd elements 8n the str8ng 8 of the 8nput."]
     """
-    pass
+    assert all(s.isdigit() for s in lst), "invalid inputs" # $_CONTRACT_$
+
+    ans, template = [], "the number of odd elements in the string i of the input."
+    for s in lst:
+        odd_cnt = len(list(filter(lambda ch: int(ch) % 2 == 1, s)))
+        ans.append(template.replace("i", str(odd_cnt)))
+    return ans
 
 def check(candidate):
 
