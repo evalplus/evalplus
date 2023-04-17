@@ -96,7 +96,7 @@ def get_contract_and_ref(task_id, entry_point, promt) -> Tuple[str, str]:
 
     reading_contract = True
     for line in code.strip("\n").split("\n"):
-        if reading_contract and line.startswith("    assert "):
+        if reading_contract and "$_CONTRACT_$" in line:
             contract += line + "\n"
         else:
             reading_contract = False
