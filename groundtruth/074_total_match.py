@@ -13,7 +13,8 @@ def total_match(lst1, lst2):
     total_match(['hi', 'admin'], ['hI', 'hi', 'hi']) ➞ ['hI', 'hi', 'hi']
     total_match(['4'], ['1', '2', '3', '4', '5']) ➞ ['4']
     '''
-    pass
+    c1, c2 = sum(map(lambda s: len(s), lst1)), sum(map(lambda s: len(s), lst2))
+    return lst1 if c1 <= c2 else lst2
 
 def check(candidate):
 
