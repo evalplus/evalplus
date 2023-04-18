@@ -13,7 +13,7 @@ from eval_plus.evaluation.evaluate_helpers import (
     swallow_io,
     time_limit,
 )
-from eval_plus.utils import get_human_eval_plus, to_raw
+from eval_plus.utils import get_human_eval_plus, get_human_eval_plus_inputs, to_raw
 
 
 # unbiased estimator from https://github.com/openai/human-eval
@@ -43,11 +43,6 @@ def estimate_pass_at_k(
     return np.array(
         [estimator(int(n), int(c), k) for n, c in zip(num_samples_it, num_correct)]
     )
-
-
-# hacky way to handle \n\r, etc in strings
-def to_raw(string):
-    return string.encode("unicode-escape").decode().replace("\\\\", "\\")
 
 
 def construct_inputs_sig(inputs: list) -> str:
@@ -103,8 +98,14 @@ def execute(code: str, inputs: List, signature: str) -> str:
 
 def evaluate_files(files: List[str], inputs, outputs, entry_point: str) -> List[str]:
     suc_files = []
+    cache = {}
     for file in files:
         code = open(file, "r").read()
+        if code in cache:
+            suc = cache[code]
+            if suc:
+                suc_files.append(file)
+            continue
         suc = True
         for input, output in zip(inputs, outputs):
             o = execute(code, input, entry_point)
@@ -113,10 +114,11 @@ def evaluate_files(files: List[str], inputs, outputs, entry_point: str) -> List[
                 break
         if suc:
             suc_files.append(file)
+        cache[code] = suc
     return suc_files
 
 
-def evaluate(args, problems):
+def evaluate(args, problems, extra_inputs=None):
     base_total, base_correct, new_correct = [], [], []
     for problem in problems:
         p_name = problem["task_id"].replace("/", "_")
@@ -138,10 +140,12 @@ def evaluate(args, problems):
         base_total.append(len(gen_files))
         base_correct.append(len(base_suc_files))
 
-        if args.more_eval:
-            input_gen = MutateGen(problem["base_input"]).generate(100)
+        if args.more_eval and p_name in extra_inputs:
             new_inputs, gd_new_results = [], []
-            for new_input in input_gen:
+            code = (
+                problem["prompt"] + problem["contract"] + problem["canonical_solution"]
+            )
+            for new_input in extra_inputs[p_name]:
                 o = execute(code, new_input, problem["entry_point"])
                 if o != "timed out" and o != "thrown exception":
                     new_inputs.append(new_input)
@@ -153,6 +157,8 @@ def evaluate(args, problems):
                 f"Total Gen: {len(gen_files)}, New Success Files: {len(new_suc_files)}"
             )
             new_correct.append(len(new_suc_files))
+        else:
+            new_correct.append(0)
 
     # Calculate pass@k.
     total = np.array(base_total)
@@ -183,7 +189,11 @@ def main():
         raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
 
     problems = get_human_eval_plus()
-    evaluate(args, problems)
+    more_inputs = None
+    if args.more_eval:
+        more_inputs = get_human_eval_plus_inputs()
+
+    evaluate(args, problems, more_inputs)
 
 
 if __name__ == "__main__":

@@ -42,6 +42,16 @@ def get_human_eval_plus() -> List[Dict[str, str]]:
     return human_eval
 
 
+def get_human_eval_plus_inputs() -> Dict[str, List]:
+    task_inputs = {}
+    for i, line in enumerate(open(HUMANEVAL_PLUS_INPUTS_PATH, "r").read().split("\n")):
+        if not line:
+            continue
+        plus = json.loads(line)
+        task_inputs[plus["task_id"]] = plus["inputs"]
+    return task_inputs
+
+
 def get_human_eval() -> List[Dict[str, str]]:
     """Get HumanEval from OpenAI's github repo and return as a list of parsed dicts.
 
