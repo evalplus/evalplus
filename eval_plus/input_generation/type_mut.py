@@ -1,9 +1,9 @@
+from multipledispatch import dispatch
+
 import copy
 import random
 import string
-from typing import Any, Dict, List, Set, Tuple
-
-from multipledispatch import dispatch
+from typing import List, Any, Tuple, Set, Dict
 
 from eval_plus.evaluation.evaluate import execute
 from eval_plus.input_generation.mut_gen import MutateGen
@@ -81,14 +81,16 @@ class TypedMutGen(MutateGen):
 
     # List-like
     def _mutate_list_like(self, seed_input):
-        idx = random.randint(0, len(seed_input) - 1)
+        if len(seed_input) == 0:
+            return []
 
         choice = random.randint(0, 3)
-        if choice == 0 and len(seed_input) > 0:  # remove one element
+        idx = random.randint(0, len(seed_input) - 1)
+        if choice == 0:  # remove one element
             seed_input.pop(random.randint(0, len(seed_input) - 1))
-        elif choice == 1:  # add one mutated element
+        elif choice == 1 and len(seed_input) > 0:  # add one mutated element
             seed_input.append(self.typed_mutate(seed_input[idx]))
-        elif choice == 2:  # repeat one element
+        elif choice == 2 and len(seed_input) > 0:  # repeat one element
             seed_input.append(seed_input[idx])
         else:  # inplace element change
             seed_input[idx] = self.typed_mutate(seed_input[idx])
@@ -105,22 +107,23 @@ class TypedMutGen(MutateGen):
     # String
     @use_ingredient(0.2)
     def typed_mutate_str_impl(self, seed_input: str):
-        choice = random.randint(0, 2)
-        if choice == 0:  # replace a substring with empty or mutated string
+        choice = random.randint(0, 2) if seed_input else 0
+        if choice == 0 and self.ingredients[str]:  # insert an ingredient
+            idx = random.randint(0, len(seed_input))
+            return (
+                seed_input[:idx]
+                + random.choice(list(self.ingredients[str]))
+                + seed_input[idx:]
+            )
+        # other choices assume len(seed_input) > 0
+        elif choice == 1:  # replace a substring with empty or mutated string
             start = random.randint(0, len(seed_input) - 1)
             end = random.randint(start + 1, len(seed_input))
             mid = (
                 "" if random.randint(0, 1) else self.typed_mutate(seed_input[start:end])
             )
             return seed_input[:start] + mid + seed_input[end:]
-        elif choice == 1 and self.ingredients[str]:  # insert an ingredient
-            idx = random.randint(0, len(seed_input) - 1)
-            return (
-                seed_input[:idx]
-                + random.choice(list(self.ingredients[str]))
-                + seed_input[idx:]
-            )
-        elif choice == 2 and len(seed_input) > 0:  # repeat one element
+        elif choice == 2:  # repeat one element
             idx = random.randint(0, len(seed_input) - 1)
             return (
                 seed_input[:idx]
