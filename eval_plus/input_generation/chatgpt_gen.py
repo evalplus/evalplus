@@ -6,7 +6,7 @@ from typing import Dict, List
 import openai
 
 from eval_plus.evaluation.evaluate import execute
-from eval_plus.input_generation.base_gen import InputGen
+from eval_plus.input_generation.base_gen import BaseGen
 from eval_plus.input_generation.util.api_request import (
     create_chatgpt_config,
     request_chatgpt_engine,
@@ -14,7 +14,7 @@ from eval_plus.input_generation.util.api_request import (
 from eval_plus.utils import to_raw
 
 
-class ChatGPTGen(InputGen):
+class ChatGPTGen(BaseGen):
     def __init__(self, inputs: List, signature: str, contract_code: str, gd_code: str):
         super().__init__(inputs, signature, contract_code)
         self.gd_code = gd_code

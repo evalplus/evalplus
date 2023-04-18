@@ -1,13 +1,13 @@
 import copy
 import random
 import string
-from typing import List
+from typing import List, Any
 
 from eval_plus.evaluation.evaluate import execute
-from eval_plus.input_generation.base_gen import InputGen
+from eval_plus.input_generation.base_gen import BaseGen
 
 
-class MutateGen(InputGen):
+class MutateGen(BaseGen):
     def __init__(self, inputs: List, signature: str, contract_code: str):
         super().__init__(inputs, signature, contract_code)
 
@@ -15,11 +15,10 @@ class MutateGen(InputGen):
         # random for now.
         return random.choice(self.seed_pool)
 
-    def mutate(self, seed) -> List:
+    def mutate(self, seed_input: Any) -> List:
+        new_input = copy.deepcopy(seed_input)
 
-        new_input = copy.deepcopy(seed)
-
-        while hash(str(new_input)) == hash(str(seed)):
+        while hash(str(new_input)) == hash(str(seed_input)):
             strategy = random.randint(0, 7)
             if len(new_input) == 0:
                 break

@@ -1,7 +1,7 @@
 import copy
 
 
-class InputGen(object):
+class BaseGen(object):
     def __init__(self, inputs, signature, contract_code):
         self.contract_code = contract_code
         self.signature = signature
