@@ -2,6 +2,7 @@ from multipledispatch import dispatch
 
 import copy
 import random
+import string
 from typing import List, Any, Tuple, Set, Dict
 
 from eval_plus.evaluation.evaluate import execute
@@ -34,6 +35,8 @@ class TypedMutGen(MutateGen):
             float: set(),
             str: set(),
         }
+        for x in inputs:
+            self.fetch_ingredient(x)
 
     def seed_selection(self):
         # random for now.
@@ -53,14 +56,24 @@ class TypedMutGen(MutateGen):
 
     # Simple primitives
     @dispatch(int)
-    # @use_ingredient(0.5)
+    @use_ingredient(0.5)
     def typed_mutate(self, seed_input: int):
-        return seed_input + random.randint(-1, 1)
+        @use_ingredient(0.5)
+        def _impl(_, seed_input: int):
+            return seed_input + random.randint(-1, 1)
+
+        return _impl(self, seed_input)
 
     @dispatch(float)
-    # @use_ingredient(0.5)
     def typed_mutate(self, seed_input: float):
-        return seed_input + random.uniform(-1, 1)
+        @use_ingredient(0.5)
+        def _impl(_, seed_input: float):
+            if random.randint(0, 1):
+                return seed_input + random.uniform(-1, 1)
+            else:
+                return seed_input * (1 + random.uniform(-0.5, 0.5))
+
+        return _impl(self, seed_input)
 
     @dispatch(bool)
     def typed_mutate(self, seed_input: bool):
@@ -74,17 +87,12 @@ class TypedMutGen(MutateGen):
         if choice == 0 and len(seed_input) > 0:  # remove one element
             seed_input.pop(random.randint(0, len(seed_input) - 1))
         elif choice == 1:  # add one mutated element
-            seed_input.append(self.mutate(seed_input[idx]))
+            seed_input.append(self.typed_mutate(seed_input[idx]))
         elif choice == 2:  # repeat one element
             seed_input.append(seed_input[idx])
         else:  # inplace element change
-            seed_input[idx] = self.mutate(seed_input[idx])
+            seed_input[idx] = self.typed_mutate(seed_input[idx])
         return seed_input
-
-    @dispatch(str)
-    # @use_ingredient(0.5)
-    def typed_mutate(self, seed_input: str):
-        return "".join(self._mutate_list_like([*seed_input]))
 
     @dispatch(list)
     def typed_mutate(self, seed_input: List):
@@ -93,6 +101,39 @@ class TypedMutGen(MutateGen):
     @dispatch(tuple)
     def typed_mutate(self, seed_input: Tuple):
         return tuple(self._mutate_list_like(list(seed_input)))
+
+    # String
+    @use_ingredient(0.2)
+    def typed_mutate_str_impl(self, seed_input: str):
+        choice = random.randint(0, 2)
+        if choice == 0:  # replace a substring with empty or mutated string
+            start = random.randint(0, len(seed_input) - 1)
+            end = random.randint(start + 1, len(seed_input))
+            mid = (
+                "" if random.randint(0, 1) else self.typed_mutate(seed_input[start:end])
+            )
+            return seed_input[:start] + mid + seed_input[end:]
+        elif choice == 1 and self.ingredients[str]:  # insert an ingredient
+            idx = random.randint(0, len(seed_input) - 1)
+            return (
+                seed_input[:idx]
+                + random.choice(list(self.ingredients[str]))
+                + seed_input[idx:]
+            )
+        elif choice == 2 and len(seed_input) > 0:  # repeat one element
+            idx = random.randint(0, len(seed_input) - 1)
+            return (
+                seed_input[:idx]
+                + seed_input[random.randint(0, len(seed_input) - 1)]
+                + seed_input[idx:]
+            )
+
+        # random char
+        return seed_input + random.choice(string.ascii_letters)
+
+    @dispatch(str)
+    def typed_mutate(self, seed_input: str):
+        return self.typed_mutate_str_impl(seed_input)
 
     # Set
     @dispatch(set)
@@ -106,12 +147,12 @@ class TypedMutGen(MutateGen):
         if choice == 0 and len(seed_input) > 0:  # remove a kv
             del seed_input[random.choice(list(seed_input.keys()))]
         elif choice == 1:  # add a kv
-            k = self.mutate(random.choice(list(seed_input.keys())))
-            v = self.mutate(random.choice(list(seed_input.values())))
+            k = self.typed_mutate(random.choice(list(seed_input.keys())))
+            v = self.typed_mutate(random.choice(list(seed_input.values())))
             seed_input[k] = v
         else:  # inplace value change
             k0, v0 = random.choice(list(seed_input.items()))
-            seed_input[k0] = self.mutate(v0)
+            seed_input[k0] = self.typed_mutate(v0)
         return seed_input
 
     ############################################
