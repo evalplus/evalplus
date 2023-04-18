@@ -11,13 +11,10 @@ def prod_signs(arr):
     >>> prod_signs([0, 1]) == 0
     >>> prod_signs([]) == None
     """
-    if arr == []: return None
-    if 0 in arr: return 0
-    s, sgn = 0, 1
-    for x in arr:
-        s += abs(x)
-        sgn *= (x // abs(x))
-    return s * sgn
+    if not arr: return None
+    prod = 0 if 0 in arr else (-1) ** len(list(filter(lambda x: x < 0, arr)))
+    return prod * sum([abs(i) for i in arr])
+
 
 def check(candidate):
 

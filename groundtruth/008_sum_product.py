@@ -9,11 +9,15 @@ def sum_product(numbers: List[int]) -> Tuple[int, int]:
     >>> sum_product([1, 2, 3, 4])
     (10, 24)
     """
-    s, p = 0, 1
-    for number in numbers:
-        s += number
-        p *= number
-    return s, p
+    sum_value = 0
+    prod_value = 1
+
+    for n in numbers:
+        sum_value += n
+        prod_value *= n
+    return sum_value, prod_value
+
+
 
 
 METADATA = {

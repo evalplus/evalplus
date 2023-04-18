@@ -13,13 +13,11 @@ def add_elements(arr, k):
         1. 1 <= len(arr) <= 100
         2. 1 <= k <= len(arr)
     """
+
     assert 1 <= len(arr) <= 100, "invalid inputs" # $_CONTRACT_$
     assert 1 <= k <= len(arr), "invalid inputs" # $_CONTRACT_$
+    return sum(elem for elem in arr[:k] if len(str(elem)) <= 2)
 
-    def digits(x: int) -> int:
-        s = str(x)
-        return len(s) - 1 if s[0] == "-" else len(s)
-    return sum(filter(lambda x: digits(x) <= 2, arr[:k]))
 
 def check(candidate):
 

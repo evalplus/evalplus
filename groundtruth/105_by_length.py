@@ -21,30 +21,26 @@ def by_length(arr):
             -> reverse arr -> [55, 1, -1]
       return = ['One']
     """
-    def to_word(x: int) -> str:
-      if x == 1:
-        return "One"
-      elif x == 2:
-        return "Two"
-      elif x == 3:
-        return "Three"
-      elif x == 4:
-        return "Four"
-      elif x == 5:
-        return "Five"
-      elif x == 6:
-        return "Six"
-      elif x == 7:
-        return "Seven"
-      elif x == 8:
-        return "Eight"
-      else:
-        return "Nine"
-    sorted_list, ans = sorted(arr)[::-1], []
-    for x in sorted_list:
-      if 1 <= x <= 9:
-        ans.append(to_word(x))
-    return ans
+    dic = {
+        1: "One",
+        2: "Two",
+        3: "Three",
+        4: "Four",
+        5: "Five",
+        6: "Six",
+        7: "Seven",
+        8: "Eight",
+        9: "Nine",
+    }
+    sorted_arr = sorted(arr, reverse=True)
+    new_arr = []
+    for var in sorted_arr:
+        try:
+            new_arr.append(dic[var])
+        except:
+            pass
+    return new_arr
+
 
 def check(candidate):
 

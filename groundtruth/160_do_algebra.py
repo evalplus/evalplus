@@ -24,16 +24,16 @@ def do_algebra(operator, operand):
         Operator list has at least one operator, and operand list has at least two operands.
 
     """
+
     assert len(operator) >= 1, "invalid inputs" # $_CONTRACT_$
     assert len(operand) == len(operator) + 1, "invalid inputs" # $_CONTRACT_$
     assert all(x >= 0 for x in operand), "invalid inputs" # $_CONTRACT_$
     assert all(sgn in ["+", "-", "*", "//", "**"] for sgn in operator), "invalid inputs" # $_CONTRACT_$
+    expression = str(operand[0])
+    for oprt, oprn in zip(operator, operand[1:]):
+        expression+= oprt + str(oprn)
+    return eval(expression)
 
-    exp = ""
-    for i in range(len(operator)):
-        exp += str(operand[i]) + operator[i]
-    exp += str(operand[-1])
-    return eval(exp)
 
 def check(candidate):
 

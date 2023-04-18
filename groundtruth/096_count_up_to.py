@@ -10,16 +10,20 @@ def count_up_to(n):
     count_up_to(1) => []
     count_up_to(18) => [2,3,5,7,11,13,17]
     """
-    assert n >= 0, "invalid inputs" # $_CONTRACT_$
 
-    ans = []
-    isprime = [True] * (n + 1)
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
+    primes = []
     for i in range(2, n):
-        if isprime[i]:
-            ans.append(i)
-            for j in range(i + i, n, i):
-                isprime[j] = False
-    return ans
+        is_prime = True
+        for j in range(2, i):
+            if i % j == 0:
+                is_prime = False
+                break
+        if is_prime:
+            primes.append(i)
+    return primes
+
+
 
 def check(candidate):
 

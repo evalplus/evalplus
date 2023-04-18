@@ -7,7 +7,11 @@ def below_threshold(l: list, t: int):
     >>> below_threshold([1, 20, 4, 10], 5)
     False
     """
-    return all(x < t for x in l)
+    for e in l:
+        if e >= t:
+            return False
+    return True
+
 
 
 

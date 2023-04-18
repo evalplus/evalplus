@@ -19,11 +19,9 @@ def get_row(lst, x):
     get_row([], 1) == []
     get_row([[], [1], [1, 2, 3]], 3) == [(2, 2)]
     """
-    res = []
-    for i, l in enumerate(lst):
-        for j in range(len(l) - 1, -1, -1):
-            if l[j] == x: res.append((i, j))
-    return res
+    coords = [(i, j) for i in range(len(lst)) for j in range(len(lst[i])) if lst[i][j] == x]
+    return sorted(sorted(coords, key=lambda x: x[1], reverse=True), key=lambda x: x[0])
+
 
 def check(candidate):
 

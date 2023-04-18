@@ -11,14 +11,14 @@ def unique_digits(x):
     >>> unique_digits([152, 323, 1422, 10])
     []
     """
-    assert all(num > 0 for num in x), "invalid inputs" # $_CONTRACT_$
 
-    def judge(x):
-        for ch in str(x):
-            if int(ch) % 2 == 0:
-                return False
-        return True
-    return sorted(list(filter(judge, x)))
+    assert all(num > 0 for num in x), "invalid inputs" # $_CONTRACT_$
+    odd_digit_elements = []
+    for i in x:
+        if all (int(c) % 2 == 1 for c in str(i)):
+            odd_digit_elements.append(i)
+    return sorted(odd_digit_elements)
+
 
 def check(candidate):
 

@@ -10,16 +10,14 @@ def order_by_points(nums):
     >>> order_by_points([1, 11, -1, -11, -12]) == [-1, -11, 1, -12, 11]
     >>> order_by_points([]) == []
     """
-    def weight(x):
-        x_list = list(str(x))
-        if x_list[0] == "-":
-            x_list = x_list[1:]
-            x_list = list(map(int, x_list))
-            x_list[0] = -x_list[0]
-        else:
-            x_list = list(map(int, x_list))
-        return sum(x_list)
-    return sorted(nums, key=weight)
+    def digits_sum(n):
+        neg = 1
+        if n < 0: n, neg = -1 * n, -1 
+        n = [int(i) for i in str(n)]
+        n[0] = n[0] * neg
+        return sum(n)
+    return sorted(nums, key=digits_sum)
+
 
 def check(candidate):
 

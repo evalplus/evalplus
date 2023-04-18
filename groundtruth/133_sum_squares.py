@@ -14,7 +14,11 @@ def sum_squares(lst):
 
     """
     import math
-    return sum(map(lambda x: math.ceil(x) ** 2, lst))
+    squared = 0
+    for i in lst:
+        squared += math.ceil(i)**2
+    return squared
+
 
 def check(candidate):
 

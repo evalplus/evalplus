@@ -75,7 +75,8 @@ def {entry_point}(*args):
 
 
 def get_contract_and_ref(task_id: str, entry_point) -> Tuple[str, str]:
-    mod = import_module(f"groundtruth.{task_id.zfill(3)}_{entry_point}")
+    # FIXME: may just use `canonical_solution`
+    mod = import_module(f"groundtruth_bk.{task_id.zfill(3)}_{entry_point}")
     fn = getattr(mod, entry_point)
 
     doc = fn.__doc__
@@ -126,6 +127,7 @@ if __name__ == "__main__":
             new["contract"], new["reference"] = get_contract_and_ref(
                 old["task_id"].split("/")[-1], old["entry_point"]
             )
+            new["canonical_solution"] = old["canonical_solution"]
             new["base_input"] = instrument_inputs(
                 old["entry_point"], old["prompt"], old["test"]
             )

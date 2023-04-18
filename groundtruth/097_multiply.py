@@ -9,7 +9,8 @@ def multiply(a, b):
     multiply(2020, 1851) should return 0.
     multiply(14,-15) should return 20.
     """
-    return int(str(a)[-1]) * int(str(b)[-1])
+    return abs(a % 10) * abs(b % 10)
+
 
 def check(candidate):
 

@@ -11,11 +11,8 @@ def double_the_difference(lst):
    
     If the input list is empty, return 0.
     '''
-    ans = 0
-    for num in lst:
-        if num % 2 == 1 and num > 0:
-            ans += num ** 2
-    return ans
+    return sum([i**2 for i in lst if i > 0 and i%2!=0 and "." not in str(i)])
+
 
 def check(candidate):
 

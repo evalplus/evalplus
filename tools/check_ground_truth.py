@@ -1,5 +1,5 @@
 """This script checks:
-1. Independence of "contract" and "reference" in groundtruth. (i.e., it should work without the "contract" part)
+1. Independence of "contract" and "canonical_solution" in groundtruth. (i.e., it should work without the "contract" part)
 """
 
 import pathlib

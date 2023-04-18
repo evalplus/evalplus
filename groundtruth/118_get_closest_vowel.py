@@ -14,14 +14,18 @@ def get_closest_vowel(word):
     get_closest_vowel("quick") ==> ""
     get_closest_vowel("ab") ==> ""
     """
-    assert word == "" or word.isalpha(), "invalid inputs" # $_CONTRACT_$
 
-    def is_vowel(ch: str) -> bool:
-        return ch in "aeiouAEIOU"
-    for i in range(len(word) - 2, 0, -1):
-        if is_vowel(word[i]) and not is_vowel(word[i-1]) and not is_vowel(word[i+1]):
-            return word[i]
+    assert word == "" or word.isalpha(), "invalid inputs" # $_CONTRACT_$
+    if len(word) < 3:
+        return ""
+
+    vowels = {"a", "e", "i", "o", "u", "A", "E", 'O', 'U', 'I'}
+    for i in range(len(word)-2, 0, -1):
+        if word[i] in vowels:
+            if (word[i+1] not in vowels) and (word[i-1] not in vowels):
+                return word[i]
     return ""
+
 
 def check(candidate):
 

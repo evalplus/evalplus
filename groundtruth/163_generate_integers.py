@@ -9,10 +9,13 @@ def generate_integers(a, b):
     generate_integers(8, 2) => [2, 4, 6, 8]
     generate_integers(10, 14) => []
     """
-    assert a > 0 and b > 0, "invalid inputs" # $_CONTRACT_$
 
-    if a > b: a, b = b, a
-    return [i for i in range(a, min(b + 1, 10)) if i % 2 == 0]
+    assert a > 0 and b > 0, "invalid inputs" # $_CONTRACT_$
+    lower = max(2, min(a, b))
+    upper = min(8, max(a, b))
+
+    return [i for i in range(lower, upper+1) if i % 2 == 0]
+
 
 def check(candidate):
 

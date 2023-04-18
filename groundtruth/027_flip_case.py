@@ -5,11 +5,9 @@ def flip_case(string: str) -> str:
     >>> flip_case('Hello')
     'hELLO'
     """
-    table = {
-        **{chr(val): chr(val + 32) for val in range(65, 91)},
-        **{chr(val + 32): chr(val) for val in range(65, 91)}
-    }
-    return "".join(map(lambda x: table[x] if x in table else x, string))
+    return string.swapcase()
+
+
 
 
 METADATA = {

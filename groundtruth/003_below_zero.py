@@ -10,12 +10,15 @@ def below_zero(operations: List[int]) -> bool:
     >>> below_zero([1, 2, -4, 5])
     True
     """
-    account = 0
-    for operation in operations:
-        account += operation
-        if account < 0:
+    balance = 0
+
+    for op in operations:
+        balance += op
+        if balance < 0:
             return True
+
     return False
+
 
 
 

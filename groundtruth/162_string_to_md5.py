@@ -6,11 +6,9 @@ def string_to_md5(text):
 
     >>> string_to_md5('Hello world') == '3e25960a79dbc69b674cd4ec67a72c62'
     """
-    if text == "": return None
     import hashlib
-    m = hashlib.md5()
-    m.update(text.encode("utf-8"))
-    return m.hexdigest()
+    return hashlib.md5(text.encode('ascii')).hexdigest() if text else None
+
 
 def check(candidate):
 

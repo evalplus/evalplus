@@ -11,9 +11,10 @@ def decimal_to_binary(decimal):
     decimal_to_binary(15)   # returns "db1111db"
     decimal_to_binary(32)   # returns "db100000db"
     """
-    assert decimal >= 0, "invalid inputs" # $_CONTRACT_$
 
+    assert decimal >= 0, "invalid inputs" # $_CONTRACT_$
     return "db" + bin(decimal)[2:] + "db"
+
 
 def check(candidate):
 

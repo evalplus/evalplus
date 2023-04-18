@@ -29,22 +29,38 @@ def minPath(grid, k):
         Input: grid = [ [5,9,3], [4,1,6], [7,8,2]], k = 1
         Output: [1]
     """
+
     assert k > 0, "invalid inputs" # $_CONTRACT_$
     assert len(grid) >= 2, "invalid inputs" # $_CONTRACT_$
     assert all(len(l) == len(grid) for l in grid), "invalid inputs" # $_CONTRACT_$
-
-    N = len(grid)
-    x, y = 0, 0
-    for i in range(N):
-        for j in range(N):
+    n = len(grid)
+    val = n * n + 1
+    for i in range(n):
+        for j in range(n):
             if grid[i][j] == 1:
-                x, y = i, j
-    mn = N * N
-    if x > 0: mn = min(mn, grid[x - 1][y])
-    if x < N - 1: mn = min(mn, grid[x + 1][y])
-    if y > 0: mn = min(mn, grid[x][y - 1])
-    if y < N - 1: mn = min(mn, grid[x][y + 1])
-    return [1 if i % 2 == 0 else mn for i in range(k)]
+                temp = []
+                if i != 0:
+                    temp.append(grid[i - 1][j])
+
+                if j != 0:
+                    temp.append(grid[i][j - 1])
+
+                if i != n - 1:
+                    temp.append(grid[i + 1][j])
+
+                if j != n - 1:
+                    temp.append(grid[i][j + 1])
+
+                val = min(temp)
+
+    ans = []
+    for i in range(k):
+        if i % 2 == 0:
+            ans.append(1)
+        else:
+            ans.append(val)
+    return ans
+
 
 def check(candidate):
 
