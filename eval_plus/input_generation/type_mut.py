@@ -50,13 +50,95 @@ class TypedMutGen(MutateGen):
 
         return new_input
 
+    #########################
+    # Type-aware generation #
+    #########################
+    @dispatch(int)
+    def typed_gen(self, _):
+        @use_ingredient(0.5)
+        def _impl(*_):
+            return random.randint(-100, 100)
+
+        return _impl(self, _)
+
+    @dispatch(float)
+    def typed_gen(self, _):
+        @use_ingredient(0.5)
+        def _impl(*_):
+            return random.uniform(-100, 100)
+
+        return _impl(self, _)
+
+    @dispatch(bool)
+    def typed_gen(self, _):
+        return random.choice([True, False])
+
+    @dispatch(str)
+    def typed_gen(self, _):
+        @use_ingredient(0.5)
+        def _impl(*_):
+            return "".join(
+                random.choice(string.ascii_letters)
+                for _ in range(random.randint(0, 10))
+            )
+
+        return _impl(self, _)
+
+    def any_gen(self):
+        # weighted choose
+        # random.choice([1, 1.1, "str"])
+        choice = random.choices(
+            [
+                True,
+                1,
+                1.1,
+                "str",
+                [],  # list
+                tuple(),  # tuple
+                dict(),  # dict
+                set(),  # set
+            ],
+            [0.2, 0.2, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05],
+        )[0]
+        return self.typed_gen(choice)
+
+    @dispatch(list)
+    def typed_gen(self, _):
+        ret = []
+        size = random.randint(0, 10)
+        if random.randint(0, 4) == 0:  # heterogeneous
+            for _ in range(size):
+                ret.append(self.any_gen())
+        else:  # homogeneous
+            t = random.choice([bool(), int(), float(), str()])
+            for _ in range(size):
+                ret.append(self.typed_gen(t))
+        return ret
+
+    @dispatch(tuple)
+    def typed_gen(self, _):
+        return tuple(self.typed_gen([]))
+
+    @dispatch(set)
+    def typed_gen(self, _):
+        return set(self.typed_gen([]))
+
+    @dispatch(dict)
+    def typed_gen(self, _):
+        ret = dict()
+        values = self.typed_gen([])
+        # NOTE: Assumption: nobody uses dict with heterogeneous keys
+        # NOTE: Assumption: nobody uses dict with boolean keys
+        key_type = random.choice([int(), float(), str()])
+        for v in values:
+            ret[self.typed_gen(key_type)] = self.typed_gen(v)
+        return ret
+
     ########################
     # Type-aware mutation  #
     ########################
-
     # Simple primitives
     @dispatch(int)
-    @use_ingredient(0.5)
     def typed_mutate(self, seed_input: int):
         @use_ingredient(0.5)
         def _impl(_, seed_input: int):
@@ -70,8 +152,7 @@ class TypedMutGen(MutateGen):
         def _impl(_, seed_input: float):
             if random.randint(0, 1):
                 return seed_input + random.uniform(-1, 1)
-            else:
-                return seed_input * (1 + random.uniform(-0.5, 0.5))
+            return seed_input * (1 + random.uniform(-0.5, 0.5))
 
         return _impl(self, seed_input)
 
@@ -80,9 +161,10 @@ class TypedMutGen(MutateGen):
         return random.choice([True, False])
 
     # List-like
-    def _mutate_list_like(self, seed_input):
+    @dispatch(list)
+    def typed_mutate(self, seed_input: List):
         if len(seed_input) == 0:
-            return []
+            return self.typed_gen([])
 
         choice = random.randint(0, 3)
         idx = random.randint(0, len(seed_input) - 1)
@@ -96,64 +178,65 @@ class TypedMutGen(MutateGen):
             seed_input[idx] = self.typed_mutate(seed_input[idx])
         return seed_input
 
-    @dispatch(list)
-    def typed_mutate(self, seed_input: List):
-        return self._mutate_list_like(seed_input)
-
     @dispatch(tuple)
     def typed_mutate(self, seed_input: Tuple):
-        return tuple(self._mutate_list_like(list(seed_input)))
+        return tuple(self.typed_mutate(list(seed_input)))
 
     # String
-    @use_ingredient(0.2)
-    def typed_mutate_str_impl(self, seed_input: str):
-        choice = random.randint(0, 2) if seed_input else 0
-        if choice == 0 and self.ingredients[str]:  # insert an ingredient
-            idx = random.randint(0, len(seed_input))
-            return (
-                seed_input[:idx]
-                + random.choice(list(self.ingredients[str]))
-                + seed_input[idx:]
-            )
-        # other choices assume len(seed_input) > 0
-        elif choice == 1:  # replace a substring with empty or mutated string
-            start = random.randint(0, len(seed_input) - 1)
-            end = random.randint(start + 1, len(seed_input))
-            mid = (
-                "" if random.randint(0, 1) else self.typed_mutate(seed_input[start:end])
-            )
-            return seed_input[:start] + mid + seed_input[end:]
-        elif choice == 2:  # repeat one element
-            idx = random.randint(0, len(seed_input) - 1)
-            return (
-                seed_input[:idx]
-                + seed_input[random.randint(0, len(seed_input) - 1)]
-                + seed_input[idx:]
-            )
-
-        # random char
-        return seed_input + random.choice(string.ascii_letters)
-
     @dispatch(str)
     def typed_mutate(self, seed_input: str):
-        return self.typed_mutate_str_impl(seed_input)
+        @use_ingredient(0.2)
+        def _impl(_, seed_input: str):
+            choice = random.randint(0, 2) if seed_input else 0
+            if choice == 0 and self.ingredients[str]:  # insert an ingredient
+                idx = random.randint(0, len(seed_input))
+                return (
+                    seed_input[:idx]
+                    + random.choice(list(self.ingredients[str]))
+                    + seed_input[idx:]
+                )
+            # other choices assume len(seed_input) > 0
+            elif choice == 1:  # replace a substring with empty or mutated string
+                start = random.randint(0, len(seed_input) - 1)
+                end = random.randint(start + 1, len(seed_input))
+                mid = (
+                    ""
+                    if random.randint(0, 1)
+                    else self.typed_mutate(seed_input[start:end])
+                )
+                return seed_input[:start] + mid + seed_input[end:]
+            elif choice == 2:  # repeat one element
+                idx = random.randint(0, len(seed_input) - 1)
+                return (
+                    seed_input[:idx]
+                    + seed_input[random.randint(0, len(seed_input) - 1)]
+                    + seed_input[idx:]
+                )
+
+            # random char
+            return self.typed_gen(str())
+
+        return _impl(self, seed_input)
 
     # Set
     @dispatch(set)
     def typed_mutate(self, seed_input: Set):
-        return set(self._mutate_list_like(list(seed_input)))
+        return set(self.typed_mutate(list(seed_input)))
 
     # Dict
     @dispatch(dict)
     def typed_mutate(self, seed_input: Dict):
+        if len(seed_input) == 0:
+            return self.typed_gen(dict())
+
         choice = random.randint(0, 2)
-        if choice == 0 and len(seed_input) > 0:  # remove a kv
+        if choice == 0:  # remove a kv
             del seed_input[random.choice(list(seed_input.keys()))]
         elif choice == 1:  # add a kv
             k = self.typed_mutate(random.choice(list(seed_input.keys())))
             v = self.typed_mutate(random.choice(list(seed_input.values())))
             seed_input[k] = v
-        else:  # inplace value change
+        elif choice == 2:  # inplace value change
             k0, v0 = random.choice(list(seed_input.items()))
             seed_input[k0] = self.typed_mutate(v0)
         return seed_input
