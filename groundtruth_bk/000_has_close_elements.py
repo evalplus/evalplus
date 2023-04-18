@@ -9,6 +9,8 @@ def has_close_elements(numbers: List[float], threshold: float) -> bool:
     >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)
     True
     """
+    assert threshold > 0, "invalid inputs" # $_CONTRACT_$
+
     sorted_numbers = sorted(numbers)
     for i in range(len(sorted_numbers) - 1):
         if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:
