@@ -201,7 +201,7 @@ class TypedMutGen(MutateGen):
     # String
     @dispatch(str)
     def typed_mutate(self, seed_input: str):
-        @use_ingredient(0.2)
+        @use_ingredient(0.4)
         def _impl(_, seed_input: str):
             choice = random.randint(0, 2) if seed_input else 0
             if choice == 0 and self.ingredients[str]:  # insert an ingredient
@@ -274,6 +274,8 @@ class TypedMutGen(MutateGen):
     @dispatch(str)
     def typed_fetch(self, seed_input: str):
         self.ingredients[str].add(seed_input)
+        for token in seed_input.strip().split():
+            self.ingredients[str].add(token)
 
     # List-like
     def _fetch_list_like(self, seed_input):

@@ -31,6 +31,7 @@ def get_human_eval_plus() -> List[Dict[str, str]]:
         "contract" is the assertions for the function's input (validity).
         "canonical_solution" is the ground-truth implementation for diff-testing.
         "base_input" is the test inputs.
+        "atol" is the absolute tolerance for diff-testing.
     """
     human_eval = get_human_eval()
     for i, line in enumerate(open(HUMANEVAL_PLUS_PATH, "r").read().split("\n")):
