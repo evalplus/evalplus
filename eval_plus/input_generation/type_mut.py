@@ -1,9 +1,9 @@
-from multipledispatch import dispatch
-
 import copy
 import random
 import string
-from typing import List, Any, Tuple, Set, Dict
+from typing import Any, Dict, List, Set, Tuple
+
+from multipledispatch import dispatch
 
 from eval_plus.evaluation.evaluate import execute
 from eval_plus.input_generation.mut_gen import MutateGen
@@ -285,16 +285,22 @@ class TypedMutGen(MutateGen):
         self._fetch_list_like(seed_input.values())
 
     def generate(self, num: int):
+        num_generated = 1
         while len(self.new_inputs) < num:
+            if num_generated % 1000 == 0:
+                print(
+                    f"generated {num_generated} already with {len(self.new_inputs)} new inputs ... "
+                )
             new_input = self.seed_selection()
             # Multi-step instead of single-step
             for _ in range(random.randint(1, MAX_MULTI_STEP_SIZE)):
                 new_input = self.mutate(new_input)
+            num_generated += 1
             if hash(str(new_input)) not in self.seed_hash:
                 o = execute(self.contract_code, new_input, self.signature)
                 if o != "timed out" and o != "thrown exception":
                     self.typed_fetch(new_input)
                     self.seed_pool.append(new_input)
-                    self.seed_hash.add(hash(str(new_input)))
                     self.new_inputs.append(new_input)
+                self.seed_hash.add(hash(str(new_input)))
         return self.new_inputs[:num]
