@@ -11,7 +11,7 @@ from appdirs import user_cache_dir
 HUMANEVAL_PLUS_PATH = pathlib.Path(__file__).parent.parent / "HumanEvalPlus.jsonl"
 # temp
 HUMANEVAL_PLUS_INPUTS_PATH = (
-    pathlib.Path(__file__).parent.parent / "HumanEvalPlusInputs.jsonl"
+    pathlib.Path(__file__).parent.parent / "HumanEvalPlusInputsType.jsonl"
 )
 CACHE_DIR = user_cache_dir("eval-plus")
 
@@ -40,6 +40,7 @@ def get_human_eval_plus() -> List[Dict[str, str]]:
         plus = json.loads(line)
         human_eval[i]["base_input"] = plus["base_input"]
         human_eval[i]["contract"] = plus["contract"]
+        human_eval[i]["atol"] = plus["atol"]
     return human_eval
 
 
