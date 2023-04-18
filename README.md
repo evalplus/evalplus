@@ -11,6 +11,7 @@ fe = get_human_eval_plus() # -> a list of tasks (each is a dict)
 # "contract" is the assertions for the function's input (empty if no constraints).
 # "canonical_solution" is the ground-truth implementation.
 # "base_input" is the test inputs.
+# "atol": absolute tolerance for diff-testing
 ```
 
 > **Note**:
