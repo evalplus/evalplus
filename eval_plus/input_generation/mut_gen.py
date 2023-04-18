@@ -1,7 +1,7 @@
 import copy
 import random
 import string
-from typing import List, Any
+from typing import Any, List
 
 from eval_plus.evaluation.evaluate import execute
 from eval_plus.input_generation.base_gen import BaseGen

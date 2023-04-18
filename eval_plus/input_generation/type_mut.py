@@ -1,9 +1,9 @@
-from multipledispatch import dispatch
-
 import copy
 import random
 import string
-from typing import List, Any, Tuple, Set, Dict
+from typing import Any, Dict, List, Set, Tuple
+
+from multipledispatch import dispatch
 
 from eval_plus.evaluation.evaluate import execute
 from eval_plus.input_generation.mut_gen import MutateGen

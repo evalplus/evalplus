@@ -17,9 +17,9 @@ perfect, but we will either manually or automatically fix/complete it later.
 """
 
 import json
+from importlib import import_module
 from inspect import getsource
 from typing import Tuple
-from importlib import import_module
 
 from eval_plus.utils import HUMANEVAL_PLUS_PATH, get_human_eval
 

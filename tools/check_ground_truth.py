@@ -2,9 +2,9 @@
 1. Independence of "contract" and "canonical_solution" in groundtruth. (i.e., it should work without the "contract" part)
 """
 
+import multiprocessing as mp
 import pathlib
 
-import multiprocessing as mp
 from rich.progress import track
 
 from eval_plus.utils import get_human_eval_plus
