@@ -38,12 +38,14 @@ def parse_lcov(outputs: List[str], func: Callable, mode: str = "branch"):
         if switch:
             extracted_outputs.append(line)
 
+    src, start_lineno = inspect.getsourcelines(func)
+    end_lineno = start_lineno + len(src) - 1
+
     if mode == "branch":
-        src, start_lineno = inspect.getsourcelines(func)
-        end_lineno = start_lineno + len(src) - 1
         branch, branch_covered = [], []
         for line in extracted_outputs:
             if line.startswith("BRDA"):
+                # BRDA format: BR:<lineno>,<blockno>,<branchno>,<taken>
                 lineno, blockno, branchno, taken = line[5:].split(",")
                 if start_lineno <= int(lineno) <= end_lineno:
                     branch_sig = f"BR:{lineno},{blockno},{branchno}"
@@ -52,7 +54,19 @@ def parse_lcov(outputs: List[str], func: Callable, mode: str = "branch"):
                         branch_covered.append(branch_sig)
         return branch, branch_covered
     else:
-        raise NotImplementedError
+        not_covered_lines = []
+        for line in extracted_outputs:
+            if line.startswith("DA"):
+                # DA format: DA:<lineno>,<exec_count>[,...]
+                lineno, exec_count = line[3:].split(",")[:2]
+                if start_lineno <= int(lineno) <= end_lineno:
+                    if exec_count == "0":
+                        not_covered_lines.append(int(lineno))
+        for lineno in not_covered_lines:
+            line = src[lineno - start_lineno]
+            if line.strip() != "" and "def" not in line:
+                src[lineno - start_lineno] = line[:-1] + "  # Not executed\n"
+        return "".join(src)
 
 
 def cov(code: str, inputs: List[List[Any]], entry_point: str, mode="branch"):

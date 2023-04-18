@@ -1,3 +1,4 @@
+import argparse
 from typing import Any, List, Union
 
 from appdirs import user_cache_dir
@@ -42,11 +43,27 @@ def test_solution_coverage(
 
 
 if __name__ == "__main__":
-    for i in range(0, 164):
-        task_id = f"HumanEval/{i}"
-        branch, branch_covered = test_solution_coverage(
-            dataset="HumanEval", task_id=task_id, mode="branch"
-        )
-        per = 1.0 if len(branch) == 0 else len(branch_covered) / len(branch)
-        if per != 1.0:
-            print(i, per, len(branch_covered), len(branch))
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--mode", type=str, default="branch", choices=["line", "branch"]
+    )
+    args = parser.parse_args()
+
+    if args.mode == "branch":
+        for i in range(0, 164):
+            task_id = f"HumanEval/{i}"
+            branch, branch_covered = test_solution_coverage(
+                dataset="HumanEval", task_id=task_id, mode="branch"
+            )
+            per = 1.0 if len(branch) == 0 else len(branch_covered) / len(branch)
+            if per != 1.0:
+                print(i, per, len(branch_covered), len(branch))
+    else:
+        for i in range(0, 164):
+            task_id = f"HumanEval/{i}"
+            annotated_code = test_solution_coverage(
+                dataset="HumanEval", task_id=task_id, mode="line"
+            )
+            if "Not executed" in annotated_code:
+                print(f"{task_id = }")
+                print(annotated_code)
