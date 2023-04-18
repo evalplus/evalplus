@@ -33,14 +33,14 @@ def pluck(arr):
         * 1 <= nodes.length <= 10000
         * 0 <= node.value
     """
+
     assert len(arr) <= 10000, "invalid inputs" # $_CONTRACT_$
     assert all(val >= 0 for val in arr), "invalid inputs" # $_CONTRACT_$
+    if(len(arr) == 0): return []
+    evens = list(filter(lambda x: x%2 == 0, arr))
+    if(evens == []): return []
+    return [min(evens), arr.index(min(evens))]
 
-    if all(val % 2 == 1 for val in arr): return []
-    min_even = min(filter(lambda x: x % 2 == 0, arr))
-    for i in range(len(arr)):
-        if arr[i] == min_even:
-            return [min_even, i]
 
 def check(candidate):
 

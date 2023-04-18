@@ -9,9 +9,10 @@ def truncate_number(number: float) -> float:
     >>> truncate_number(3.5)
     0.5
     """
-    assert number > 0, "invalid inputs" # $_CONTRACT_$
 
-    return number - int(number)
+    assert number > 0, "invalid inputs" # $_CONTRACT_$
+    return number % 1.0
+
 
 
 

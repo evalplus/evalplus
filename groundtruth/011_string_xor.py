@@ -7,10 +7,17 @@ def string_xor(a: str, b: str) -> str:
     >>> string_xor('010', '110')
     '100'
     """
+
     assert len(a) == len(b), "invalid inputs" # $_CONTRACT_$
     assert set(a).issubset({"0", "1"}) and set(b).issubset({"0", "1"}), "invalid inputs" # $_CONTRACT_$
+    def xor(i, j):
+        if i == j:
+            return '0'
+        else:
+            return '1'
 
-    return "".join(str(int(a[i]) ^ int(b[i])) for i in range(len(a)))
+    return ''.join(xor(x, y) for x, y in zip(a, b))
+
 
 
 

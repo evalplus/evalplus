@@ -16,18 +16,20 @@ def Strongest_Extension(class_name, extensions):
     Example:
     for Strongest_Extension('my_class', ['AA', 'Be', 'CC']) == 'my_class.AA'
     """
-    assert len(extensions) > 0, "invalid inputs" # $_CONTRACT_$
 
-    def strength(s: str) -> int:
-        CAP, SM = 0, 0
-        for ch in s:
-            if ch.isupper(): CAP += 1
-            if ch.islower(): SM += 1
-        return CAP - SM
-    max_strength = max(map(strength, extensions))
-    for e in extensions:
-        if strength(e) == max_strength:
-            return class_name + "." + e
+    assert len(extensions) > 0, "invalid inputs" # $_CONTRACT_$
+    strong = extensions[0]
+    my_val = len([x for x in extensions[0] if x.isalpha() and x.isupper()]) - len([x for x in extensions[0] if x.isalpha() and x.islower()])
+    for s in extensions:
+        val = len([x for x in s if x.isalpha() and x.isupper()]) - len([x for x in s if x.isalpha() and x.islower()])
+        if val > my_val:
+            strong = s
+            my_val = val
+
+    ans = class_name + "." + strong
+    return ans
+
+
 
 def check(candidate):
 

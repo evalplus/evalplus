@@ -17,11 +17,18 @@ def make_palindrome(string: str) -> str:
     >>> make_palindrome('cata')
     'catac'
     """
-    if is_palindrome(string):
-        return string
-    for i in range(len(string)):
-        if is_palindrome(string[i:]):
-            return string + string[i-1::-1]
+    if not string:
+        return ''
+
+    beginning_of_suffix = 0
+
+    while not is_palindrome(string[beginning_of_suffix:]):
+        beginning_of_suffix += 1
+
+    return string + string[:beginning_of_suffix][::-1]
+
+
+
 
 METADATA = {
     'author': 'jt',

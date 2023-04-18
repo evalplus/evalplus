@@ -7,11 +7,8 @@ HumanEval's format is basically:
 - "entry_point": name of the function
 ---------------------------------------------------------------------------------
 We want to have a better structure for HumanEvalPlus:
-- "task_id", "prompt" and "entry_point" are the same
-+ "isignature": function's input signature in Dict[var_str, type_str].
-+ "docstring": docstring
-+ "reference": the ground-truth implementation for diff-testing
-+ "base_input": test inputs
+- "task_id", "prompt", "canonical_solution" and "entry_point" are the same
++ "base_input": test inputs for diff-testing
 [NOTE] Above is something stable. For unstable part, i.e., fuzzer-generated inputs,
 we will use another separate file to store them.
 ---------------------------------------------------------------------------------
@@ -20,35 +17,11 @@ perfect, but we will either manually or automatically fix/complete it later.
 """
 
 import json
-from inspect import signature, getsource
+from inspect import getsource
 from typing import Tuple
 from importlib import import_module
 
 from eval_plus.utils import HUMANEVAL_PLUS_PATH, get_human_eval
-
-
-def extract_sig_and_docstr(entry_point, prompt) -> Tuple[str, str]:
-    ldict = {}
-    fn_text = prompt + "    pass"
-    exec(fn_text, globals(), ldict)
-    fn = ldict[entry_point]
-    sig_dict = {}
-    for var, param in signature(fn).parameters.items():
-        ann = param.annotation
-        if ann is param.empty:
-            ann = "Any"
-        elif ann in {int, str, float, bool, list, tuple, set, dict}:
-            ann = ann.__name__
-
-        ann = (
-            f"{ann}".replace("typing.", "")
-            .replace("dict", "Dict")
-            .replace("list", "List")
-            .replace("tuple", "Tuple")
-            .replace("set", "Set")
-        )
-        sig_dict[var] = ann
-    return sig_dict, fn.__doc__
 
 
 def _ret(entry_point) -> str:
@@ -75,7 +48,8 @@ def {entry_point}(*args):
 
 
 def get_contract_and_ref(task_id: str, entry_point) -> Tuple[str, str]:
-    mod = import_module(f"groundtruth.{task_id.zfill(3)}_{entry_point}")
+    # FIXME: may just use `canonical_solution`
+    mod = import_module(f"groundtruth_bk.{task_id.zfill(3)}_{entry_point}")
     fn = getattr(mod, entry_point)
 
     doc = fn.__doc__
@@ -116,13 +90,6 @@ if __name__ == "__main__":
     with open(HUMANEVAL_PLUS_PATH, "w") as file:
         new = {}
         for old in human_eval:
-            new["task_id"] = old["task_id"]
-            new["prompt"] = old["prompt"]
-            new["entry_point"] = old["entry_point"]
-
-            new["isignature"], new["docstring"] = extract_sig_and_docstr(
-                old["entry_point"], old["prompt"]
-            )
             new["contract"], new["reference"] = get_contract_and_ref(
                 old["task_id"].split("/")[-1], old["entry_point"]
             )

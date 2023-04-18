@@ -10,17 +10,23 @@ def int_to_mini_roman(number):
     >>> int_to_mini_roman(152) == 'clii'
     >>> int_to_mini_roman(426) == 'cdxxvi'
     """
-    assert 1 <= number <= 1000, "invalid inputs" # $_CONTRACT_$
 
-    m = ["", "m"]
-    c = ["", "c", "cc", "ccc", "cd", "d", "dc", "dcc", "dccc", "cm"]
-    x = ["", "x", "xx", "xxx", "xl", "l", "lx", "lxx", "lxxx", "xc"]
-    i = ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix"]
-    thousands = m[number // 1000]
-    hundreds = c[(number % 1000) // 100]
-    tens = x[(number % 100) // 10]
-    ones = i[number % 10]
-    return thousands + hundreds + tens + ones
+    assert 1 <= number <= 1000, "invalid inputs" # $_CONTRACT_$
+    num = [1, 4, 5, 9, 10, 40, 50, 90,  
+           100, 400, 500, 900, 1000] 
+    sym = ["I", "IV", "V", "IX", "X", "XL",  
+           "L", "XC", "C", "CD", "D", "CM", "M"] 
+    i = 12
+    res = ''
+    while number: 
+        div = number // num[i] 
+        number %= num[i] 
+        while div: 
+            res += sym[i] 
+            div -= 1
+        i -= 1
+    return res.lower()
+
 
 def check(candidate):
 

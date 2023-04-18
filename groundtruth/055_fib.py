@@ -9,13 +9,14 @@ def fib(n: int):
     >>> fib(8)
     21
     """
-    assert n >= 1, "invalid inputs" # $_CONTRACT_$
 
-    if n <= 2: return 1
-    a, b = 1, 1
-    for _ in range(3, n + 1):
-        a, b, = b, a + b
-    return b
+    assert n >= 1, "invalid inputs" # $_CONTRACT_$
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+    return fib(n - 1) + fib(n - 2)
+
 
 
 

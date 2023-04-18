@@ -8,11 +8,16 @@ def choose_num(x, y):
     choose_num(12, 15) = 14
     choose_num(13, 12) = -1
     """
-    assert x > 0 and y > 0, "invalid inputs" # $_CONTRACT_$
 
-    if x > y: return -1
-    if x == y: return y if y % 2 == 0 else -1
-    return y if y % 2 == 0 else y - 1
+    assert x > 0 and y > 0, "invalid inputs" # $_CONTRACT_$
+    if x > y:
+        return -1
+    if y % 2 == 0:
+        return y
+    if x == y:
+        return -1
+    return y - 1
+
 
 def check(candidate):
 

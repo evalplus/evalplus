@@ -10,11 +10,13 @@ def rounded_avg(n, m):
     rounded_avg(10, 20) => "0b1111"
     rounded_avg(20, 33) => "0b11010"
     """
-    assert n > 0 and m > 0, "invalid inputs"
+    if m < n:
+        return -1
+    summation = 0
+    for i in range(n, m+1):
+        summation += i
+    return bin(round(summation/(m - n + 1)))
 
-    if n > m: return -1
-    avg = round((n + m) / 2)
-    return bin(avg)
 
 def check(candidate):
 

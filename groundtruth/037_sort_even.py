@@ -9,9 +9,16 @@ def sort_even(l: list):
     >>> sort_even([5, 6, 3, 4])
     [3, 6, 5, 4]
     """
-    even = [l[i] for i in range(len(l)) if i % 2 == 0]
-    even.sort()
-    return [even[i // 2] if i % 2 == 0 else l[i] for i in range(len(l))]
+    evens = l[::2]
+    odds = l[1::2]
+    evens.sort()
+    ans = []
+    for e, o in zip(evens, odds):
+        ans.extend([e, o])
+    if len(evens) > len(odds):
+        ans.append(evens[-1])
+    return ans
+
 
 
 

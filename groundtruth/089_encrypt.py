@@ -10,9 +10,17 @@ def encrypt(s):
     encrypt('gf') returns 'kj'
     encrypt('et') returns 'ix'
     """
-    assert s == "" or s.islower(), "invalid inputs" # $_CONTRACT_$
 
-    return "".join(map(lambda ch: chr((ord(ch) - ord("a") + 4) % 26 + ord("a")), s))
+    assert s == "" or s.islower(), "invalid inputs" # $_CONTRACT_$
+    d = 'abcdefghijklmnopqrstuvwxyz'
+    out = ''
+    for c in s:
+        if c in d:
+            out += d[(d.index(c)+2*2) % 26]
+        else:
+            out += c
+    return out
+
 
 def check(candidate):
 

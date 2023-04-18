@@ -17,9 +17,15 @@ def hex_key(num):
     For num = "123456789ABCDEF0" the output should be 6.
     For num = "2020" the output should be 2.
     """
+
     assert all(x in "0123456789ABCDEF" for x in num), "invalid inputs" # $_CONTRACT_$
-    
-    return len(list(filter(lambda x: x in "2367BD", num)))
+    primes = ('2', '3', '5', '7', 'B', 'D')
+    total = 0
+    for i in range(0, len(num)):
+        if num[i] in primes:
+            total += 1
+    return total
+
 
 def check(candidate):
 

@@ -7,18 +7,21 @@ def is_multiply_prime(a):
     is_multiply_prime(30) == True
     30 = 2 * 3 * 5
     """
-    if a <= 1: return False
-    isprime = [True] * (a + 1)
-    for i in range(2, a + 1):
-        if isprime[i]:
-            for j in range(i + i, a + 1, i):
-                isprime[j] = False
-    cnt, tmp = 0, a
-    for i in range(2, a + 1):
-        while isprime[i] and tmp % i == 0:
-            tmp //= i
-            cnt += 1
-    return cnt == 3
+    def is_prime(n):
+        for j in range(2,n):
+            if n%j == 0:
+                return False
+        return True
+
+    for i in range(2,101):
+        if not is_prime(i): continue
+        for j in range(2,101):
+            if not is_prime(j): continue
+            for k in range(2,101):
+                if not is_prime(k): continue
+                if i*j*k == a: return True
+    return False
+
 
 def check(candidate):
 

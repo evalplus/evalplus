@@ -12,9 +12,10 @@ def check_if_last_char_is_a_letter(txt):
     check_if_last_char_is_a_letter("apple pi e ") ➞ False
     check_if_last_char_is_a_letter("") ➞ False 
     '''
-    if len(txt) == 0: return False
-    if len(txt) == 1: return txt.isalpha()
-    return txt[-1].isalpha() and txt[-2] == " "
+ 
+    check = txt.split(' ')[-1]
+    return True if len(check) == 1 and (97 <= ord(check.lower()) <= 122) else False
+
 
 def check(candidate):
 

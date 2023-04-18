@@ -8,12 +8,19 @@ def intersperse(numbers: List[int], delimeter: int) -> List[int]:
     >>> intersperse([1, 2, 3], 4)
     [1, 4, 2, 4, 3]
     """
-    res = []
-    for i in range(len(numbers)):
-        res.append(numbers[i])
-        if i != len(numbers) - 1:
-            res.append(delimeter)
-    return res
+    if not numbers:
+        return []
+
+    result = []
+
+    for n in numbers[:-1]:
+        result.append(n)
+        result.append(delimeter)
+
+    result.append(numbers[-1])
+
+    return result
+
 
 
 

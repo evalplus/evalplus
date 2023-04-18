@@ -9,12 +9,16 @@ def can_arrange(arr):
     can_arrange([1,2,4,3,5]) = 3
     can_arrange([1,2,3]) = -1
     """
-    assert len(arr) == len(set(arr)), "invalid inputs" # $_CONTRACT_$
 
-    for i in range(len(arr) - 1, 0, -1):
-        if not (arr[i] >= arr[i - 1]):
-            return i
-    return -1
+    assert len(arr) == len(set(arr)), "invalid inputs" # $_CONTRACT_$
+    ind=-1
+    i=1
+    while i<len(arr):
+      if arr[i]<arr[i-1]:
+        ind=i
+      i+=1
+    return ind
+
 
 def check(candidate):
 

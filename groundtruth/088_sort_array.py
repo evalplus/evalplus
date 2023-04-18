@@ -14,13 +14,10 @@ def sort_array(array):
     * sort_array([2, 4, 3, 0, 1, 5]) => [0, 1, 2, 3, 4, 5]
     * sort_array([2, 4, 3, 0, 1, 5, 6]) => [6, 5, 4, 3, 2, 1, 0]
     """
-    assert all(x >= 0 for x in array), "invalid inputs" # $_CONTRACT_$
 
-    if array == []: return []
-    arr = sorted(list(array))
-    if (arr[0] + arr[-1]) % 2 == 0:
-        arr = arr[::-1]
-    return arr
+    assert all(x >= 0 for x in array), "invalid inputs" # $_CONTRACT_$
+    return [] if len(array) == 0 else sorted(array, reverse= (array[0]+array[-1]) % 2 == 0) 
+
 
 def check(candidate):
 

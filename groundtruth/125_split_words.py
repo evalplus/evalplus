@@ -9,12 +9,13 @@ def split_words(txt):
     split_words("Hello,world!") ➞ ["Hello", "world!"]
     split_words("abcdef") == 3 
     '''
-    if " " in txt: return txt.split(" ")
-    if "," in txt: return txt.split(",")
-    cnt = 0
-    for ch in txt:
-        if ch.islower() and (ord(ch) - ord("a")) % 2 == 1: cnt += 1
-    return cnt
+    if " " in txt:
+        return txt.split()
+    elif "," in txt:
+        return txt.replace(',',' ').split()
+    else:
+        return len([i for i in txt if i.islower() and ord(i)%2 == 0])
+
 
 def check(candidate):
 

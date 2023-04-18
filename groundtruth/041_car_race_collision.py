@@ -12,9 +12,10 @@ def car_race_collision(n: int):
 
     This function outputs the number of such collisions.
     """
-    assert n >= 1, "invalid inputs" # $_CONTRACT_$
 
-    return n ** 2
+    assert n >= 1, "invalid inputs" # $_CONTRACT_$
+    return n**2
+
 
 
 

@@ -8,19 +8,20 @@ def f(n):
     Example:
     f(5) == [1, 2, 6, 24, 15]
     """
+
     assert n >= 0, "invalid inputs" # $_CONTRACT_$
-
-    if n == 0: return []
-    if n == 1: return [1]
-    if n == 2: return [1, 2]
-
-    ans = [1, 2]
-    for i in range(3, n + 1):
-        if i % 2 == 1:
-            ans.append(ans[-2] + (i - 1) + i)
+    ret = []
+    for i in range(1,n+1):
+        if i%2 == 0:
+            x = 1
+            for j in range(1,i+1): x *= j
+            ret += [x]
         else:
-            ans.append(ans[-2] * (i - 1) * i)
-    return ans
+            x = 0
+            for j in range(1,i+1): x += j
+            ret += [x]
+    return ret
+
 
 def check(candidate):
 

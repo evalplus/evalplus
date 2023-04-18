@@ -17,7 +17,7 @@ if __name__ == "__main__":
     for i, task in enumerate(human_eval):
         incomplete = (
             task["prompt"]
-            + "    pass"
+            + task["canonical_solution"]
             + "\n\n"
             + task["test"]
             + "\n"

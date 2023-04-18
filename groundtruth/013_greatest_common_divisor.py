@@ -7,11 +7,12 @@ def greatest_common_divisor(a: int, b: int) -> int:
     >>> greatest_common_divisor(25, 15)
     5
     """
-    assert a > 0 and b > 0, "invalid inputs" # $_CONTRACT_$
 
-    def query_gcd(a: int, b: int) -> int:
-        return a if b == 0 else query_gcd(b, a % b)
-    return query_gcd(a, b)    
+    assert a > 0 and b > 0, "invalid inputs" # $_CONTRACT_$
+    while b:
+        a, b = b, a % b
+    return a
+
 
 
 

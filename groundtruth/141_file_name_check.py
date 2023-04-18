@@ -13,14 +13,21 @@ def file_name_check(file_name):
     file_name_check("example.txt") # => 'Yes'
     file_name_check("1example.dll") # => 'No' (the name should start with a latin alphapet letter)
     """
-    if len(list(filter(lambda ch: ch.isdigit(), file_name))) > 3:
-        return "No"
-    f_list = file_name.split(".")
-    if len(f_list) != 2: return "No"
-    if len(f_list[0]) == 0: return "No"
-    if not f_list[0][0].isalpha(): return "No"
-    if f_list[1] not in ["txt", "exe", "dll"]: return "No"
-    return "Yes"
+    suf = ['txt', 'exe', 'dll']
+    lst = file_name.split(sep='.')
+    if len(lst) != 2:
+        return 'No'
+    if not lst[1] in suf:
+        return 'No'
+    if len(lst[0]) == 0:
+        return 'No'
+    if not lst[0][0].isalpha():
+        return 'No'
+    t = len([x for x in lst[0] if x.isdigit()])
+    if t > 3:
+        return 'No'
+    return 'Yes'
+
 
 def check(candidate):
 

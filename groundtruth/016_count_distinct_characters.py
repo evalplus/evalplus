@@ -11,6 +11,7 @@ def count_distinct_characters(string: str) -> int:
 
 
 
+
 METADATA = {
     'author': 'jt',
     'dataset': 'test'

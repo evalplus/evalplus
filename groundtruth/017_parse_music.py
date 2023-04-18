@@ -14,15 +14,11 @@ def parse_music(music_string: str) -> List[int]:
     >>> parse_music('o o| .| o| o| .| .| .| .| o o')
     [4, 2, 1, 2, 2, 1, 1, 1, 1, 4, 4]
     """
-    assert music_string == "" or all(map(lambda x: x in ["o", "o|", ".|"], music_string.split(" "))), "invalid inputs" # $_CONTRACT_$
 
-    def count_beats(note: str) -> int:
-        if note == "o": return 4
-        elif note == "o|": return 2
-        elif note == ".|": return 1
-    
-    if music_string == "": return []
-    return list(map(count_beats, music_string.split(" ")))
+    assert music_string == "" or all(map(lambda x: x in ["o", "o|", ".|"], music_string.split(" "))), "invalid inputs" # $_CONTRACT_$
+    note_map = {'o': 4, 'o|': 2, '.|': 1}
+    return [note_map[x] for x in music_string.split(' ') if x]
+
 
 
 

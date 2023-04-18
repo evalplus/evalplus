@@ -8,15 +8,14 @@ def circular_shift(x, shift):
     >>> circular_shift(12, 2)
     "12"
     """
-    assert x >= 0 and shift >= 0, "invalid inputs" # $_CONTRACT_$
 
+    assert x >= 0 and shift >= 0, "invalid inputs" # $_CONTRACT_$
     s = str(x)
-    if shift > len(s): return s[::-1]
-    shift %= len(s)
-    if shift == 0:
-        return s
+    if shift > len(s):
+        return s[::-1]
     else:
         return s[len(s) - shift:] + s[:len(s) - shift]
+
 
 def check(candidate):
 

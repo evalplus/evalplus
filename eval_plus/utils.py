@@ -24,20 +24,22 @@ def to_raw(string):
 def get_human_eval_plus() -> List[Dict[str, str]]:
     """Get HumanEvalPlus locally.
     Returns:
-        List[Dict[str, str]]: List of dicts with keys "task_id", "prompt", "contract", "isignature", "docstring", "reference", "base_input", "fuzz_input"
+        List[Dict[str, str]]: List of dicts with keys "task_id", "prompt", "contract", "canonical_solution", "base_input"
     Notes:
         "task_id" is the identifier string for the task.
         "prompt" is the function signature with docstring.
         "contract" is the assertions for the function's input (validity).
-        "isignature" is the function's input signature.
-        "docstring" is the docstring.
-        "reference" is the ground-truth implementation for diff-testing.
+        "canonical_solution" is the ground-truth implementation for diff-testing.
         "base_input" is the test inputs.
     """
-    human_eval_plus = open(HUMANEVAL_PLUS_PATH, "r").read()
-    human_eval_plus = human_eval_plus.split("\n")
-    human_eval_plus = [json.loads(line) for line in human_eval_plus if line]
-    return human_eval_plus
+    human_eval = get_human_eval()
+    for i, line in enumerate(open(HUMANEVAL_PLUS_PATH, "r").read().split("\n")):
+        if not line:
+            continue
+        plus = json.loads(line)
+        human_eval[i]["base_input"] = plus["base_input"]
+        human_eval[i]["contract"] = plus["contract"]
+    return human_eval
 
 
 def get_human_eval() -> List[Dict[str, str]]:

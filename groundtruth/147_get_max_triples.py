@@ -13,12 +13,17 @@ def get_max_triples(n):
         a = [1, 3, 7, 13, 21]
         The only valid triple is (1, 7, 13).
     """
-    assert n > 0, "invalid inputs" # $_CONTRACT_$
 
-    if n <= 2: return False
-    one_cnt = 1 + (n - 2) // 3 * 2 + (n - 2) % 3
-    zero_cnt = n - one_cnt
-    return one_cnt * (one_cnt - 1) * (one_cnt - 2) // 6 + zero_cnt * (zero_cnt - 1) * (zero_cnt - 2) // 6
+    assert n > 0, "invalid inputs" # $_CONTRACT_$
+    A = [i*i - i + 1 for i in range(1,n+1)]
+    ans = []
+    for i in range(n):
+        for j in range(i+1,n):
+            for k in range(j+1,n):
+                if (A[i]+A[j]+A[k])%3 == 0:
+                    ans += [(A[i],A[j],A[k])]
+    return len(ans)
+
 
 def check(candidate):
 
