@@ -10,7 +10,7 @@ We want to have a better structure for HumanEvalPlus:
 - "task_id", "prompt" and "entry_point" are the same
 + "isignature": function's input signature in Dict[var_str, type_str].
 + "docstring": docstring
-+ "reference": the ground-truth implementation for diff-testing
++ "canonical_solution": the ground-truth implementation for diff-testing
 + "base_input": test inputs
 [NOTE] Above is something stable. For unstable part, i.e., fuzzer-generated inputs,
 we will use another separate file to store them.
