@@ -79,6 +79,7 @@ class Decoder(object):
         self.model = self.model.to(self.device)
         self.tokenizer = AutoTokenizer.from_pretrained(pretrained)
         self.batch_size = batch_size
+        self.temperature = temperature
 
     # Assumption is that all inputs should probably fit under maximum context. but can add a checking function
     # just in case. TODO: think about
@@ -108,7 +109,7 @@ class Decoder(object):
                 do_sample=do_sample,
                 top_p=0.95,
                 top_k=None,
-                temperature=0.8,
+                temperature=self.temperature,
                 output_scores=True,
                 return_dict_in_generate=True,
                 pad_token_id=self.tokenizer.eos_token_id,
