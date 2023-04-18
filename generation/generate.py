@@ -11,7 +11,21 @@ def code_generate(args, workdir: PathLike, model: HFTorchDecoder):
         p_name = task["task_id"].replace("/", "_")
         os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
         print(f"Code generation for {p_name} @ {model}")
-        for l_samples in range(args.n_samples, 0, -args.bs):
+        if args.resume:
+            # count existing .py files
+            n_existing = len(
+                [
+                    f
+                    for f in os.listdir(os.path.join(workdir, p_name))
+                    if f.endswith(".py")
+                ]
+            )
+            if n_existing >= 0:
+                print(f"Resuming {p_name} since {n_existing} samples already exist")
+            nsamples = args.n_samples - n_existing
+        else:
+            nsamples = args.n_samples - n_existing
+        for l_samples in range(nsamples, 0, -args.bs):
             outputs = model.codegen(task["prompt"], num_samples=l_samples)
             for i, impl in enumerate(outputs):
                 with open(
@@ -31,6 +45,7 @@ def main():
     parser.add_argument("--dataset", default="humaneval", type=str)
     parser.add_argument("--root", default="/JawTitan/EvalPlus", type=str)
     parser.add_argument("--n_samples", default=200, type=int)
+    parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
 
     if args.dataset not in ["humaneval"]:
