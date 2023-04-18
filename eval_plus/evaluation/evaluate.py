@@ -62,7 +62,6 @@ def construct_inputs_sig(inputs: list) -> str:
 
 
 def execute(code: str, inputs: List, signature: str) -> str:
-
     eval_code = code + f"\noutputs = {signature}({construct_inputs_sig(inputs)})"
 
     def unsafe_execute():
@@ -121,17 +120,11 @@ def evaluate_files(files: List[str], inputs, outputs, entry_point: str) -> List[
 def evaluate(args, problems):
     base_total, base_correct, new_correct = [], [], []
     for problem in problems:
-        if (
-            problem["reference"].strip().startswith("pass")
-            or "32" in problem["task_id"]
-        ):
-            # gd not available.
-            continue
         p_name = problem["task_id"].replace("/", "_")
         print("evaluating for {} ...".format(p_name))
         # first populate the gd results
         gd_results = []
-        code = problem["prompt"] + problem["reference"]
+        code = problem["prompt"] + problem["canonical_solution"]
         for base_input in problem["base_input"]:
             o = execute(code, base_input, problem["entry_point"])
             # sanity
