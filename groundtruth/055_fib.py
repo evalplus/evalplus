@@ -10,7 +10,7 @@ def fib(n: int):
     21
     """
 
-    assert n >= 1, "invalid inputs" # $_CONTRACT_$
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
     if n == 0:
         return 0
     if n == 1:
