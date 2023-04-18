@@ -119,9 +119,10 @@ class TypedMutGen(MutateGen):
     def typed_gen(self, _):
         return tuple(self.typed_gen([]))
 
-    @dispatch(set)
-    def typed_gen(self, _):
-        return set(self.typed_gen([]))
+    # NOTE: disable set for now as Steven is too weak in Python (/s)
+    # @dispatch(set)
+    # def typed_gen(self, _):
+    #     return set(self.typed_gen([]))
 
     @dispatch(dict)
     def typed_gen(self, _):
@@ -273,9 +274,10 @@ class TypedMutGen(MutateGen):
     def typed_fetch(self, seed_input: Tuple):
         self._fetch_list_like(seed_input)
 
-    @dispatch(set)
-    def typed_fetch(self, seed_input: Set):
-        self._fetch_list_like(seed_input)
+    # NOTE: disable set for now as Steven is too weak in Python (/s)
+    # @dispatch(set)
+    # def typed_fetch(self, seed_input: Set):
+    #     self._fetch_list_like(seed_input)
 
     # Dict
     @dispatch(dict)
