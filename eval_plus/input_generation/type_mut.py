@@ -9,6 +9,9 @@ from eval_plus.evaluation.evaluate import execute
 from eval_plus.input_generation.mut_gen import MutateGen
 
 MAX_MULTI_STEP_SIZE = 5
+MUTATE_BOUND_SIZE = 8
+
+NoneType = type(None)
 
 
 # decorator to use ingredients
@@ -45,14 +48,20 @@ class TypedMutGen(MutateGen):
     def mutate(self, seed_input: Any) -> List:
         new_input = copy.deepcopy(seed_input)
 
-        while new_input == seed_input:
+        patience = MUTATE_BOUND_SIZE
+        while new_input == seed_input or patience == 0:
             new_input = self.typed_mutate(new_input)
+            patience -= 1
 
         return new_input
 
     #########################
     # Type-aware generation #
     #########################
+    @dispatch(NoneType)
+    def typed_gen(self, _):
+        return None
+
     @dispatch(int)
     def typed_gen(self, _):
         @use_ingredient(0.5)
@@ -86,7 +95,6 @@ class TypedMutGen(MutateGen):
 
     def any_gen(self):
         # weighted choose
-        # random.choice([1, 1.1, "str"])
         choice = random.choices(
             [
                 True,
@@ -96,8 +104,9 @@ class TypedMutGen(MutateGen):
                 [],  # list
                 tuple(),  # tuple
                 dict(),  # dict
+                None,  # None
             ],
-            [0.2, 0.2, 0.2, 0.2, 0.07, 0.07, 0.06],
+            [0.2, 0.2, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05],
         )[0]
         return self.typed_gen(choice)
 
@@ -160,6 +169,10 @@ class TypedMutGen(MutateGen):
     def typed_mutate(self, seed_input: bool):
         return random.choice([True, False])
 
+    @dispatch(NoneType)
+    def typed_mutate(self, seed_input: NoneType):
+        return None
+
     # List-like
     @dispatch(list)
     def typed_mutate(self, seed_input: List):
@@ -171,7 +184,10 @@ class TypedMutGen(MutateGen):
         if choice == 0:  # remove one element
             seed_input.pop(random.randint(0, len(seed_input) - 1))
         elif choice == 1 and len(seed_input) > 0:  # add one mutated element
-            seed_input.append(self.typed_mutate(seed_input[idx]))
+            seed_input.insert(
+                random.randint(0, len(seed_input) - 1),
+                self.typed_mutate(seed_input[idx]),
+            )
         elif choice == 2 and len(seed_input) > 0:  # repeat one element
             seed_input.append(seed_input[idx])
         else:  # inplace element change
