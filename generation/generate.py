@@ -18,7 +18,7 @@ from model import HFTorchDecoder, make_model
 def code_generate(args, workdir: PathLike, model: HFTorchDecoder):
     with Progress(
         TextColumn(
-            f"{args.dataset}•" + "[progress.percentage]{task.percentage:>3.0f}%"
+            f"{args.dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"
         ),
         BarColumn(),
         MofNCompleteColumn(),
