@@ -3,12 +3,13 @@ import random
 import string
 from typing import List
 
+from eval_plus.evaluation.evaluate import execute
 from eval_plus.input_generation.base_gen import InputGen
 
 
 class MutateGen(InputGen):
-    def __init__(self, inputs: List):
-        super().__init__(inputs)
+    def __init__(self, inputs: List, signature: str, contract_code: str):
+        super().__init__(inputs, signature, contract_code)
 
     def seed_selection(self):
         # random for now.
@@ -98,7 +99,9 @@ class MutateGen(InputGen):
             seed = self.seed_selection()
             new_input = self.mutate(seed)
             if hash(str(new_input)) not in self.seed_hash:
-                self.seed_pool.append(new_input)
-                self.seed_hash.add(hash(str(new_input)))
-                self.new_inputs.append(new_input)
-        return self.new_inputs
+                o = execute(self.contract_code, new_input, self.signature)
+                if o != "timed out" and o != "thrown exception":
+                    self.seed_pool.append(new_input)
+                    self.seed_hash.add(hash(str(new_input)))
+                    self.new_inputs.append(new_input)
+        return self.new_inputs[:num]

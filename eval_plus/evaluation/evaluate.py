@@ -14,7 +14,7 @@ from eval_plus.evaluation.evaluate_helpers import (
     time_limit,
 )
 from eval_plus.input_generation.mut_gen import MutateGen
-from eval_plus.utils import get_human_eval_plus
+from eval_plus.utils import get_human_eval_plus, to_raw
 
 
 # unbiased estimator from https://github.com/openai/human-eval
