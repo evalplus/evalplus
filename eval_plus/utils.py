@@ -9,7 +9,16 @@ import wget
 from appdirs import user_cache_dir
 
 HUMANEVAL_PLUS_PATH = pathlib.Path(__file__).parent.parent / "HumanEvalPlus.jsonl"
+# temp
+HUMANEVAL_PLUS_INPUTS_PATH = (
+    pathlib.Path(__file__).parent.parent / "HumanEvalPlusInputs.jsonl"
+)
 CACHE_DIR = user_cache_dir("eval-plus")
+
+
+# hacky way to handle \n\r, etc in strings
+def to_raw(string):
+    return string.encode("unicode-escape").decode().replace("\\\\", "\\")
 
 
 def get_human_eval_plus() -> List[Dict[str, str]]:
