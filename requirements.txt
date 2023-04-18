@@ -4,3 +4,4 @@ pre-commit
 tempdir
 openai
 rich
+multipledispatch
