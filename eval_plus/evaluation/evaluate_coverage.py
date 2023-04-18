@@ -6,8 +6,6 @@ from appdirs import user_cache_dir
 from eval_plus.cov import cov
 from eval_plus.utils import get_human_eval_plus
 
-CACHE_DIR = user_cache_dir("eval-plus")
-
 
 def test_solution_coverage(
     dataset: str = "HumanEvalPlus",
