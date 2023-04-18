@@ -96,9 +96,8 @@ class TypedMutGen(MutateGen):
                 [],  # list
                 tuple(),  # tuple
                 dict(),  # dict
-                set(),  # set
             ],
-            [0.2, 0.2, 0.2, 0.2, 0.05, 0.05, 0.05, 0.05],
+            [0.2, 0.2, 0.2, 0.2, 0.07, 0.07, 0.06],
         )[0]
         return self.typed_gen(choice)
 
