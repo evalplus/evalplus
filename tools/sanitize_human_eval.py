@@ -48,13 +48,13 @@ def {entry_point}(*args):
     return globals()["_inputs"]
 
 
-def get_contract_and_ref(task_id: str, entry_point) -> Tuple[str, str]:
+def get_contract_and_ref(task_id: int, entry_point) -> Tuple[str, str]:
     # FIXME: may just use `canonical_solution`
-    mod = import_module(f"groundtruth_bk.{task_id.zfill(3)}_{entry_point}")
+    mod = import_module(f"groundtruth_bk.{str(task_id).zfill(3)}_{entry_point}")
     fn = getattr(mod, entry_point)
 
     doc = fn.__doc__
-    if task_id == "51":
+    if task_id == 51:
         doc = doc.replace("bcdf\nghjklm", r"bcdf\nghjklm").replace(
             "abcdef\nghijklm", r"abcdef\nghijklm"
         )
@@ -84,10 +84,10 @@ def get_contract_and_ref(task_id: str, entry_point) -> Tuple[str, str]:
     return contract, "\n" + impl + "\n"
 
 
-def get_atol(task_id: str) -> float:
-    if task_id == "002" or task_id == "004":
+def get_atol(task_id: int) -> float:
+    if task_id == 2 or task_id == 4:
         return 1e-6
-    elif task_id == "032":
+    elif task_id == 32:
         return 1e-4  # FIXME: actually wrapped by poly.
     return 0
 
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     with open(HUMANEVAL_PLUS_PATH, "w") as file:
         new = {}
         for old in human_eval:
-            task_id = old["task_id"].split("/")[-1]
+            task_id = int(old["task_id"].split("/")[-1])
             new["contract"], new["reference"] = get_contract_and_ref(
                 task_id, old["entry_point"]
             )
