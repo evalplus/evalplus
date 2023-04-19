@@ -2,6 +2,9 @@ import os
 from typing import List
 from abc import ABC, abstractmethod
 
+# Communism
+os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/ColossalTitan/huggingface/")
+
 import openai
 import torch
 from transformers import (
@@ -11,8 +14,29 @@ from transformers import (
     StoppingCriteriaList,
 )
 
-# os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/ColossalTitan/huggingface/")  # I don't like colossaltitan
-
+# ==============================================================
+# # The vicuna-7b weights are at /ColossalTitan/vicuna/vicuna-7b
+# Made by running:
+# ```
+# python3 -m fastchat.model.apply_delta \
+#     --base /ColossalTitan/llama/converted_hf_7B \
+#     --target /ColossalTitan/vicuna/vicuna-7b \
+#     --delta lmsys/vicuna-7b-delta-v1.1
+# ```
+# ==============================================================
+# The vicuna-13b weights are at /ColossalTitan/vicuna/vicuna-13b
+# Made by running:
+# ```
+# python3 -m fastchat.model.apply_delta \
+#     --base /ColossalTitan/llama/converted_hf_13B \
+#     --target /ColossalTitan/vicuna/vicuna-13b \
+#     --delta lmsys/vicuna-13b-delta-v1.1
+# ```
+# ==============================================================
+# Acknoledgement:
+# Modified from https://github.com/lm-sys/FastChat/blob/main/fastchat/serve/huggingface_api.py
+import torch
+from fastchat.serve.inference import load_model
 
 EOF_STRINGS = ["\nclass", "\ndef", "\n#", "\n@", "\nprint", "\nif"]
 
@@ -75,6 +99,12 @@ class DecoderBase(ABC):
     ) -> List[str]:
         pass
 
+    def __repr__(self) -> str:
+        return self.name
+
+    def __str__(self) -> str:
+        return self.name
+
 
 class OpenAIDecoder(DecoderBase):
     def __init__(
@@ -105,12 +135,6 @@ class OpenAIDecoder(DecoderBase):
 
         # process the output and return
         return [x["text"] for x in ret["choices"]]
-
-    def __repr__(self) -> str:
-        return self.name
-
-    def __str__(self) -> str:
-        return self.name
 
 
 class HFTorchDecoder(DecoderBase):
@@ -182,6 +206,27 @@ class HFTorchDecoder(DecoderBase):
         return outputs
 
 
+class FsChatDecoder(HFTorchDecoder):
+    def __init__(
+        self,
+        name: str,
+        batch_size: int = 1,
+        temperature: float = 0.8,
+        weight=None,
+    ):
+        DecoderBase.__init__(
+            self, name=name, batch_size=batch_size, temperature=temperature
+        )
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model, self.tokenizer = load_model(
+            f"/ColossalTitan/vicuna/{name}",
+            device="cuda",
+            num_gpus=1,
+            load_8bit=False,
+            debug=False,
+        )
+
+
 def make_model(
     name: str,
     batch_size: int = 1,
@@ -203,6 +248,18 @@ def make_model(
         return OpenAIDecoder(
             batch_size=batch_size,
             name="codegen-16b",
+            temperature=temperature,
+        )
+    elif name == "polycoder":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="NinedayWang/PolyCoder-2.7B",
+            temperature=temperature,
+        )
+    elif name == "vicuna-7b" or name == "vicuna-13b":
+        return FsChatDecoder(
+            batch_size=batch_size,
+            name=name,
             temperature=temperature,
         )
 
