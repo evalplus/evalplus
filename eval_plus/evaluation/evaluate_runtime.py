@@ -60,13 +60,13 @@ def execute_for_runtime(code: str, inputs: List, signature: str) -> str:
 
 
 def test_solution_runtime(
-    dataset: str = "HumanEvalPlus",
+    dataset: str = "humaneval",
     task_id: str = "HumanEval/0",
     impl: str = "canonical",
     inputs: Union[str, List[List[Any]]] = "base_input",
     repeat: int = 10,
 ):
-    if "HumanEval" in dataset:
+    if "humaneval" in dataset:
         problems, problem = get_human_eval_plus(), None
         for p in problems:
             if p["task_id"] == task_id:
