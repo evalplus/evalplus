@@ -46,18 +46,21 @@ def code_generate(args, workdir: PathLike, model: HFTorchDecoder):
 
             nsamples = args.n_samples - n_existing
             p.console.print(log)
-            for l_samples in range(nsamples, 0, -args.bs):
-                outputs = model.codegen(task["prompt"], num_samples=l_samples)
-                for i, impl in enumerate(outputs):
-                    with open(
-                        os.path.join(
-                            workdir,
-                            p_name,
-                            "{}.py".format(args.n_samples - l_samples + i),
-                        ),
-                        "w",
-                    ) as f:
-                        f.write(task["prompt"] + impl)
+
+            sidx = args.n_samples - nsamples
+            while sidx < args.n_samples:
+                outputs = model.codegen(
+                    task["prompt"], num_samples=args.n_samples - sidx
+                )
+                for impl in outputs:
+                    try:
+                        with open(
+                            os.path.join(workdir, p_name, f"{sidx}.py"), "w"
+                        ) as f:
+                            f.write(task["prompt"] + impl)
+                    except UnicodeEncodeError:
+                        continue
+                    sidx += 1
 
 
 def main():
