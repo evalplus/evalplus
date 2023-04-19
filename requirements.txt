@@ -5,3 +5,4 @@ tempdir
 openai
 rich
 multipledispatch
+fschat
