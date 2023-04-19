@@ -1,18 +1,11 @@
 import os
-from typing import List
 from abc import ABC, abstractmethod
+from typing import List
 
 # Communism
 os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/ColossalTitan/huggingface/")
 
 import openai
-import torch
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    StoppingCriteria,
-    StoppingCriteriaList,
-)
 
 # ==============================================================
 # # The vicuna-7b weights are at /ColossalTitan/vicuna/vicuna-7b
@@ -37,6 +30,12 @@ from transformers import (
 # Modified from https://github.com/lm-sys/FastChat/blob/main/fastchat/serve/huggingface_api.py
 import torch
 from fastchat.serve.inference import load_model
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    StoppingCriteria,
+    StoppingCriteriaList,
+)
 
 EOF_STRINGS = ["\nclass", "\ndef", "\n#", "\n@", "\nprint", "\nif"]
 
@@ -260,6 +259,12 @@ def make_model(
         return FsChatDecoder(
             batch_size=batch_size,
             name=name,
+            temperature=temperature,
+        )
+    elif name == "santacoder":
+        return FsChatDecoder(
+            batch_size=batch_size,
+            name="bigcode/santacoder",
             temperature=temperature,
         )
 
