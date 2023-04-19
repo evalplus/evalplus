@@ -96,7 +96,9 @@ def execute(code: str, inputs: List, signature: str) -> str:
     return result[0]
 
 
-def evaluate_files(files: List[str], inputs, outputs, entry_point: str) -> List[str]:
+def evaluate_files(
+    files: List[str], inputs, outputs, entry_point: str, atol: float
+) -> List[str]:
     suc_files = []
     cache = {}
     for file in files:
@@ -109,9 +111,18 @@ def evaluate_files(files: List[str], inputs, outputs, entry_point: str) -> List[
         suc = True
         for input, output in zip(inputs, outputs):
             o = execute(code, input, entry_point)
-            if o != output:
-                suc = False
-                break
+            if atol != 0:
+                try:
+                    if abs(float(o) - float(output)) >= atol:
+                        suc = False
+                        break
+                except:
+                    suc = False
+                    break
+            else:
+                if o != output:
+                    suc = False
+                    break
         if suc:
             suc_files.append(file)
         cache[code] = suc
@@ -122,7 +133,7 @@ def evaluate(args, problems, extra_inputs=None):
     base_total, base_correct, new_correct = [], [], []
     for problem in problems:
         p_name = problem["task_id"].replace("/", "_")
-        print("evaluating for {} ...".format(p_name))
+        print("evaluating for {} ...".format(p_name), problem["atol"])
         # first populate the gd results
         gd_results = []
         code = problem["prompt"] + problem["canonical_solution"]
@@ -134,7 +145,11 @@ def evaluate(args, problems, extra_inputs=None):
 
         gen_files = glob.glob(args.r_folder + f"/{p_name}/*.py")
         base_suc_files = evaluate_files(
-            gen_files, problem["base_input"], gd_results, problem["entry_point"]
+            gen_files,
+            problem["base_input"],
+            gd_results,
+            problem["entry_point"],
+            problem["atol"],
         )
         print(f"Total Gen: {len(gen_files)}, Base Success Files: {len(base_suc_files)}")
         base_total.append(len(gen_files))
@@ -151,14 +166,19 @@ def evaluate(args, problems, extra_inputs=None):
                     new_inputs.append(new_input)
                     gd_new_results.append(o)
             new_suc_files = evaluate_files(
-                base_suc_files, new_inputs, gd_new_results, problem["entry_point"]
+                base_suc_files,
+                new_inputs,
+                gd_new_results,
+                problem["entry_point"],
+                problem["atol"],
             )
             print(
                 f"Total Gen: {len(gen_files)}, New Success Files: {len(new_suc_files)}"
             )
             new_correct.append(len(new_suc_files))
         else:
-            new_correct.append(0)
+            # same passing.
+            new_correct.append(len(base_suc_files))
 
     # Calculate pass@k.
     total = np.array(base_total)
