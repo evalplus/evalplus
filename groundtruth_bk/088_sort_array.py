@@ -17,10 +17,7 @@ def sort_array(array):
     assert all(x >= 0 for x in array), "invalid inputs" # $_CONTRACT_$
 
     if array == []: return []
-    arr = sorted(list(array))
-    if (arr[0] + arr[-1]) % 2 == 0:
-        arr = arr[::-1]
-    return arr
+    return sorted(array, reverse=(array[0]+array[-1]) % 2 == 0)
 
 def check(candidate):
 
