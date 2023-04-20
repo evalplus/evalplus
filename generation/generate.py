@@ -2,20 +2,19 @@ import argparse
 import os
 from os import PathLike
 
-from model import HFTorchDecoder, make_model
+from model import DecoderBase, make_model
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
     Progress,
     TextColumn,
     TimeElapsedColumn,
-    TimeRemainingColumn,
 )
 
 from eval_plus.utils import get_human_eval
 
 
-def code_generate(args, workdir: PathLike, model: HFTorchDecoder):
+def code_generate(args, workdir: PathLike, model: DecoderBase):
     with Progress(
         TextColumn(
             f"{args.dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"
