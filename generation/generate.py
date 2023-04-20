@@ -24,8 +24,6 @@ def code_generate(args, workdir: PathLike, model: HFTorchDecoder):
         MofNCompleteColumn(),
         TextColumn("•"),
         TimeElapsedColumn(),
-        TextColumn("•"),
-        TimeRemainingColumn(),
     ) as p:
         for task in p.track(get_human_eval()):
             p_name = task["task_id"].replace("/", "_")
