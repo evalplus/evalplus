@@ -5,8 +5,9 @@
 
 import os
 
-from model import NON_CODE_EOFS
 from tqdm import tqdm
+
+NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "\n#"]
 
 
 def get_all_python_files(folder):
@@ -34,7 +35,10 @@ if __name__ == "__main__":
     old_folder = pathlib.Path(args.folder)
     new_folder = old_folder.parent / (old_folder.name + "-sanitized")
 
+    nsan = 0
+    ntotal = 0
     for pyf in tqdm(get_all_python_files(args.folder)):
+        ntotal += 1
         old_code = open(pyf).read()
         new_code = old_code
 
@@ -54,7 +58,10 @@ if __name__ == "__main__":
 
         if new_code != old_code:
             print("Sanitized: ", pyf, "->", new_pyf)
+            nsan += 1
 
         pathlib.Path(new_pyf).parent.mkdir(parents=True, exist_ok=True)
         with open(new_pyf, "w") as f:
             f.write(new_code)
+
+    print(f"Sanitized {nsan} out of {ntotal} files.")
