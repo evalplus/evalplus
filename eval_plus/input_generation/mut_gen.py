@@ -3,7 +3,7 @@ import random
 import string
 from typing import Any, List
 
-from eval_plus.evaluation.evaluate import execute
+from eval_plus.evaluation.evaluate import batch_exec
 from eval_plus.input_generation.base_gen import BaseGen
 
 
@@ -98,8 +98,9 @@ class MutateGen(BaseGen):
             seed = self.seed_selection()
             new_input = self.mutate(seed)
             if hash(str(new_input)) not in self.seed_hash:
-                o = execute(self.contract_code, new_input, self.signature)
-                if o != "timed out" and o != "thrown exception":
+                if batch_exec(
+                    self.contract_code, [new_input], self.signature, fast_check=True
+                ):
                     self.seed_pool.append(new_input)
                     self.seed_hash.add(hash(str(new_input)))
                     self.new_inputs.append(new_input)
