@@ -72,6 +72,8 @@ if __name__ == "__main__":
         print(colored("==============================", "blue"))
         print(colored(" ::: Checking compilation...  ", "blue"))
         print(colored(" ::::: All code compilable?   ", "blue"))
+        ncode = 0
+        npass = 0
         for i in range(ntask):
             task_folder = os.path.join(args.folder, f"HumanEval_{i}")
             # folder must exist
@@ -79,10 +81,11 @@ if __name__ == "__main__":
                 continue
 
             for pyf in get_all_python_files(task_folder):
+                ncode += 1
                 if not syntax_check(open(pyf).read(), args.verbose):
-                    simple_name = pyf.replace(
-                        os.path.join(args.folder, "HumanEval_"), ""
-                    )
-                    print(colored(f" ⚠️ {simple_name} is not compilable!", "red"))
+                    print(colored(f" ⚠️ {pyf} is not compilable!", "red"))
+                    npass += 1
+        if ncode != npass:
+            print(colored(f" ::::: ⚠️ {npass}/{ncode} code are not compilable!", "red"))
     else:
         raise NotImplementedError

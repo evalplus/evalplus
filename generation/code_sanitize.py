@@ -5,6 +5,7 @@
 
 import os
 
+from model import NON_CODE_EOFS
 from tqdm import tqdm
 
 
@@ -45,13 +46,15 @@ if __name__ == "__main__":
                     new_code += " "
                 new_code += line + "\n"
         if args.eof:
-            pass
-
-        if new_code != old_code:
-            print("Sanitized: ", pyf)
+            for eof in NON_CODE_EOFS:
+                new_code = new_code.split(eof)[0]
 
         # write to new folder
         new_pyf = pyf.replace(str(old_folder), str(new_folder))
+
+        if new_code != old_code:
+            print("Sanitized: ", pyf, "->", new_pyf)
+
         pathlib.Path(new_pyf).parent.mkdir(parents=True, exist_ok=True)
         with open(new_pyf, "w") as f:
             f.write(new_code)

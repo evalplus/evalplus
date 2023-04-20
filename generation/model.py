@@ -38,7 +38,16 @@ from transformers import (
     StoppingCriteriaList,
 )
 
-EOF_STRINGS = ["\nclass", "\ndef", "\n#", "\n@", "\nprint", "\nif", "<|endoftext|>"]
+NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>"]
+
+EOF_STRINGS = [
+    "\nclass",
+    "\ndef",
+    "\n#",
+    "\n@",
+    "\nprint",
+    "\nif",
+] + NON_CODE_EOFS
 
 
 # Adopted from https://github.com/huggingface/transformers/pull/14897
