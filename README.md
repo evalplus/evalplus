@@ -33,3 +33,13 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 - `eval_plus` is the package name.
 - `${DATASET}_plus` is the name of dataset applied with `eval_plus`.
+
+### Post Fixes
+
+```shell
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+# --vicuna: fix vicuna where some lines starts with only 3 whitespaces.
+# --eof:    fix LLMs which needs to consider more EOF tokens.
+python generation/code_sanitize.py --vicuna --eof --folder /path/to/vicuna-[??]b_temp_[??]
+# Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
+```
