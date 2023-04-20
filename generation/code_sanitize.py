@@ -4,7 +4,6 @@
 """
 
 import os
-import re
 
 from tqdm import tqdm
 

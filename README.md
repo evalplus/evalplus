@@ -43,3 +43,12 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)
 python generation/code_sanitize.py --vicuna --eof --folder /path/to/vicuna-[??]b_temp_[??]
 # Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
 ```
+
+### Baby Checker
+
+Warn at incomplete tasks and uncompilable code.
+
+```shell
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+python tools/baby_checker.py --folder /path/to/[model]-[??]b_temp_[??]
+```
