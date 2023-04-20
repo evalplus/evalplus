@@ -1,8 +1,8 @@
 import multiprocessing
+import time
 from math import sqrt
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
-from eval_plus.evaluation.evaluate import construct_inputs_sig
 from eval_plus.evaluation.evaluate_helpers import (
     TimeoutException,
     create_tempdir,
@@ -12,10 +12,13 @@ from eval_plus.evaluation.evaluate_helpers import (
 )
 from eval_plus.utils import get_human_eval_plus
 
+MAX_WARMUP_LIMIT = 5
+RUN_REPEAT = 25
 
-def execute_for_runtime(code: str, inputs: List, signature: str) -> str:
-    eval_code = code + f"\noutputs = {signature}({construct_inputs_sig(inputs)})"
 
+def execute_for_runtime(
+    code: str, inputs: List, warmups: List, entry_point: str
+) -> Union[str, float]:
     def unsafe_execute():
         with create_tempdir():
             # These system calls are needed when cleaning up tempdir.
@@ -27,22 +30,27 @@ def execute_for_runtime(code: str, inputs: List, signature: str) -> str:
             chdir = os.chdir
             # Disable functionalities that can make destructive changes to the test.
             reliability_guard()
-            # Construct the check program and run it.
-            check_program = eval_code
-            exec_global = {}
+            # load functions
+            exec_globals = {}
+            exec(code, exec_globals)
+            fn = exec_globals[entry_point]
             try:
-                import time
+                # warmup calls
+                for warmup in warmups:
+                    with swallow_io():
+                        fn(*warmup)
 
                 start_time = time.time()
+                # real call
                 with swallow_io():
                     with time_limit(1):
-                        exec(check_program, exec_global)
+                        fn(*inputs)
                 duration = time.time() - start_time
+
                 result.append(duration)
             except TimeoutException:
                 result.append("timed out")
             except BaseException as e:
-                print(str(e))
                 result.append("thrown exception")
             # Needed for cleaning up.
             shutil.rmtree = rmtree
@@ -64,7 +72,6 @@ def test_solution_runtime(
     task_id: str = "HumanEval/0",
     impl: str = "canonical",
     inputs: Union[str, List[List[Any]]] = "base_input",
-    repeat: int = 10,
 ):
     if "humaneval" in dataset:
         problems, problem = get_human_eval_plus(), None
@@ -81,9 +88,17 @@ def test_solution_runtime(
 
         results = [0, 0]
         for input_list in inputs:
+            # choose warmup input
+            warmups = []
+            for base_input_list in problem["base_input"]:
+                if (
+                    hash(str(base_input_list)) != hash(str(input_list))
+                    and len(warmups) < MAX_WARMUP_LIMIT
+                ):
+                    warmups.append(base_input_list)
             runtime_list = [
-                execute_for_runtime(impl, input_list, entry_point)
-                for _ in range(repeat)
+                execute_for_runtime(impl, input_list, warmups, entry_point)
+                for _ in range(RUN_REPEAT)
             ]
             if any(type(x) != float for x in runtime_list):
                 print(f"{task_id = } incorrect")
@@ -93,7 +108,7 @@ def test_solution_runtime(
                 results[0] = avg_runtime
                 results[1] = sqrt(
                     sum((runtime - avg_runtime) ** 2 for runtime in runtime_list)
-                    / (repeat - 1)
+                    / (RUN_REPEAT - 1)
                 )
 
         return results

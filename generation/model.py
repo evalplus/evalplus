@@ -92,6 +92,8 @@ class DecoderBase(ABC):
         self.name = name
         self.batch_size = batch_size
         self.temperature = temperature
+        self.eofs = EOF_STRINGS
+        self.skip_special_tokens = False
 
     @abstractmethod
     def codegen(
@@ -153,10 +155,10 @@ class HFTorchDecoder(DecoderBase):
             kwargs["torch_dtype"] = torch.float16
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
         if name in {"StabilityAI/stablelm-base-alpha-7b"}:
+            self.skip_special_tokens = True
             print("Switching to float16 ...")
             self.model = self.model.half()
         self.model = self.model.to(self.device)
-        self.eofs = EOF_STRINGS
 
     # Assumption is that all inputs should probably fit under maximum context. but can add a checking function
     # just in case. TODO: think about
@@ -191,7 +193,9 @@ class HFTorchDecoder(DecoderBase):
             pad_token_id=self.tokenizer.eos_token_id,
         )  # remove warning
         gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
-        gen_strs = self.tokenizer.batch_decode(gen_seqs, skip_special_tokens=False)
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
         outputs = []
         # removes eof tokens.
         for output in gen_strs:
