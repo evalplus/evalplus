@@ -38,7 +38,7 @@ from transformers import (
     StoppingCriteriaList,
 )
 
-EOF_STRINGS = ["\nclass", "\ndef", "\n#", "\n@", "\nprint", "\nif"]
+EOF_STRINGS = ["\nclass", "\ndef", "\n#", "\n@", "\nprint", "\nif", "<|endoftext|>"]
 
 
 # Adopted from https://github.com/huggingface/transformers/pull/14897
