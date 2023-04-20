@@ -14,10 +14,7 @@ def solve(s):
     for ch in s:
         if ch.isalpha():
             has_letter = True
-            if ch.islower():
-                ans += chr(ord(ch) - ord("a") + ord("A"))
-            else:
-                ans += chr(ord(ch) - ord("A") + ord("a"))
+            ans += ch.swapcase()
         else:
             ans += ch
     return ans if has_letter else s[::-1]
