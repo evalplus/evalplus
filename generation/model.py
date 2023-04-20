@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from typing import List
+from warnings import warn
 
 # Communism
 os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/ColossalTitan/huggingface/")
@@ -111,14 +112,19 @@ class OpenAIDecoder(DecoderBase):
     ) -> None:
         super().__init__(name, batch_size, temperature)
         openai.api_key = os.environ.get("OPENAI_API_KEY", "dummy")
-        openai.api_base = os.environ.get("OPENAI_API_BASE", "http://127.0.0.1:5000/v1")
+        FAUXIPILOT_ADDR = None
+        if name == "codegen-16b":
+            FAUXIPILOT_ADDR = "http://127.0.0.1:5000/v1"
+        elif name == "codegen-6b":
+            FAUXIPILOT_ADDR = "http://127.0.0.1:5010/v1"
+        openai.api_base = os.environ.get("OPENAI_API_BASE", FAUXIPILOT_ADDR)
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
         assert do_sample, "Currently we let OpenAI API only support sampling"
         batch_size = min(self.batch_size, num_samples)
-        assert batch_size <= 10, "Use larger batch size could blow up the memory!"
+        assert batch_size <= 20, "Use larger batch size could blow up the memory!"
 
         ret = openai.Completion.create(
             model="fastertransformer",
@@ -137,27 +143,20 @@ class OpenAIDecoder(DecoderBase):
 
 
 class HFTorchDecoder(DecoderBase):
-    def __init__(
-        self,
-        name: str,
-        batch_size: int = 1,
-        temperature: float = 0.8,
-        weight=None,
-    ):
+    def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
         super().__init__(name=name, batch_size=batch_size, temperature=temperature)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(name)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            name, torch_dtype=torch.float16
-        )
-        if weight == "float16":
+        kwargs = {}
+        kwargs["trust_remote_code"] = name in {"bigcode/santacoder"}
+        if "codegen-" in name:  # use fp16 for codegen models
+            kwargs["torch_dtype"] = torch.float16
+        self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
+        if name in {"StabilityAI/stablelm-base-alpha-7b"}:
             print("Switching to float16 ...")
             self.model = self.model.half()
-        elif weight == "bfloat16":
-            # neo 2.7b can be loaded using only 8 gb with bfloat16
-            print("Switching to bfloat16 ...")
-            self.model = self.model.to(torch.bfloat16)
         self.model = self.model.to(self.device)
+        self.eofs = EOF_STRINGS
 
     # Assumption is that all inputs should probably fit under maximum context. but can add a checking function
     # just in case. TODO: think about
@@ -174,7 +173,7 @@ class HFTorchDecoder(DecoderBase):
             [
                 EndOfFunctionCriteria(
                     start_length=len(input_tokens[0]),
-                    eof_strings=EOF_STRINGS,
+                    eof_strings=self.eofs,
                     tokenizer=self.tokenizer,
                 )
             ]
@@ -206,13 +205,7 @@ class HFTorchDecoder(DecoderBase):
 
 
 class FsChatDecoder(HFTorchDecoder):
-    def __init__(
-        self,
-        name: str,
-        batch_size: int = 1,
-        temperature: float = 0.8,
-        weight=None,
-    ):
+    def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
         DecoderBase.__init__(
             self, name=name, batch_size=batch_size, temperature=temperature
         )
@@ -238,6 +231,16 @@ def make_model(
             temperature=temperature,
         )
     elif name == "codegen-6b":
+        warn(
+            "Using fauxipilot backend for codegen-6b by default. "
+            "If you wish to use huggingface backend go `codegen-6b-hf`"
+        )
+        return OpenAIDecoder(
+            batch_size=batch_size,
+            name="codegen-6b",
+            temperature=temperature,
+        )
+    elif name == "codegen-6b-hf":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Salesforce/codegen-6B-mono",
@@ -262,9 +265,16 @@ def make_model(
             temperature=temperature,
         )
     elif name == "santacoder":
-        return FsChatDecoder(
+        warn("Not working yet!")
+        return HFTorchDecoder(
             batch_size=batch_size,
             name="bigcode/santacoder",
+            temperature=temperature,
+        )
+    elif name == "stablelm-7b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="StabilityAI/stablelm-base-alpha-7b",
             temperature=temperature,
         )
 
@@ -278,6 +288,3 @@ def make_model(
     # Add more manually in `make_model` function
     """
     )
-
-
-# TODO: infilling models (e.g., incoder, codet5, etc), if we want to do it, might not be entirely neccessary.
