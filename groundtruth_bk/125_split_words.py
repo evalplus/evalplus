@@ -9,7 +9,8 @@ def split_words(txt):
     split_words("Hello,world!") ➞ ["Hello", "world!"]
     split_words("abcdef") == 3 
     '''
-    if len(txt.split()) > 1: return txt.split()
+    whitespace = tuple(' \n\r\t')
+    if any([x in txt for x in whitespace]): return txt.split()
     if "," in txt: return txt.split(",")
     cnt = 0
     for ch in txt:
