@@ -5,6 +5,7 @@ import json
 import math
 import multiprocessing
 import os
+import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, List, Union
 
@@ -19,6 +20,8 @@ from eval_plus.evaluation.evaluate_helpers import (
     time_limit,
 )
 from eval_plus.utils import get_human_eval_plus, get_human_eval_plus_inputs, to_raw
+
+DEBUG = os.environ.get("DEBUG", False)
 
 
 # unbiased estimator from https://github.com/openai/human-eval
@@ -122,10 +125,11 @@ def batch_exec(
                             # fast mode: check if the result is correct
                             if expected:
                                 exp = expected[i]
+                                nonlocal atol
                                 if atol == 0 and is_floats(out) and is_floats(exp):
                                     atol = 1e-6  # enforce atol for float comparison
 
-                                if "entry_point" == entry_point:
+                                if "find_zero" == entry_point:
                                     assert poly(*out, inp) <= atol
 
                                 if atol != 0:
@@ -138,6 +142,8 @@ def batch_exec(
                 print(f"timed out :: {entry_point}")
             except BaseException:
                 result.append("failed")
+                if DEBUG:
+                    traceback.print_exc()
             # Needed for cleaning up.
             shutil.rmtree = rmtree
             os.rmdir = rmdir
