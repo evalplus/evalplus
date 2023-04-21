@@ -126,7 +126,7 @@ def batch_exec(
                             if expected:
                                 exp = expected[i]
                                 nonlocal atol
-                                if atol == 0 and is_floats(out) and is_floats(exp):
+                                if atol == 0 and is_floats(exp):
                                     atol = 1e-6  # enforce atol for float comparison
 
                                 if "find_zero" == entry_point:
@@ -238,9 +238,11 @@ def evaluate(flags, problems, extra_inputs=None):
     else:
         n_workers = flags.parallel
 
-    if os.path.isfile(os.path.join(flags.r_folder, "eval_results.json")):
+    result_path = os.path.join(flags.r_folder, "eval_results.json")
+
+    if os.path.isfile(result_path) and not flags.i_just_wanna_run:
         print(f"Load from {flags.r_folder + '/eval_results.json'}")
-        with open(os.path.join(flags.r_folder, "eval_results.json"), "r") as f:
+        with open(result_path, "r") as f:
             results = json.load(f)
         base_total = [len(x["base_files"]) for _, x in results["eval"].items()]
         base_correct = [len(x["correct_files"]) for _, x in results["eval"].items()]
@@ -269,7 +271,23 @@ def evaluate(flags, problems, extra_inputs=None):
                 base_total.append(len(btotal))
                 base_correct.append(len(bcorrect))
                 new_correct.append(len(ncorrect))
-        with open(os.path.join(flags.r_folder, "eval_results.json"), "w") as f:
+
+    if os.path.isfile(result_path):
+        decision = ""
+        while decision.lower() not in ["y", "n"]:
+            print(f"{result_path} already exists. Press [Y/N] to overwrite or exit...")
+            decision = input()
+
+        if decision.lower() == "y":
+            # mv the file to a backup
+            new_path = result_path + ".bak"
+            while os.path.isfile(new_path):
+                new_path += ".bak"
+            os.rename(result_path, new_path)
+            print(f"Backup {result_path} to {new_path}")
+
+    if not os.path.isfile(result_path):
+        with open(result_path, "w") as f:
             json.dump(results, f)
 
     # Calculate pass@k.
@@ -296,6 +314,7 @@ def main():
     parser.add_argument("--r_folder", required=True, type=str)
     parser.add_argument("--more_eval", action="store_true")
     parser.add_argument("--parallel", default=None, type=int)
+    parser.add_argument("--i-just-wanna-run", action="store_true")
     args = parser.parse_args()
 
     if args.dataset not in ["humaneval"]:
