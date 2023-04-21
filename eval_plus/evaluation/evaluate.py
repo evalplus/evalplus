@@ -91,13 +91,13 @@ def batch_exec(
         # check if it is float; List[float]; Tuple[float]
         if isinstance(x, float):
             return True
-        if isinstance(x, list):
+        if isinstance(x, (list, tuple)):
             return all(isinstance(i, float) for i in x)
-        if isinstance(x, tuple):
-            return all(isinstance(i, float) for i in x)
+        if isinstance(x, np.ndarray):
+            return x.dtype == np.float64 or x.dtype == np.float32
         return False
 
-    def unsafe_execute():
+    def unsafe_execute(atol):
         with create_tempdir():
             # These system calls are needed when cleaning up tempdir.
             import os
@@ -125,7 +125,6 @@ def batch_exec(
                             # fast mode: check if the result is correct
                             if expected:
                                 exp = expected[i]
-                                nonlocal atol
                                 if atol == 0 and is_floats(exp):
                                     atol = 1e-6  # enforce atol for float comparison
 
@@ -135,7 +134,7 @@ def batch_exec(
                                 if atol != 0:
                                     np.testing.assert_allclose(out, exp, atol=atol)
                                 else:
-                                    assert out == exp
+                                    assert out == exp, f"{out} != {exp}"
                 result.append("success")
             except TimeoutException:
                 result.append(f"timed out :: {entry_point}")
@@ -152,7 +151,7 @@ def batch_exec(
     manager = multiprocessing.Manager()
     outputs = manager.list()
     result = manager.list()
-    p = multiprocessing.Process(target=unsafe_execute)
+    p = multiprocessing.Process(target=unsafe_execute, args=(atol,))
     p.start()
     p.join(timeout=timeout + 1)
     if p.is_alive():
