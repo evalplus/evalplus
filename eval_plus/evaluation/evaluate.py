@@ -125,16 +125,18 @@ def batch_exec(
                             # fast mode: check if the result is correct
                             if expected:
                                 exp = expected[i]
-                                if atol == 0 and is_floats(exp):
-                                    atol = 1e-6  # enforce atol for float comparison
+                                exact_match = out == exp
 
                                 if "find_zero" == entry_point:
                                     assert poly(*out, inp) <= atol
 
-                                if atol != 0:
+                                if atol == 0 and is_floats(exp):
+                                    atol = 1e-6  # enforce atol for float comparison
+                                if not exact_match and atol != 0:
                                     np.testing.assert_allclose(out, exp, atol=atol)
                                 else:
-                                    assert out == exp, f"{out} != {exp}"
+                                    assert exact_match
+
                 result.append("success")
             except TimeoutException:
                 result.append(f"timed out :: {entry_point}")
