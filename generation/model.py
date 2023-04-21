@@ -43,7 +43,15 @@ from eval_plus.input_generation.util.api_request import (
     request_chatgpt_engine,
 )
 
-EOF_STRINGS = ["\nclass", "\ndef", "\n#", "\n@", "\nprint", "\nif", "<|endoftext|>"]
+NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>"]
+EOF_STRINGS = [
+    "\nclass",
+    "\ndef",
+    "\n#",
+    "\n@",
+    "\nprint",
+    "\nif",
+] + NON_CODE_EOFS
 
 
 # Adopted from https://github.com/huggingface/transformers/pull/14897
