@@ -1,7 +1,9 @@
 import argparse
 import glob
 import itertools
+import json
 import multiprocessing
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, List, Union
 
@@ -174,8 +176,6 @@ def evaluate_one(problem: dict, r_folder: str, more_eval: bool, iextra=None):
         problem["entry_point"],
         problem["atol"],
     )
-    base_total = len(gen_files)
-    base_correct = len(base_suc_files)
 
     msg = f"{p_name} :: Total {len(gen_files)} :: Base Success {len(base_suc_files)}"
 
@@ -191,13 +191,12 @@ def evaluate_one(problem: dict, r_folder: str, more_eval: bool, iextra=None):
             problem["atol"],
         )
         print(msg + f" :: New Success {len(new_suc_files)}")
-        new_correct = len(new_suc_files)
     else:
         # same passing.
-        new_correct = len(base_suc_files)
+        new_suc_files = base_suc_files
         print(msg)
 
-    return base_total, base_correct, new_correct
+    return p_name, gen_files, base_suc_files, new_suc_files
 
 
 def evaluate(flags, problems, extra_inputs=None):
@@ -207,19 +206,39 @@ def evaluate(flags, problems, extra_inputs=None):
     else:
         n_workers = flags.parallel
 
-    with ThreadPoolExecutor(max_workers=n_workers) as executor:
-        futures = []
-        for problem in problems:
-            p_name = problem["task_id"].replace("/", "_")
-            iextra = extra_inputs.get(p_name, None) if extra_inputs else None
-            args = (problem, flags.r_folder, flags.more_eval, iextra)
-            futures.append(executor.submit(evaluate_one, *args))
-
-        for future in tqdm(as_completed(futures), total=len(futures)):
-            btotal, bcorrect, ncorrect = future.result()
-            base_total.append(btotal)
-            base_correct.append(bcorrect)
-            new_correct.append(ncorrect)
+    if os.path.isfile(os.path.join(flags.r_folder, "eval_results.json")):
+        print(f"Load from {flags.r_folder + '/eval_results.json'}")
+        with open(os.path.join(flags.r_folder, "eval_results.json"), "r") as f:
+            results = json.load(f)
+        base_total = [len(x["base_files"]) for _, x in results["eval"].items()]
+        base_correct = [len(x["correct_files"]) for _, x in results["eval"].items()]
+        new_correct = [len(x["ncorrect_files"]) for _, x in results["eval"].items()]
+    else:
+        results = {
+            # TODO put some meta data here
+            "extra_input_hash": hash(str(problems)),
+            "eval": {}  # dict of each p_name with all files / base-succ / new-succ files
+            # TODO: incorrect file failing test inputs
+        }
+        with ThreadPoolExecutor(max_workers=n_workers) as executor:
+            futures = []
+            for problem in problems:
+                p_name = problem["task_id"].replace("/", "_")
+                iextra = extra_inputs.get(p_name, None) if extra_inputs else None
+                args = (problem, flags.r_folder, flags.more_eval, iextra)
+                futures.append(executor.submit(evaluate_one, *args))
+            for future in tqdm(as_completed(futures), total=len(futures)):
+                p_name, btotal, bcorrect, ncorrect = future.result()
+                results["eval"][p_name] = {
+                    "base_files": btotal,
+                    "correct_files": bcorrect,
+                    "ncorrect_files": ncorrect,
+                }
+                base_total.append(len(btotal))
+                base_correct.append(len(bcorrect))
+                new_correct.append(len(ncorrect))
+        with open(os.path.join(flags.r_folder, "eval_results.json"), "w") as f:
+            json.dump(results, f)
 
     # Calculate pass@k.
     total = np.array(base_total)
