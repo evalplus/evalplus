@@ -273,7 +273,7 @@ def evaluate(flags, problems, extra_inputs=None):
                 base_correct.append(len(bcorrect))
                 new_correct.append(len(ncorrect))
 
-    if os.path.isfile(result_path):
+    if os.path.isfile(result_path) and flags.i_just_wanna_run:
         decision = ""
         while decision.lower() not in ["y", "n"]:
             print(f"{result_path} already exists. Press [Y/N] to overwrite or exit...")

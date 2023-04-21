@@ -7,7 +7,8 @@ import os
 
 from tqdm import tqdm
 
-NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "\n#"]
+POLYCODER_EXTRA = ["\n//", "\n/*"]
+NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "\n#"] + POLYCODER_EXTRA
 
 
 def get_all_python_files(folder):
