@@ -11,9 +11,13 @@ def longest(strings: List[str]) -> Optional[str]:
     >>> longest(['a', 'bb', 'ccc'])
     'ccc'
     """
-    if strings == []: return
-    max_length = max(map(len, strings))
-    return list(filter(lambda s: len(s) == max_length, strings))[0]
+    if not strings:
+        return None
+
+    maxlen = max(len(x) for x in strings)
+    for s in strings:
+        if len(s) == maxlen:
+            return s
 
 
 
