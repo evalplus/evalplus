@@ -41,10 +41,21 @@ def get_human_eval_plus() -> List[Dict[str, str]]:
         human_eval[i]["base_input"] = plus["base_input"]
         human_eval[i]["contract"] = plus["contract"]
         human_eval[i]["atol"] = plus["atol"]
+        human_eval[i]["reference"] = plus["reference"]
     return human_eval
 
 
 def get_human_eval_plus_inputs() -> Dict[str, List]:
+    task_inputs = {}
+    for i, line in enumerate(open(HUMANEVAL_PLUS_INPUTS_PATH, "r").read().split("\n")):
+        if not line:
+            continue
+        plus = json.loads(line)
+        task_inputs[plus["task_id"]] = plus["inputs"]
+    return task_inputs
+
+
+def get_human_eval_plus_inputs_new() -> Dict[str, List]:
     task_inputs = {}
     for i, line in enumerate(open(HUMANEVAL_PLUS_INPUTS_PATH, "r").read().split("\n")):
         if not line:

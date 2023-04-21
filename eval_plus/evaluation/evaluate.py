@@ -163,7 +163,7 @@ def evaluate_one(problem: dict, r_folder: str, more_eval: bool, iextra=None):
         problem["atol"] if problem["atol"] else "",
     )
     # first populate the gd results
-    code = problem["prompt"] + problem["canonical_solution"]
+    code = problem["prompt"] + problem["reference"]
     gd_results = batch_exec(code, problem["base_input"], problem["entry_point"])
 
     gen_files = glob.glob(r_folder + f"/{p_name}/*.py")
@@ -180,7 +180,6 @@ def evaluate_one(problem: dict, r_folder: str, more_eval: bool, iextra=None):
     msg = f"{p_name} :: Total {len(gen_files)} :: Base Success {len(base_suc_files)}"
 
     if more_eval and iextra:
-        code = problem["prompt"] + problem["contract"] + problem["canonical_solution"]
         new_inputs = iextra
         gd_new_results = batch_exec(code, iextra, problem["entry_point"])
 
