@@ -100,6 +100,12 @@ def batch_exec(
                             # fast mode: check if the result is correct
                             if expected:
                                 exp = expected[i]
+                                if (
+                                    atol == 0
+                                    and isinstance(out, float)
+                                    and isinstance(exp, float)
+                                ):
+                                    atol = 1e-6  # enforce atol for float comparison
                                 if atol != 0:
                                     assert abs(float(out) - float(exp)) <= atol
                                 else:
