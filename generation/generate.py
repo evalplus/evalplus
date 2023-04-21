@@ -56,7 +56,10 @@ def code_generate(args, workdir: PathLike, model: DecoderBase):
                             "w",
                             encoding="utf-8",
                         ) as f:
-                            f.write(task["prompt"] + impl)
+                            if args.model == "chatgpt":
+                                f.write(impl)
+                            else:
+                                f.write(task["prompt"] + impl)
                     except UnicodeEncodeError:
                         continue
                     sidx += 1

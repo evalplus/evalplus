@@ -38,16 +38,12 @@ from transformers import (
     StoppingCriteriaList,
 )
 
-NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>"]
+from eval_plus.input_generation.util.api_request import (
+    create_chatgpt_config,
+    request_chatgpt_engine,
+)
 
-EOF_STRINGS = [
-    "\nclass",
-    "\ndef",
-    "\n#",
-    "\n@",
-    "\nprint",
-    "\nif",
-] + NON_CODE_EOFS
+EOF_STRINGS = ["\nclass", "\ndef", "\n#", "\n@", "\nprint", "\nif", "<|endoftext|>"]
 
 
 # Adopted from https://github.com/huggingface/transformers/pull/14897
@@ -232,6 +228,75 @@ class FsChatDecoder(HFTorchDecoder):
         )
 
 
+class ChatGPTDecoder(DecoderBase):
+    def __init__(
+        self, name: str, batch_size: int = 1, temperature: float = 0.8
+    ) -> None:
+        super().__init__(name, batch_size, temperature)
+        openai.api_key = os.environ.get("OPENAI_API_KEY", "dummy")
+
+    @staticmethod
+    def _find_gen_func_sig(prompt):
+        func_sig = ""
+        for x in prompt.splitlines():
+            if x.startswith("def ") and x.endswith(":"):
+                # always pick the last one, since there could pre-defined functions.
+                func_sig = x
+        return func_sig
+
+    @staticmethod
+    def _remove_eof(gen):
+        min_index = 1000
+        for eof_string in EOF_STRINGS:
+            if eof_string in gen:
+                min_index = min(min_index, gen.index(eof_string))
+        return gen[:min_index]
+
+    def _chatgpt_parse(self, ret, prompt):
+        outputs = []
+        for returns in ret["choices"]:
+            raw_o = returns["message"]["content"]
+            if "```" in raw_o:
+                gen = raw_o.split("```")[1].strip()
+                if gen.startswith(prompt.strip()):
+                    suf = gen.split(prompt.strip())[-1]
+                    suf = self._remove_eof(suf)
+                    gen = prompt.strip() + suf
+                elif self._find_gen_func_sig(prompt) in gen:
+                    # same function sign is in the prompt
+                    sig = self._find_gen_func_sig(prompt)
+                    pre, suf = gen.split(sig)[0], gen.split(sig)[-1]
+                    suf = self._remove_eof(suf)
+                    gen = pre + sig + suf
+                else:
+                    gen = f"# CANNOT PARSE CODE SNIPPET\n{gen}"
+            else:
+                # cannot really handle parse just dump to file and maybe process later.
+                gen = f"# CANNOT PARSE\n{raw_o}"
+            outputs.append(gen)
+        return outputs
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        assert do_sample, "Currently we let OpenAI API only support sampling"
+        batch_size = min(self.batch_size, num_samples)
+        assert batch_size <= 20, "Use larger batch size could blow up the memory!"
+
+        # construct prompt
+        message = (
+            f"Please complete the following code snippet.\n```\n{prompt.strip()}\n```"
+        )
+        config = create_chatgpt_config(
+            message=message,
+            max_tokens=512,
+            temperature=self.temperature,
+            batch_size=batch_size,
+        )
+        ret = request_chatgpt_engine(config)
+        return self._chatgpt_parse(ret, prompt.strip())
+
+
 def make_model(
     name: str,
     batch_size: int = 1,
@@ -288,6 +353,12 @@ def make_model(
         return HFTorchDecoder(
             batch_size=batch_size,
             name="StabilityAI/stablelm-base-alpha-7b",
+            temperature=temperature,
+        )
+    elif name == "chatgpt":
+        return ChatGPTDecoder(
+            batch_size=batch_size,
+            name="ChatGPT",
             temperature=temperature,
         )
 
