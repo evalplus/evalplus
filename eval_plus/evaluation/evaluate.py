@@ -74,6 +74,16 @@ def batch_exec(
     timeout_unit = 1
     timeout = len(inputs) * timeout_unit
 
+    def is_floats(x) -> bool:
+        # check if it is float; List[float]; Tuple[float]
+        if isinstance(x, float):
+            return True
+        if isinstance(x, list):
+            return all(isinstance(i, float) for i in x)
+        if isinstance(x, tuple):
+            return all(isinstance(i, float) for i in x)
+        return False
+
     def unsafe_execute():
         with create_tempdir():
             # These system calls are needed when cleaning up tempdir.
@@ -102,14 +112,10 @@ def batch_exec(
                             # fast mode: check if the result is correct
                             if expected:
                                 exp = expected[i]
-                                if (
-                                    atol == 0
-                                    and isinstance(out, float)
-                                    and isinstance(exp, float)
-                                ):
+                                if atol == 0 and is_floats(out) and is_floats(exp):
                                     atol = 1e-6  # enforce atol for float comparison
                                 if atol != 0:
-                                    assert abs(float(out) - float(exp)) <= atol
+                                    np.testing.assert_allclose(out, exp, atol=atol)
                                 else:
                                     assert out == exp
                 result.append("success")
