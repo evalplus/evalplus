@@ -15,17 +15,16 @@ def parse_nested_parens(paren_string: str) -> List[int]:
         if ch == "(": cnt += 1 # $_CONTRACT_$
         if ch == ")": cnt -= 1 # $_CONTRACT_$
         assert cnt >= 0, "invalid inputs" # $_CONTRACT_$
-
-    res, cnt, max_depth = [], 0, 0
-    for ch in paren_string:
-        if ch == "(": cnt += 1
-        if ch == ")": cnt -= 1
-        max_depth = max(max_depth, cnt)
-        if cnt == 0:
-            if max_depth != 0:
-                res.append(max_depth)
-                max_depth = 0
-    return res
+    
+    def count_depth(s: str) -> int:
+        max_depth, cnt = 0, 0
+        for ch in s:
+            if ch == "(": cnt += 1
+            if ch == ")": cnt -= 1
+            max_depth = max(max_depth, cnt)
+        return max_depth
+    
+    return [count_depth(s) for s in paren_string.split(" ") if s != ""]
 
 
 
