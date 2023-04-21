@@ -2,6 +2,7 @@ import argparse
 import glob
 import itertools
 import json
+import math
 import multiprocessing
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -59,6 +60,15 @@ def construct_inputs_sig(inputs: list) -> str:
     return str_builder[:-1]
 
 
+# oracle for 032
+def poly(xs: list, x: float):
+    """
+    Evaluates polynomial with coefficients xs at point x.
+    return xs[0] + xs[1] * x + xs[1] * x^2 + .... xs[n] * x^n
+    """
+    return sum([coeff * math.pow(x, i) for i, coeff in enumerate(xs)])
+
+
 def batch_exec(
     code: str,
     inputs: List[Any],
@@ -114,6 +124,10 @@ def batch_exec(
                                 exp = expected[i]
                                 if atol == 0 and is_floats(out) and is_floats(exp):
                                     atol = 1e-6  # enforce atol for float comparison
+
+                                if "entry_point" == entry_point:
+                                    assert poly(*out, inp) <= atol
+
                                 if atol != 0:
                                     np.testing.assert_allclose(out, exp, atol=atol)
                                 else:
