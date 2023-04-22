@@ -57,11 +57,15 @@ if __name__ == "__main__":
 
     TEXTTEMPS = [r"\temptwo{}", r"\tempfour{}", r"\tempsix{}", r"\tempeight{}"]
 
-    def make_line(summary, amax):
+    def aplus(s) -> str:
+        return r"\aplus{" + s + r"}"
+
+    def make_line(summary, amax, ap=False):
+        pkvals = [f"{100 * v[amax[i]]:.2f}" for i, v in enumerate(summary.values())]
+        if ap:
+            pkvals = [aplus(v) for v in pkvals]
         return (
-            " & ".join(
-                [f"{100 * v[amax[i]]:.2f}" for i, v in enumerate(summary.values())]
-            )
+            " & ".join(pkvals)
             + " & "
             + " & ".join([f"{TEXTTEMPS[i]}".replace("0.", ".") for i in amax])
             + r" \\"
@@ -69,6 +73,6 @@ if __name__ == "__main__":
 
     print("LaTeX Table Ingredent")
     argmax = [np.argmax(v) for v in before_summary.values()]
-    cprint(make_line(before_summary, argmax), "green")
+    cprint("before & " + make_line(before_summary, argmax), "green")
     argmax = [np.argmax(v) for v in after_summary.values()]
-    cprint(make_line(after_summary, argmax), "green")
+    cprint(aplus("after") + " & " + make_line(after_summary, argmax, ap=True), "green")
