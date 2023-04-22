@@ -11,7 +11,30 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from eval_plus.utils import get_human_eval
+from eval_plus.utils import get_human_eval_plus
+
+
+def construct_contract_prompt(prompt: str, contract_type: str, contract: str) -> str:
+    if contract_type == "no":
+        return prompt
+    elif contract_type == "docstring":
+        # embed within the docstring
+        sep = ""
+        if '"""' in prompt:
+            sep = '"""'
+        elif "'''" in prompt:
+            sep = "'''"
+        assert sep != ""
+        l = prompt.split(sep)
+        contract = "\n".join([x.split("#")[0] for x in contract.splitlines()])
+        l[1] = (
+            l[1] + contract + "\n" + " " * (len(contract) - len(contract.lstrip()) - 1)
+        )
+        return sep.join(l)
+    elif contract_type == "code":
+        # at the beginning of the function
+        contract = "\n".join([x.split("#")[0] for x in contract.splitlines()])
+        return prompt + contract
 
 
 def code_generate(args, workdir: PathLike, model: DecoderBase):
@@ -24,8 +47,10 @@ def code_generate(args, workdir: PathLike, model: DecoderBase):
         TextColumn("•"),
         TimeElapsedColumn(),
     ) as p:
-        for task in p.track(get_human_eval()):
+        for task in p.track(get_human_eval_plus()):
             p_name = task["task_id"].replace("/", "_")
+            if args.use_contracts != "no" and task["contract"] == "":
+                continue
             os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
             log = f"Codegen: {p_name} @ {model}"
             n_existing = 0
@@ -47,7 +72,10 @@ def code_generate(args, workdir: PathLike, model: DecoderBase):
             sidx = args.n_samples - nsamples
             while sidx < args.n_samples:
                 outputs = model.codegen(
-                    task["prompt"], num_samples=args.n_samples - sidx
+                    construct_contract_prompt(
+                        task["prompt"], args.use_contracts, task["contract"]
+                    ),
+                    num_samples=args.n_samples - sidx,
                 )
                 for impl in outputs:
                     try:
@@ -57,6 +85,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase):
                             encoding="utf-8",
                         ) as f:
                             if args.model == "chatgpt":
+                                # TODO: contracts for chatgpt if we have time?
                                 f.write(impl)
                             else:
                                 f.write(task["prompt"] + impl)
@@ -74,10 +103,16 @@ def main():
     parser.add_argument("--root", default="/JawTitan/EvalPlus", type=str)
     parser.add_argument("--n_samples", default=200, type=int)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--use_contracts", default="no", type=str)
     args = parser.parse_args()
 
     if args.dataset not in ["humaneval"]:
         raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
+
+    if args.use_contracts not in ["no", "code", "docstring"]:
+        raise NotImplementedError(
+            "Unsupported contract usage: {}".format(args.use_contracts)
+        )
 
     # Make project dir
     os.makedirs(args.root, exist_ok=True)
@@ -89,7 +124,11 @@ def main():
         name=args.model, batch_size=args.bs, temperature=args.temperature
     )
     workdir = os.path.join(
-        args.root, args.dataset, args.model + f"_temp_{args.temperature}"
+        args.root,
+        args.dataset,
+        args.model + f"_temp_{args.temperature}" + ""
+        if args.use_contracts == "no"
+        else f"-contract-{args.use_contracts}",
     )
     os.makedirs(workdir, exist_ok=True)
 
