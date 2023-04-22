@@ -1,4 +1,4 @@
-"""Convert the results to an ingredent for LaTeX table.
+"""Convert the results to an ingredient for LaTeX table.
 """
 
 import argparse
