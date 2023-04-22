@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
 POLYCODER_EXTRA = ["\n//", "\n/*"]
-NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "\n#"] + POLYCODER_EXTRA
+NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "\n#"]
 
 
 def get_all_python_files(folder):
@@ -28,8 +28,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", type=str, required=True)
-    parser.add_argument("--vicuna", action="store_true")
-    parser.add_argument("--incoder", action="store_true")
     parser.add_argument("--eof", action="store_true")
 
     args = parser.parse_args()
@@ -45,7 +43,7 @@ if __name__ == "__main__":
         old_code = open(pyf).read()
         new_code = old_code
 
-        if args.vicuna:
+        if "vicuna" in args.folder:
             new_code = ""
             for line in old_code.splitlines():
                 lspace = len(line) - len(line.lstrip())
@@ -53,12 +51,13 @@ if __name__ == "__main__":
                     new_code += " "
                 new_code += line + "\n"
         if args.eof:
-            if args.incoder:
-                for eof in INCODER_EXTRA:
-                    new_code = new_code.split(eof)[0]
-            else:
-                for eof in NON_CODE_EOFS:
-                    new_code = new_code.split(eof)[0]
+            eof_strs = NON_CODE_EOFS
+            if "incoder" in args.folder:
+                eof_strs = eof_strs + INCODER_EXTRA
+            if "polycoder" in args.folder:
+                eof_strs = eof_strs + POLYCODER_EXTRA
+            for eof in eof_strs:
+                new_code = new_code.split(eof)[0]
 
         # write to new folder
         new_pyf = pyf.replace(str(old_folder), str(new_folder))
