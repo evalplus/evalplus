@@ -7,7 +7,7 @@ def is_multiply_prime(a):
     is_multiply_prime(30) == True
     30 = 2 * 3 * 5
     """
-    assert type(a) == int and a < 100, "invalid inputs" # $_CONTRACT_$
+    assert type(a) == int, "invalid inputs" # $_CONTRACT_$
     if a <= 1: return False
     isprime = [True] * (a + 1)
     for i in range(2, a + 1):
