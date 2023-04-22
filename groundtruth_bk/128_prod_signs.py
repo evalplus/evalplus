@@ -11,6 +11,8 @@ def prod_signs(arr):
     >>> prod_signs([0, 1]) == 0
     >>> prod_signs([]) == None
     """
+    assert type(arr) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in arr), "invalid inputs" # $_CONTRACT_$
     if arr == []: return None
     if 0 in arr: return 0
     s, sgn = 0, 1

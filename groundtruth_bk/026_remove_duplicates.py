@@ -7,6 +7,8 @@ def remove_duplicates(numbers: List[int]) -> List[int]:
     >>> remove_duplicates([1, 2, 3, 2, 4])
     [1, 3, 4]
     """
+    assert type(numbers) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in numbers), "invalid inputs" # $_CONTRACT_$
     num_cnt = dict()
     for number in numbers:
         if number not in num_cnt:

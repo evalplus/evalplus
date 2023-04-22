@@ -17,6 +17,7 @@ def make_palindrome(string: str) -> str:
     >>> make_palindrome('cata')
     'catac'
     """
+    assert type(string) == str, "invalid inputs" # $_CONTRACT_$
     if is_palindrome(string):
         return string
     for i in range(len(string)):

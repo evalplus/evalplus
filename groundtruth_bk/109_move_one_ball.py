@@ -26,6 +26,8 @@ def move_one_ball(arr):
                 array by performing any number of right shift operations.
                 
     """
+    assert type(arr) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in arr), "invalid inputs" # $_CONTRACT_$
     assert len(set(arr)) == len(arr), "invalid inputs" # $_CONTRACT_$
     assert all(type(x) == int for x in arr), "invalid inputs" # $_CONTRACT_$
     

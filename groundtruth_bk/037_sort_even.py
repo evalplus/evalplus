@@ -9,6 +9,8 @@ def sort_even(l: list):
     >>> sort_even([5, 6, 3, 4])
     [3, 6, 5, 4]
     """
+    assert type(l) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) in [int, float] for x in l), "invalid inputs" # $_CONTRACT_$
     even = [l[i] for i in range(len(l)) if i % 2 == 0]
     even.sort()
     return [even[i // 2] if i % 2 == 0 else l[i] for i in range(len(l))]

@@ -10,6 +10,8 @@ def sort_array(arr):
     >>> sort_array([-2, -3, -4, -5, -6]) == [-6, -5, -4, -3, -2]
     >>> sort_array([1, 0, 2, 3, 4]) [0, 1, 2, 3, 4]
     """
+    assert type(arr) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int and x >= 0 for x in arr), "invalid inputs" # $_CONTRACT_$
     from functools import cmp_to_key
     def cmp(x: int, y: int) -> int:
         x1 = len(list(filter(lambda ch: ch == "1", bin(x))))

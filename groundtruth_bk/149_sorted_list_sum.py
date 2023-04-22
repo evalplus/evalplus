@@ -14,6 +14,8 @@ def sorted_list_sum(lst):
     assert list_sort(["aa", "a", "aaa"]) => ["aa"]
     assert list_sort(["ab", "a", "aaa", "cd"]) => ["ab", "cd"]
     """
+    assert type(lst) == str, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == str for x in lst), "invalid inputs" # $_CONTRACT_$
     from functools import cmp_to_key
     def cmp(s: str, t: str):
         if len(s) != len(t):

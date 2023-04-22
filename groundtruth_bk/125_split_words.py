@@ -9,6 +9,8 @@ def split_words(txt):
     split_words("Hello,world!") ➞ ["Hello", "world!"]
     split_words("abcdef") == 3 
     '''
+    assert type(txt) == str, "invalid inputs" # $_CONTRACT_$
+    assert not txt.startswith(" ") and not txt.startswith(",") and not txt.endswith(" ") and not txt.endswith(","), "invalid inputs" # $_CONTRACT_$
     whitespace = tuple(' \n\r\t')
     if any([x in txt for x in whitespace]): return txt.split()
     if "," in txt: return txt.split(",")

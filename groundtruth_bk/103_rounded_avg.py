@@ -10,6 +10,7 @@ def rounded_avg(n, m):
     rounded_avg(10, 20) => "0b1111"
     rounded_avg(20, 33) => "0b11010"
     """
+    assert type(n) == int and type(m) == int, "invalid inputs" # $_CONTRACT_$
     assert n > 0 and m > 0, "invalid inputs"  # $_CONTRACT_$
 
     if n > m: return -1

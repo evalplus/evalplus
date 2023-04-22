@@ -9,6 +9,8 @@ def can_arrange(arr):
     can_arrange([1,2,4,3,5]) = 3
     can_arrange([1,2,3]) = -1
     """
+    assert type(arr) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) in [int, float] for x in arr), "invalid inputs" # $_CONTRACT_$
     assert len(arr) == len(set(arr)), "invalid inputs" # $_CONTRACT_$
 
     for i in range(len(arr) - 1, 0, -1):

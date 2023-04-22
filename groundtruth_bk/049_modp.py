@@ -13,6 +13,7 @@ def modp(n: int, p: int):
     >>> modp(100, 101)
     1
     """
+    assert type(n) == int and type(p) == int, "invalid inputs" # $_CONTRACT_$
     assert n >= 0 and p >= 1, "invalid inputs" # $_CONTRACT_$
 
     res, x = 1, 2

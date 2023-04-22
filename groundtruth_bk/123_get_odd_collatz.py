@@ -16,6 +16,7 @@ def get_odd_collatz(n):
     For example:
     get_odd_collatz(5) returns [1, 5] # The collatz sequence for 5 is [5, 16, 8, 4, 2, 1], so the odd numbers are only 1, and 5.
     """
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n > 0, "invalid inputs" # $_CONTRACT_$
 
     ans, x = [], n

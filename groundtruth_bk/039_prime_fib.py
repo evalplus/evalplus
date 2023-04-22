@@ -14,6 +14,7 @@ def prime_fib(n: int):
     >>> prime_fib(5)
     89
     """
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert 1 <= n <= 12, "invalid inputs" # $_CONTRACT_$
 
     import random

@@ -10,6 +10,8 @@ def strange_sort_list(lst):
     strange_sort_list([5, 5, 5, 5]) == [5, 5, 5, 5]
     strange_sort_list([]) == []
     '''
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in lst), "invalid inputs" # $_CONTRACT_$
     sorted_list = sorted(lst)
     ans, i, j = [], 0, len(sorted_list) - 1
     while i < j:

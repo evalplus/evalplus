@@ -5,6 +5,7 @@ def flip_case(string: str) -> str:
     >>> flip_case('Hello')
     'hELLO'
     """
+    assert type(string) == str, "invalid inputs" # $_CONTRACT_$
     return "".join(map(lambda x: x.swapcase(), string))
 
 
