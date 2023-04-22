@@ -52,3 +52,10 @@ Warn at incomplete tasks and uncompilable code.
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 python tools/baby_checker.py --folder /path/to/[model]-[??]b_temp_[??]
 ```
+
+### Result to LaTeX Table Ingredient
+
+```shell
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+python tools/res2tex.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
+```
