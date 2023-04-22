@@ -9,6 +9,8 @@ def cycpattern_check(a , b):
     cycpattern_check("himenss","simen") => True
 
     """
+    if a == b:
+        return True
     for i in range(0, len(b)):
         if b[i:] + b[:i] in a:
             return True
