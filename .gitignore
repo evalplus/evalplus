@@ -163,3 +163,5 @@ cython_debug/
 # VSCode
 .vscode/
 EvalPlus/
+backup/
+evo.sh

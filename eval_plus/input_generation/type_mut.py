@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Set, Tuple
 
 from multipledispatch import dispatch
 
-from eval_plus.evaluation.evaluate import batch_exec
 from eval_plus.input_generation.mut_gen import MutateGen
+from eval_plus.input_generation.util import trusted_check_exec
 
 MAX_MULTI_STEP_SIZE = 5
 MUTATE_BOUND_SIZE = 8
@@ -315,9 +315,7 @@ class TypedMutGen(MutateGen):
                 new_input = self.mutate(new_input)
             num_generated += 1
             if hash(str(new_input)) not in self.seed_hash:
-                if batch_exec(
-                    self.contract_code, [new_input], self.signature, fast_check=True
-                ):
+                if trusted_check_exec(self.contract_code, [new_input], self.signature):
                     self.typed_fetch(new_input)
                     self.seed_pool.append(new_input)
                     self.new_inputs.append(new_input)

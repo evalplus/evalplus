@@ -5,20 +5,21 @@ import json
 import math
 import multiprocessing
 import os
-import traceback
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
+from concurrent.futures import ProcessPoolExecutor
+from datetime import datetime
 from typing import Any, List, Union
 
 import numpy as np
 from tqdm import tqdm
 
 from eval_plus.evaluation.evaluate_helpers import (
-    TimeoutException,
     create_tempdir,
     reliability_guard,
     swallow_io,
     time_limit,
 )
+from eval_plus.input_generation.util import trusted_exec
 from eval_plus.utils import get_human_eval_plus, get_human_eval_plus_inputs, to_raw
 
 DEBUG = os.environ.get("DEBUG", False)
@@ -72,20 +73,22 @@ def poly(xs: list, x: float):
     return sum([coeff * math.pow(x, i) for i, coeff in enumerate(xs)])
 
 
-def batch_exec(
+SUCCESS = "success"
+FAILED = "failed"
+TIMEOUT = "timed out"
+
+
+def untrusted_check(
     code: str,
     inputs: List[Any],
     entry_point: str,
+    expected,
+    atol,
+    ref_time: List[float],
     fast_check: bool = False,
-    expected=None,
-    atol=None,
-) -> Union[List[Any], bool]:
-    if fast_check and expected:
-        assert atol is not None
-        assert len(inputs) == len(expected)
-
-    timeout_unit = 1
-    timeout = len(inputs) * timeout_unit
+) -> Union[List[bool], bool]:
+    time_limits = [max(0.5, 2 * t) for t in ref_time]
+    timeout = sum(time_limits)
 
     def is_floats(x) -> bool:
         # check if it is float; List[float]; Tuple[float]
@@ -107,133 +110,150 @@ def batch_exec(
             rmdir = os.rmdir
             chdir = os.chdir
             # Disable functionalities that can make destructive changes to the test.
-            reliability_guard()
+            # allow only 4GB memory usage
+            maximum_memory_bytes = 4 * 1024 * 1024 * 1024
+            reliability_guard(maximum_memory_bytes=maximum_memory_bytes)
             exec_globals = {}
             try:
                 with swallow_io():
-                    with time_limit(timeout + 1):
-                        exec(code, exec_globals)
-                        fn = exec_globals[entry_point]
-                        for i, inp in enumerate(inputs):
-                            with time_limit(timeout_unit):
+                    exec(code, exec_globals)
+                    fn = exec_globals[entry_point]
+                    for i, inp in enumerate(inputs):
+                        try:
+                            with time_limit(time_limits[i]):
                                 out = fn(*inp)
 
-                            # slow mode: get all results
-                            if not fast_check:
-                                outputs.append(out)
+                            exp = expected[i]
+                            exact_match = out == exp
 
-                            # fast mode: check if the result is correct
-                            if expected:
-                                exp = expected[i]
-                                exact_match = out == exp
+                            if "find_zero" == entry_point:
+                                assert poly(*out, inp) <= atol
 
-                                if "find_zero" == entry_point:
-                                    assert poly(*out, inp) <= atol
+                            if atol == 0 and is_floats(exp):
+                                atol = 1e-6  # enforce atol for float comparison
+                            if not exact_match and atol != 0:
+                                np.testing.assert_allclose(out, exp, atol=atol)
+                            else:
+                                assert exact_match
+                        except BaseException:
+                            if fast_check:
+                                raise
+                            details.append(False)
+                            continue
 
-                                if atol == 0 and is_floats(exp):
-                                    atol = 1e-6  # enforce atol for float comparison
-                                if not exact_match and atol != 0:
-                                    np.testing.assert_allclose(out, exp, atol=atol)
-                                else:
-                                    assert exact_match
-
-                result.append("success")
-            except TimeoutException:
-                result.append(f"timed out :: {entry_point}")
-                print(f"timed out :: {entry_point}")
+                        details.append(True)
+                result.append(SUCCESS)
             except BaseException:
-                result.append("failed")
-                if DEBUG:
-                    traceback.print_exc()
+                result.append(FAILED)
             # Needed for cleaning up.
             shutil.rmtree = rmtree
             os.rmdir = rmdir
             os.chdir = chdir
 
     manager = multiprocessing.Manager()
-    outputs = manager.list()
+
     result = manager.list()
+    details = manager.list()
     p = multiprocessing.Process(target=unsafe_execute, args=(atol,))
     p.start()
     p.join(timeout=timeout + 1)
     if p.is_alive():
+        p.terminate()
+        time.sleep(0.1)
+    if p.is_alive():
         p.kill()
+        time.sleep(0.1)
+    p.close()
 
     if not result:
-        result.append("timed out")
+        result.append(TIMEOUT)
 
-    if fast_check:
-        return result[0] == "success"
+    if result[0] == SUCCESS:
+        if len(details) != len(inputs) or not all(details):
+            result[0] = FAILED
 
-    # cannot return outputs where inputs are invalid
-    assert result[0] == "success"
-    return outputs
+    if result[0] != SUCCESS:
+        details = None
+
+    return result[0], np.array(details)
 
 
 def evaluate_files(
-    files: List[str], inputs: List, expected: List, entry_point: str, atol: float
-) -> List[str]:
-    suc_files = []
-    cache = {}
+    files: List[str],
+    inputs: List,
+    expected: List,
+    entry_point: str,
+    atol: float,
+    ref_time: List[float],
+    fast_check: bool = False,
+) -> List:
+    ret = []
+    # sort files by the id in name (i.e., "../n.py")
+    files = sorted(files, key=lambda x: int(x.split("/")[-1].split(".")[0]))
     for file in files:
         code = open(file, "r").read()
-        if code in cache and cache[code]:
-            suc_files.append(file)  # pass
-            continue
-
-        suc = batch_exec(
-            code, inputs, entry_point, fast_check=True, expected=expected, atol=atol
+        stat, det = untrusted_check(
+            code,
+            inputs,
+            entry_point,
+            expected=expected,
+            atol=atol,
+            ref_time=ref_time,
+            fast_check=fast_check,
         )
-
-        if suc:
-            suc_files.append(file)
-        cache[code] = suc
-    return suc_files
+        ret.append((stat, det))
+    return ret
 
 
 def evaluate_one(problem: dict, r_folder: str, more_eval: bool, iextra=None):
     p_name = problem["task_id"].replace("/", "_")
-    print(
-        "evaluating for {} ...".format(p_name),
-        problem["atol"] if problem["atol"] else "",
-    )
-    # first populate the gd results
+    atol = problem["atol"]
     code = problem["prompt"] + problem["reference"]
-    gd_results = batch_exec(code, problem["base_input"], problem["entry_point"])
-
     gen_files = glob.glob(r_folder + f"/{p_name}/*.py")
-    base_suc_files = evaluate_files(
+    entry_point = problem["entry_point"]
+    # Get oracle from base questions.
+    base_oracle, base_time = trusted_exec(
+        code, problem["base_input"], entry_point, record_time=True
+    )
+
+    print("Evaluating for {} ...".format(p_name), atol if atol else "")
+    rbase = evaluate_files(
         gen_files,
         problem["base_input"],
-        gd_results,
+        base_oracle,
         problem["entry_point"],
         problem["atol"],
+        ref_time=base_time,
     )
 
-    msg = f"{p_name} :: Total {len(gen_files)} :: Base Success {len(base_suc_files)}"
+    base_nsucc = len([r for r in rbase if r[0] == SUCCESS])
+    msg = f"{p_name} :: Total {len(gen_files)} :: Base Success {base_nsucc}"
 
     if more_eval and iextra:
         new_inputs = iextra
-        gd_new_results = batch_exec(code, iextra, problem["entry_point"])
+        plus_oracle, plus_time = trusted_exec(
+            code, iextra, entry_point, record_time=True
+        )
 
-        new_suc_files = evaluate_files(
-            base_suc_files,
+        rplus = evaluate_files(
+            gen_files,
             new_inputs,
-            gd_new_results,
+            plus_oracle,
             problem["entry_point"],
             problem["atol"],
+            ref_time=plus_time,
         )
-        print(msg + f" :: New Success {len(new_suc_files)}")
-    else:
-        # same passing.
-        new_suc_files = base_suc_files
-        print(msg)
+        plus_nsucc = len(
+            [i for i in range(len(rplus)) if rbase[i][0] == rplus[i][0] == SUCCESS]
+        )
+        msg += f" :: New Success {plus_nsucc}"
 
-    return p_name, gen_files, base_suc_files, new_suc_files
+    print(msg)
+
+    return p_name, gen_files, rbase, rplus
 
 
 def evaluate(flags, problems, extra_inputs=None):
-    base_total, base_correct, new_correct = [], [], []
     if flags.parallel is None:
         n_workers = max(1, multiprocessing.cpu_count() // 2)
     else:
@@ -245,33 +265,27 @@ def evaluate(flags, problems, extra_inputs=None):
         print(f"Load from {flags.r_folder + '/eval_results.json'}")
         with open(result_path, "r") as f:
             results = json.load(f)
-        base_total = [len(x["base_files"]) for _, x in results["eval"].items()]
-        base_correct = [len(x["correct_files"]) for _, x in results["eval"].items()]
-        new_correct = [len(x["ncorrect_files"]) for _, x in results["eval"].items()]
     else:
         results = {
-            # TODO put some meta data here
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "extra_input_hash": hash(str(problems)),
-            "eval": {}  # dict of each p_name with all files / base-succ / new-succ files
-            # TODO: incorrect file failing test inputs
+            "eval": {},
         }
-        with ThreadPoolExecutor(max_workers=n_workers) as executor:
+
+        with ProcessPoolExecutor(max_workers=n_workers) as executor:
             futures = []
-            for problem in problems:
+            for problem in tqdm(problems):
                 p_name = problem["task_id"].replace("/", "_")
                 iextra = extra_inputs.get(p_name, None) if extra_inputs else None
                 args = (problem, flags.r_folder, flags.more_eval, iextra)
                 futures.append(executor.submit(evaluate_one, *args))
-            for future in tqdm(as_completed(futures), total=len(futures)):
-                p_name, btotal, bcorrect, ncorrect = future.result()
+            for future in futures:
+                p_name, files, rbase, rplus = future.result()
                 results["eval"][p_name] = {
-                    "base_files": btotal,
-                    "correct_files": bcorrect,
-                    "ncorrect_files": ncorrect,
+                    "files": files,
+                    "base": rbase,
+                    "plus": rplus,
                 }
-                base_total.append(len(btotal))
-                base_correct.append(len(bcorrect))
-                new_correct.append(len(ncorrect))
 
     if os.path.isfile(result_path) and flags.i_just_wanna_run:
         decision = ""
@@ -292,11 +306,18 @@ def evaluate(flags, problems, extra_inputs=None):
             json.dump(results, f)
 
     # Calculate pass@k.
-    total = np.array(base_total)
-    correct = np.array(base_correct)
+    total = np.array([len(r["files"]) for r in results["eval"].values()])
+    base_correct = []
+    new_correct = []
+    for r in results["eval"].values():
+        base_correct.append(len([r[0] == SUCCESS for r in r["base"]]))
+        new_correct.append(len([r[0] == SUCCESS for r in r["plus"]]))
+    base_correct = np.array(base_correct)
     new_correct = np.array(new_correct)
+    new_correct = np.logical_and(new_correct, base_correct)
+
     pass_at_k = {
-        f"pass@{k}": estimate_pass_at_k(total, correct, k).mean()
+        f"pass@{k}": estimate_pass_at_k(total, base_correct, k).mean()
         for k in [1, 10, 100]
         if (total >= k).all()
     }
