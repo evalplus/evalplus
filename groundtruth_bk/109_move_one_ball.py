@@ -27,6 +27,7 @@ def move_one_ball(arr):
                 
     """
     assert len(set(arr)) == len(arr), "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in arr), "invalid inputs" # $_CONTRACT_$
     
     sorted_arr = sorted(arr)
     if arr == sorted_arr: return True

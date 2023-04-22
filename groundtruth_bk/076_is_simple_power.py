@@ -11,6 +11,7 @@ def is_simple_power(x, n):
     is_simple_power(3, 1) => false
     is_simple_power(5, 3) => false
     """
+    assert type(x) == int and type(n) == int, "invalid inputs" # $_CONTRACT_$
     if x == 1: return True
     if n == 0: return x == 0
     if n == 1: return x == 1

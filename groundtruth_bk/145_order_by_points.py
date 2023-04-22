@@ -10,6 +10,7 @@ def order_by_points(nums):
     >>> order_by_points([1, 11, -1, -11, -12]) == [-1, -11, 1, -12, 11]
     >>> order_by_points([]) == []
     """
+    assert all(type(x) == int for x in nums), "invalid inputs" # $_CONTRACT_$
     def weight(x):
         x_list = list(str(x))
         if x_list[0] == "-":

@@ -16,6 +16,7 @@ def is_sorted(lst):
     is_sorted([1, 2, 2, 2, 3, 4]) ➞ False
     '''
     assert all(x >= 0 for x in lst), "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in lst), "invalid inputs" # $_CONTRACT_$
 
     count = dict()
     for x in lst:
