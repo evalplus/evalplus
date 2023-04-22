@@ -312,7 +312,15 @@ class IncoderDecoder(HFTorchDecoder):
         super().__init__(name, batch_size, temperature)
         self.infill_ph = "<|mask:0|>"
         self.extra_end = "<|mask:1|><|mask:0|>"
-        self.extra_eof = ["<|endofmask|>", "<|/ file", "</cell>", "</text>", "</code>"]
+        self.extra_eof = [
+            "<|endofmask|>",
+            "<|/ file",
+            "</cell>",
+            "</text>",
+            "</code>",
+            "<|",
+            "</CODE>",
+        ]
         self.eofs = self.eofs + self.extra_eof
 
     def codegen(

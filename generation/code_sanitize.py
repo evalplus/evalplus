@@ -7,6 +7,7 @@ import os
 
 from tqdm import tqdm
 
+INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
 POLYCODER_EXTRA = ["\n//", "\n/*"]
 NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "\n#"] + POLYCODER_EXTRA
 
@@ -28,6 +29,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", type=str, required=True)
     parser.add_argument("--vicuna", action="store_true")
+    parser.add_argument("--incoder", action="store_true")
     parser.add_argument("--eof", action="store_true")
 
     args = parser.parse_args()
@@ -51,8 +53,12 @@ if __name__ == "__main__":
                     new_code += " "
                 new_code += line + "\n"
         if args.eof:
-            for eof in NON_CODE_EOFS:
-                new_code = new_code.split(eof)[0]
+            if args.incoder:
+                for eof in INCODER_EXTRA:
+                    new_code = new_code.split(eof)[0]
+            else:
+                for eof in NON_CODE_EOFS:
+                    new_code = new_code.split(eof)[0]
 
         # write to new folder
         new_pyf = pyf.replace(str(old_folder), str(new_folder))
