@@ -312,7 +312,7 @@ class IncoderDecoder(HFTorchDecoder):
         super().__init__(name, batch_size, temperature)
         self.infill_ph = "<|mask:0|>"
         self.extra_end = "<|mask:1|><|mask:0|>"
-        self.extra_eof = ["<|endofmask|>", "<|/ file", "</cell>", "</text>"]
+        self.extra_eof = ["<|endofmask|>", "<|/ file", "</cell>", "</text>", "</code>"]
         self.eofs = self.eofs + self.extra_eof
 
     def codegen(
@@ -415,6 +415,12 @@ def make_model(
         return IncoderDecoder(
             batch_size=batch_size,
             name="facebook/incoder-1B",
+            temperature=temperature,
+        )
+    elif name == "incoder-6b":
+        return IncoderDecoder(
+            batch_size=batch_size,
+            name="facebook/incoder-6B",
             temperature=temperature,
         )
     elif name == "stablelm-7b":
