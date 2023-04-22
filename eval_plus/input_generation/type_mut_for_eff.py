@@ -16,7 +16,7 @@ from eval_plus.input_generation.mut_gen import MutateGen
 
 MUTATE_BOUND_SIZE = 5
 MAX_MULTI_STEP_SIZE = 1000
-MAX_SEED_POOL = 15
+MAX_SEED_POOL = 10
 
 NoneType = type(None)
 MAX_SIZE = 80000

@@ -1,6 +1,6 @@
+import math
 import multiprocessing
 import time
-from math import sqrt
 from typing import Any, List, Optional, Union
 
 from eval_plus.evaluation.evaluate_helpers import (
@@ -43,7 +43,7 @@ def execute_for_runtime(
                 start_time = time.time()
                 # real call
                 with swallow_io():
-                    with time_limit(1):
+                    with time_limit(3):
                         fn(*inputs)
                 duration = time.time() - start_time
 
@@ -61,7 +61,7 @@ def execute_for_runtime(
     result = manager.list()
     p = multiprocessing.Process(target=unsafe_execute)
     p.start()
-    p.join(timeout=1 + 1)
+    p.join(timeout=3 + 1)
     if p.is_alive():
         p.kill()
     return result[0]
@@ -86,7 +86,7 @@ def test_solution_runtime(
         if inputs == "base_input":
             inputs = problem["base_input"]
 
-        results = [0, 0]
+        results = [1000, 1000]
         for input_list in inputs:
             # choose warmup input
             warmups = []
@@ -103,12 +103,14 @@ def test_solution_runtime(
             if any(type(x) != float for x in runtime_list):
                 print(f"{task_id = } incorrect")
                 return None, None
+
             avg_runtime = sum(runtime_list) / len(runtime_list)
-            if avg_runtime > results[0]:
+            sd = math.sqrt(
+                sum((runtime - avg_runtime) ** 2 for runtime in runtime_list)
+                / (RUN_REPEAT - 1)
+            )
+            if sd < results[1]:
                 results[0] = avg_runtime
-                results[1] = sqrt(
-                    sum((runtime - avg_runtime) ** 2 for runtime in runtime_list)
-                    / (RUN_REPEAT - 1)
-                )
+                results[1] = sd
 
         return results
