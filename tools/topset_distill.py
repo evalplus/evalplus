@@ -26,10 +26,10 @@ if __name__ == "__main__":
         plus_bvs[task_id] = np.zeros(len(plus_inputs[task_id]), dtype=bool)
 
     for path in os.listdir(args.root):
-        if not path[-1].isdigit() or "chatgpt" in path:  # hack.
-            continue
-
         eval_json_path = os.path.join(args.root, path, "eval_results.json")
+        if not os.path.isfile(eval_json_path):
+            print(f"skip {path}")
+            continue
         res = json.load(open(eval_json_path, "r"))["eval"]
 
         for task_id, v in res.items():
