@@ -11,7 +11,7 @@ from appdirs import user_cache_dir
 HUMANEVAL_PLUS_PATH = pathlib.Path(__file__).parent.parent / "HumanEvalPlus.jsonl"
 # temp
 HUMANEVAL_PLUS_INPUTS_PATH = (
-    pathlib.Path(__file__).parent.parent / "HumanEvalPlusInputsType.jsonl"
+    pathlib.Path(__file__).parent.parent / "HumanEvalPlusInputsType_filtered.jsonl"
 )
 CACHE_DIR = user_cache_dir("eval-plus")
 
