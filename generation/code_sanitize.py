@@ -7,9 +7,11 @@ import os
 
 from tqdm import tqdm
 
+from eval_plus.utils import get_human_eval
+
 INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
 POLYCODER_EXTRA = ["\n//", "\n/*"]
-NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "\n#"]
+NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>"]
 
 
 def get_all_python_files(folder):
@@ -22,6 +24,26 @@ def get_all_python_files(folder):
     return py_files
 
 
+def remove_unindented_lines(code):
+    OK_STARTS = ["def ", "class ", "import ", "from "]
+
+    new_code = ""
+    for line in code.splitlines():
+        if any([line.startswith(t) for t in OK_STARTS]) or line.strip() == "":
+            new_code += line + "\n"
+            continue
+
+        lspace = len(line) - len(line.lstrip())
+        if lspace == 0:
+            continue
+
+        new_code += line + "\n"
+
+    if code.strip() == new_code.strip():
+        return code
+    return new_code
+
+
 if __name__ == "__main__":
     import argparse
     import pathlib
@@ -32,6 +54,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # task_id -> prompt
+    prompts = {}
+    for problem in get_human_eval():
+        task_id = problem["task_id"].replace("/", "_")
+        prompts[task_id] = problem["prompt"]
+
     # make a new folder with "-sanitized" suffix
     old_folder = pathlib.Path(args.folder)
     new_folder = old_folder.parent / (old_folder.name + "-sanitized")
@@ -39,6 +67,9 @@ if __name__ == "__main__":
     nsan = 0
     ntotal = 0
     for pyf in tqdm(get_all_python_files(args.folder)):
+        # Get [?] from "[prefix]/HumanEval_[?]/[number].py":
+        task_id = pyf.split("/")[-2]
+
         ntotal += 1
         old_code = open(pyf).read()
         new_code = old_code
@@ -50,6 +81,10 @@ if __name__ == "__main__":
                 if lspace == 3:
                     new_code += " "
                 new_code += line + "\n"
+
+        # remove lines that are not indented
+        new_code = remove_unindented_lines(new_code)
+
         if args.eof:
             eof_strs = NON_CODE_EOFS
             if "incoder" in args.folder:
