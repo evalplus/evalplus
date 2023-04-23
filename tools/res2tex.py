@@ -26,6 +26,8 @@ if __name__ == "__main__":
     before_summary = {}
     after_summary = {}
 
+    SUCCESS = "success"
+
     for resfile in resfiles:
         # load the results
         res = json.load(open(resfile))["eval"]
@@ -33,9 +35,18 @@ if __name__ == "__main__":
         before_pass = []
         after_pass = []
         for v in res.values():
-            total.append(len(v["base_files"]))
-            before_pass.append(len(v["correct_files"]))
-            after_pass.append(len(v["ncorrect_files"]))
+            total.append(len(v["files"]))
+            bc = sum([r[0] == SUCCESS for r in v["base"]])
+            before_pass.append(bc)
+            if v["plus"]:
+                after_pass.append(
+                    sum(
+                        [
+                            v["plus"][i][0] == v["base"][i][0] == SUCCESS
+                            for i in range(len(v["plus"]))
+                        ]
+                    )
+                )
 
         total = np.array(total)
         before_pass = np.array(before_pass)
@@ -61,7 +72,7 @@ if __name__ == "__main__":
         return r"\aplus{" + s + r"}"
 
     def make_line(summary, amax, ap=False):
-        pkvals = [f"{100 * v[amax[i]]:.2f}" for i, v in enumerate(summary.values())]
+        pkvals = [f"{100 * v[amax[i]]:.1f}" for i, v in enumerate(summary.values())]
         if ap:
             pkvals = [aplus(v) for v in pkvals]
         return (
