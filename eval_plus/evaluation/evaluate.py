@@ -8,7 +8,7 @@ import os
 import time
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
-from typing import Any, List, Union
+from typing import Any, List, Tuple, Union
 
 import numpy as np
 from tqdm import tqdm
@@ -86,9 +86,9 @@ def untrusted_check(
     atol,
     ref_time: List[float],
     fast_check: bool = False,
-) -> Union[List[bool], bool]:
-    time_limits = [max(0.2, 2 * t) for t in ref_time]
-    timeout = max(3, sum(ref_time))
+) -> Tuple[str, np.ndarray]:
+    time_limits = [max(0.05, 2 * t) for t in ref_time]
+    timeout = min(5, sum(ref_time) + 1)
 
     def is_floats(x) -> bool:
         # check if it is float; List[float]; Tuple[float]
@@ -183,7 +183,7 @@ def evaluate_files(
     atol: float,
     ref_time: List[float],
     fast_check: bool = False,
-) -> List:
+) -> List[Tuple[str, List[bool]]]:
     ret = []
     # sort files by the id in name (i.e., "../n.py")
     files = sorted(files, key=lambda x: int(x.split("/")[-1].split(".")[0]))
@@ -198,7 +198,7 @@ def evaluate_files(
             ref_time=ref_time,
             fast_check=fast_check,
         )
-        ret.append((stat, det))
+        ret.append((stat, det.tolist()))
     return ret
 
 
