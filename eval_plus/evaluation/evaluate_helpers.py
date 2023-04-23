@@ -144,6 +144,7 @@ def reliability_guard(maximum_memory_bytes: Optional[int] = None):
     os.lchown = None
     os.getcwd = None
     os.chdir = None
+    builtins.open = None
 
     import shutil
 

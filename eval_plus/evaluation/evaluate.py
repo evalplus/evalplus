@@ -168,14 +168,14 @@ def untrusted_check(
     if not result:
         result.append(TIMEOUT)
 
-    if result[0] == SUCCESS:
-        if len(details) != len(inputs) or not all(details):
-            result[0] = FAILED
-
     if result[0] != SUCCESS:
         details = None
+    else:
+        if len(details) != len(inputs) or not all(details):
+            result[0] = FAILED
+        details = np.array(details)
 
-    return result[0], np.array(details)
+    return result[0], details
 
 
 def evaluate_files(
@@ -205,7 +205,9 @@ def evaluate_files(
     return ret
 
 
-def evaluate_one(problem: dict, r_folder: str, more_eval: bool, iextra=None):
+def evaluate_one(
+    problem: dict, r_folder: str, more_eval: bool, iextra=None, fast_check=False
+):
     p_name = problem["task_id"].replace("/", "_")
     atol = problem["atol"]
     code = problem["prompt"] + problem["reference"]
@@ -224,11 +226,13 @@ def evaluate_one(problem: dict, r_folder: str, more_eval: bool, iextra=None):
         problem["entry_point"],
         problem["atol"],
         ref_time=base_time,
+        fast_check=fast_check,
     )
 
     base_nsucc = len([r for r in rbase if r[0] == SUCCESS])
-    msg = f"{p_name} :: Total {len(gen_files)} :: Base Success {base_nsucc}"
+    msg = f"{p_name} :: Base Success {base_nsucc} / {len(gen_files)}"
 
+    rplus = None
     if more_eval and iextra:
         new_inputs = iextra
         plus_oracle, plus_time = trusted_exec(
@@ -242,11 +246,12 @@ def evaluate_one(problem: dict, r_folder: str, more_eval: bool, iextra=None):
             problem["entry_point"],
             problem["atol"],
             ref_time=plus_time,
+            fast_check=fast_check,
         )
         plus_nsucc = len(
             [i for i in range(len(rplus)) if rbase[i][0] == rplus[i][0] == SUCCESS]
         )
-        msg += f" :: New Success {plus_nsucc}"
+        msg += f" :: New Success {plus_nsucc} / {len(gen_files)}"
 
     print(msg)
 
@@ -274,12 +279,18 @@ def evaluate(flags, problems, extra_inputs=None):
 
         with ProcessPoolExecutor(max_workers=n_workers) as executor:
             futures = []
-            for problem in tqdm(problems):
+            for problem in problems:
                 p_name = problem["task_id"].replace("/", "_")
                 iextra = extra_inputs.get(p_name, None) if extra_inputs else None
-                args = (problem, flags.r_folder, flags.more_eval, iextra)
+                args = (
+                    problem,
+                    flags.r_folder,
+                    flags.more_eval,
+                    iextra,
+                    not flags.full,
+                )
                 futures.append(executor.submit(evaluate_one, *args))
-            for future in futures:
+            for future in tqdm(futures):
                 p_name, files, rbase, rplus = future.result()
                 results["eval"][p_name] = {
                     "files": files,
@@ -309,25 +320,31 @@ def evaluate(flags, problems, extra_inputs=None):
     total = np.array([len(r["files"]) for r in results["eval"].values()])
     base_correct = []
     new_correct = []
-    for r in results["eval"].values():
-        base_correct.append(len([r[0] == SUCCESS for r in r["base"]]))
-        new_correct.append(len([r[0] == SUCCESS for r in r["plus"]]))
+
+    for res in results["eval"].values():
+        bc = sum([r[0] == SUCCESS for r in res["base"]])
+        base_correct.append(bc)
+        if res["plus"]:
+            new_correct.append(sum([r[0] == SUCCESS for r in res["plus"]]))
     base_correct = np.array(base_correct)
-    new_correct = np.array(new_correct)
-    new_correct = np.logical_and(new_correct, base_correct)
 
     pass_at_k = {
         f"pass@{k}": estimate_pass_at_k(total, base_correct, k).mean()
         for k in [1, 10, 100]
         if (total >= k).all()
     }
+    print("Base")
     print(pass_at_k)
-    pass_at_k = {
-        f"pass@{k}": estimate_pass_at_k(total, new_correct, k).mean()
-        for k in [1, 10, 100]
-        if (total >= k).all()
-    }
-    print(pass_at_k)
+
+    if new_correct:
+        print("Base + Extra")
+        new_correct = np.logical_and(new_correct, base_correct)
+        pass_at_k = {
+            f"pass@{k}": estimate_pass_at_k(total, new_correct, k).mean()
+            for k in [1, 10, 100]
+            if (total >= k).all()
+        }
+        print(pass_at_k)
 
 
 def main():
@@ -337,6 +354,7 @@ def main():
     parser.add_argument("--more_eval", action="store_true")
     parser.add_argument("--parallel", default=None, type=int)
     parser.add_argument("--i-just-wanna-run", action="store_true")
+    parser.add_argument("--full", action="store_true")
     args = parser.parse_args()
 
     if args.dataset not in ["humaneval"]:
