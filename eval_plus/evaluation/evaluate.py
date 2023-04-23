@@ -87,8 +87,8 @@ def untrusted_check(
     ref_time: List[float],
     fast_check: bool = False,
 ) -> Union[List[bool], bool]:
-    time_limits = [max(0.5, 2 * t) for t in ref_time]
-    timeout = sum(time_limits)
+    time_limits = [max(0.2, 2 * t) for t in ref_time]
+    timeout = max(3, sum(ref_time))
 
     def is_floats(x) -> bool:
         # check if it is float; List[float]; Tuple[float]
@@ -168,14 +168,11 @@ def untrusted_check(
     if not result:
         result.append(TIMEOUT)
 
-    if result[0] != SUCCESS:
-        details = None
-    else:
+    if result[0] == SUCCESS:
         if len(details) != len(inputs) or not all(details):
             result[0] = FAILED
-        details = np.array(details)
 
-    return result[0], details
+    return result[0], np.array(details)
 
 
 def evaluate_files(
@@ -213,6 +210,9 @@ def evaluate_one(
     code = problem["prompt"] + problem["reference"]
     gen_files = glob.glob(r_folder + f"/{p_name}/*.py")
     entry_point = problem["entry_point"]
+
+    st = time.time()
+
     # Get oracle from base questions.
     base_oracle, base_time = trusted_exec(
         code, problem["base_input"], entry_point, record_time=True
@@ -231,6 +231,7 @@ def evaluate_one(
 
     base_nsucc = len([r for r in rbase if r[0] == SUCCESS])
     msg = f"{p_name} :: Base Success {base_nsucc} / {len(gen_files)}"
+    ref_time = sum(base_time)
 
     rplus = None
     if more_eval and iextra:
@@ -248,13 +249,13 @@ def evaluate_one(
             ref_time=plus_time,
             fast_check=fast_check,
         )
-        plus_nsucc = len(
-            [i for i in range(len(rplus)) if rbase[i][0] == rplus[i][0] == SUCCESS]
+        plus_nsucc = sum(
+            [rbase[i][0] == rplus[i][0] == SUCCESS for i in range(len(rplus))]
         )
+        ref_time += sum(plus_time)
         msg += f" :: New Success {plus_nsucc} / {len(gen_files)}"
 
-    print(msg)
-
+    print(msg + f" :: {time.time() - st:.2f}s " + f" :: ref time {ref_time:.2f}s")
     return p_name, gen_files, rbase, rplus
 
 
@@ -285,7 +286,7 @@ def evaluate(flags, problems, extra_inputs=None):
                 args = (
                     problem,
                     flags.r_folder,
-                    flags.more_eval,
+                    flags.extra,
                     iextra,
                     not flags.full,
                 )
@@ -325,7 +326,14 @@ def evaluate(flags, problems, extra_inputs=None):
         bc = sum([r[0] == SUCCESS for r in res["base"]])
         base_correct.append(bc)
         if res["plus"]:
-            new_correct.append(sum([r[0] == SUCCESS for r in res["plus"]]))
+            new_correct.append(
+                sum(
+                    [
+                        res["plus"][i][0] == res["base"][i][0] == SUCCESS
+                        for i in range(len(res["plus"]))
+                    ]
+                )
+            )
     base_correct = np.array(base_correct)
 
     pass_at_k = {
@@ -338,9 +346,8 @@ def evaluate(flags, problems, extra_inputs=None):
 
     if new_correct:
         print("Base + Extra")
-        new_correct = np.logical_and(new_correct, base_correct)
         pass_at_k = {
-            f"pass@{k}": estimate_pass_at_k(total, new_correct, k).mean()
+            f"pass@{k}": estimate_pass_at_k(total, np.array(new_correct), k).mean()
             for k in [1, 10, 100]
             if (total >= k).all()
         }
@@ -351,7 +358,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", required=True, type=str)
     parser.add_argument("--r_folder", required=True, type=str)
-    parser.add_argument("--more_eval", action="store_true")
+    parser.add_argument("--extra", action="store_true")
     parser.add_argument("--parallel", default=None, type=int)
     parser.add_argument("--i-just-wanna-run", action="store_true")
     parser.add_argument("--full", action="store_true")
@@ -362,7 +369,7 @@ def main():
 
     problems = get_human_eval_plus()
     more_inputs = None
-    if args.more_eval:
+    if args.extra:
         more_inputs = get_human_eval_plus_inputs()
 
     evaluate(args, problems, more_inputs)
