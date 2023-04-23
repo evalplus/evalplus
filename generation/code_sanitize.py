@@ -11,7 +11,7 @@ from eval_plus.utils import get_human_eval
 
 INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
 POLYCODER_EXTRA = ["\n//", "\n/*"]
-NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>"]
+NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "\n#"]
 
 
 def get_all_python_files(folder):
@@ -24,12 +24,10 @@ def get_all_python_files(folder):
     return py_files
 
 
-def remove_unindented_lines(code):
-    OK_STARTS = ["def ", "class ", "import ", "from "]
-
+def remove_unindented_lines(code, ok_starts):
     new_code = ""
     for line in code.splitlines():
-        if any([line.startswith(t) for t in OK_STARTS]) or line.strip() == "":
+        if any([line.startswith(t) for t in ok_starts]) or line.strip() == "":
             new_code += line + "\n"
             continue
 
@@ -39,8 +37,6 @@ def remove_unindented_lines(code):
 
         new_code += line + "\n"
 
-    if code.strip() == new_code.strip():
-        return code
     return new_code
 
 
@@ -54,11 +50,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # task_id -> prompt
-    prompts = {}
+    # task_id -> entry_point
+    entry_point = {}
     for problem in get_human_eval():
         task_id = problem["task_id"].replace("/", "_")
-        prompts[task_id] = problem["prompt"]
+        entry_point[task_id] = problem["entry_point"]
 
     # make a new folder with "-sanitized" suffix
     old_folder = pathlib.Path(args.folder)
@@ -72,18 +68,31 @@ if __name__ == "__main__":
 
         ntotal += 1
         old_code = open(pyf).read()
+
+        fndef = "def " + entry_point[task_id] + "("
         new_code = old_code
+        chunks = new_code.split(fndef)
+        # prefix
+        # impl
+        if len(chunks) > 1:
+            new_code = fndef + chunks[-1]  # fn + impl
+
+        if "chatgpt" in args.folder:
+            tmp = ""
+            for line in new_code.splitlines():
+                if line.strip() == "python":
+                    continue
+                tmp += line + "\n"
+            new_code = tmp
 
         if "vicuna" in args.folder:
-            new_code = ""
-            for line in old_code.splitlines():
+            tmp = ""
+            for line in new_code.splitlines():
                 lspace = len(line) - len(line.lstrip())
                 if lspace == 3:
-                    new_code += " "
-                new_code += line + "\n"
-
-        # remove lines that are not indented
-        new_code = remove_unindented_lines(new_code)
+                    tmp += " "
+                tmp += line + "\n"
+            new_code = tmp
 
         if args.eof:
             eof_strs = NON_CODE_EOFS
@@ -94,10 +103,16 @@ if __name__ == "__main__":
             for eof in eof_strs:
                 new_code = new_code.split(eof)[0]
 
+        # remove lines that are not indented
+        new_code = remove_unindented_lines(new_code, ok_starts=fndef)
+
+        if len(chunks) > 1:
+            new_code = "".join(chunks[:-1]) + new_code
+
         # write to new folder
         new_pyf = pyf.replace(str(old_folder), str(new_folder))
 
-        if new_code != old_code:
+        if new_code.strip() != old_code.strip():
             print("Sanitized: ", pyf, "->", new_pyf)
             nsan += 1
 
