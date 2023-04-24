@@ -89,7 +89,14 @@ if __name__ == "__main__":
     rate_new = [r * 100 for r in rate_new]
 
     # sort by old pass rate
-    rate_old, rate_new = zip(*sorted(zip(rate_old, rate_new), key=lambda x: x[0]))
+    # numpy argsort
+    indices = np.array(rate_old).argsort()
+    # find unsolved tasks. i.e., indices where rate_old == 0
+    unsolved = np.where(np.array(rate_old) == 0)[0]
+    print("Unsovable: ", unsolved)
+    rate_old = np.array(rate_old)[indices]
+    rate_new = np.array(rate_new)[indices]
+    # rate_old, rate_new = zip(*sorted(zip(rate_old, rate_new), key=lambda x: x[0]))
 
     # making a barplot
     x = np.arange(ntask)
