@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     for path in os.listdir(args.root):
         eval_json_path = os.path.join(args.root, path, "eval_results.json")
-        if not os.path.isfile(eval_json_path):
+        if not os.path.isfile(eval_json_path) or not path[-1].isdigit():
             print(f"skip {path}")
             continue
         res = json.load(open(eval_json_path, "r"))["eval"]
