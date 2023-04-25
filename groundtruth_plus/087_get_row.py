@@ -19,6 +19,9 @@ def get_row(lst, x):
     get_row([], 1) == []
     get_row([[], [1], [1, 2, 3]], 3) == [(2, 2)]
     """
+    assert type(x) == int, "invalid inputs" # $_CONTRACT_$
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(y) == list for y in lst), "invalid inputs" # $_CONTRACT_$
     res = []
     for i, l in enumerate(lst):
         for j in range(len(l) - 1, -1, -1):

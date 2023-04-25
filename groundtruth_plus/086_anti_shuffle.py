@@ -12,6 +12,7 @@ def anti_shuffle(s):
     anti_shuffle('hello') returns 'ehllo'
     anti_shuffle('Hello World!!!') returns 'Hello !!!Wdlor'
     """
+    assert type(s) == str, "invalid inputs" # $_CONTRACT_$
     words = s.split(" ")
     return " ".join(map(lambda x: "".join(sorted(x, key=lambda ch: ord(ch))), words))
 
