@@ -13,7 +13,7 @@ def make_a_pile(n):
     >>> make_a_pile(3)
     [3, 5, 7]
     """
-    assert n >= 1, "invalid inputs" # $_CONTRACT_$
+    assert type(int) == int and n >= 1, "invalid inputs" # $_CONTRACT_$
 
     ans, num = [], n
     for _ in range(n):

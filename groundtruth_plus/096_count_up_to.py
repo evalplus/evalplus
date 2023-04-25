@@ -10,7 +10,7 @@ def count_up_to(n):
     count_up_to(1) => []
     count_up_to(18) => [2,3,5,7,11,13,17]
     """
-    assert n >= 0, "invalid inputs" # $_CONTRACT_$
+    assert type(n) == int and n >= 0, "invalid inputs" # $_CONTRACT_$
 
     ans = []
     isprime = [True] * (n + 1)

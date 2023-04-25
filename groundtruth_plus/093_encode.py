@@ -13,6 +13,7 @@ def encode(message):
     >>> encode('This is a message')
     'tHKS KS C MGSSCGG'
     """
+    assert type(message) == str, "invalid inputs" # $_CONTRACT_$
     assert all(ch == " " or ch.isalpha() for ch in message), "invalid inputs" # $_CONTRACT_$
 
     def switch_case(ch):

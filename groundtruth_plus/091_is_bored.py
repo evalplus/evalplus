@@ -11,6 +11,7 @@ def is_bored(S):
     >>> is_bored("The sky is blue. The sun is shining. I love this weather")
     1
     """
+    assert type(S) == str, "invalid inputs" # $_CONTRACT_$
     sentences = map(lambda x: x.strip(), ((S.replace("?", ".")).replace("!", ".")).split("."))
     return len([s for s in sentences if s.startswith("I ")])
     

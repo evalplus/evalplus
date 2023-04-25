@@ -11,6 +11,7 @@ def check_dict_case(dict):
     check_dict_case({"Name":"John", "Age":"36", "City":"Houston"}) should return False.
     check_dict_case({"STATE":"NC", "ZIP":"12345" }) should return True.
     """
+    assert type(dict) == dict, "invalid inputs" # $_CONTRACT_$
     keys = list(dict.keys())
     if keys == []: return False
     lower, upper = True, True

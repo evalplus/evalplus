@@ -9,6 +9,7 @@ def multiply(a, b):
     multiply(2020, 1851) should return 0.
     multiply(14,-15) should return 20.
     """
+    assert type(a) == type(b) == int, "invalid inputs" # $_CONTRACT_$
     return int(str(a)[-1]) * int(str(b)[-1])
 
 def check(candidate):
