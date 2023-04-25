@@ -9,6 +9,7 @@ def parse_nested_parens(paren_string: str) -> List[int]:
     >>> parse_nested_parens('(()()) ((())) () ((())()())')
     [2, 3, 1, 3]
     """
+    assert type(paren_string) == str, "invalid inputs" # $_CONTRACT_$
     cnt = 0 # $_CONTRACT_$
     for ch in paren_string: # $_CONTRACT_$
         assert ch in ["(", ")", " "], "invalid inputs"  # $_CONTRACT_$
