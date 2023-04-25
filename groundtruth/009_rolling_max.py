@@ -7,6 +7,7 @@ def rolling_max(numbers: List[int]) -> List[int]:
     >>> rolling_max([1, 2, 3, 2, 3, 4, 2])
     [1, 2, 3, 3, 3, 4, 4]
     """
+    assert all([isinstance(v, int) for v in numbers]), "invalid inputs" # $_CONTRACT_$
     running_max = None
     result = []
 
