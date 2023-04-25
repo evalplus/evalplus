@@ -9,6 +9,7 @@ def sum_product(numbers: List[int]) -> Tuple[int, int]:
     >>> sum_product([1, 2, 3, 4])
     (10, 24)
     """
+    assert all([isinstance(v, int) for v in numbers]), "invalid inputs" # $_CONTRACT_$
     sum_value = 0
     prod_value = 1
 
