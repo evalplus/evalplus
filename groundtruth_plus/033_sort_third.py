@@ -9,6 +9,7 @@ def sort_third(l: list):
     >>> sort_third([5, 6, 3, 4, 8, 9, 2])
     [2, 6, 3, 4, 8, 9, 5]
     """
+    assert type(l) == list, "invalid inputs" # $_CONTRACT_$
     third = [l[i] for i in range(len(l)) if i % 3 == 0]
     third.sort()
     return [third[i // 3] if i % 3 == 0 else l[i] for i in range(len(l))]

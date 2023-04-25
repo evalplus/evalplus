@@ -9,6 +9,7 @@ def fizz_buzz(n: int):
     >>> fizz_buzz(79)
     3
     """
+    assert type(n) == int and n > 0, "invalid inputs" # $_CONTRACT_$
     cnt = 0
     for i in range(n):
         if i % 11 == 0 or i % 13 == 0:
