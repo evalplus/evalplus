@@ -13,6 +13,9 @@ HUMANEVAL_PLUS_PATH = pathlib.Path(__file__).parent.parent / "HumanEvalPlus.json
 HUMANEVAL_PLUS_INPUTS_PATH = (
     pathlib.Path(__file__).parent.parent / "HumanEvalPlusInputsType_filtered.jsonl"
 )
+HUMANEVAL_PLUS_ORIGINAL_INPUTS_PATH = (
+    pathlib.Path(__file__).parent.parent / "HumanEvalPlusInputsType.jsonl"
+)
 CACHE_DIR = user_cache_dir("eval-plus")
 
 
@@ -43,6 +46,18 @@ def get_human_eval_plus() -> List[Dict[str, str]]:
         human_eval[i]["atol"] = plus["atol"]
         human_eval[i]["reference"] = plus["reference"]
     return human_eval
+
+
+def get_human_eval_plus_original_inputs() -> Dict[str, List]:
+    task_inputs = {}
+    for i, line in enumerate(
+        open(HUMANEVAL_PLUS_ORIGINAL_INPUTS_PATH, "r").read().split("\n")
+    ):
+        if not line:
+            continue
+        plus = json.loads(line)
+        task_inputs[plus["task_id"]] = plus["inputs"]
+    return task_inputs
 
 
 def get_human_eval_plus_inputs() -> Dict[str, List]:
