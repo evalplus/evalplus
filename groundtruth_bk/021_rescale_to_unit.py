@@ -7,6 +7,7 @@ def rescale_to_unit(numbers: List[float]) -> List[float]:
     >>> rescale_to_unit([1.0, 2.0, 3.0, 4.0, 5.0])
     [0.0, 0.25, 0.5, 0.75, 1.0]
     """
+    assert all(type(x) in [int, float] for x in numbers), "invalid inputs" # $_CONTRACT_$
     assert len(numbers) >= 2, "invalid inputs" # $_CONTRACT_$
     assert max(numbers) > min(numbers), "invalid inputs" # $_CONTRACT_$
 
