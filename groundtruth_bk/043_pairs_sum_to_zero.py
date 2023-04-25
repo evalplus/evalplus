@@ -16,6 +16,7 @@ def pairs_sum_to_zero(l):
     >>> pairs_sum_to_zero([1])
     False
     """
+    assert all([isinstance(v, int) for v in l]), "invalid inputs" # $_CONTRACT_$
     for i in range(len(l)):
         for j in range(len(l)):
             if i != j and l[i] + l[j] == 0:
