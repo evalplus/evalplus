@@ -17,6 +17,7 @@ def triples_sum_to_zero(l: list):
     >>> triples_sum_to_zero([1])
     False
     """
+    assert type(l) == list, "invalid inputs" # $_CONTRACT_$
     for i in range(len(l)):
         for j in range(len(l)):
             for k in range(len(l)):

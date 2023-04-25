@@ -5,6 +5,7 @@ def triangle_area(a, h):
     >>> triangle_area(5, 3)
     7.5
     """
+    assert isinstance(a, (int, float)) and isinstance(h, (int, float)), "invalid inputs" # $_CONTRACT_$
     assert a > 0 and h > 0, "invalid inputs" # $_CONTRACT_$
 
     return a * h / 2
