@@ -12,7 +12,7 @@ def is_palindrome(text: str):
     >>> is_palindrome('zbcd')
     False
     """
-    assert isinstance(text, str), "invalid input" # $_CONTRACT_$
+    assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
     return text == text[::-1]
 
 
