@@ -5,6 +5,7 @@ def largest_divisor(n: int) -> int:
     >>> largest_divisor(15)
     5
     """
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n > 1, "invalid inputs" # $_CONTRACT_$
 
     for i in range(2, n):
