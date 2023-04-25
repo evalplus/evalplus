@@ -94,7 +94,7 @@ if __name__ == "__main__":
     indices = np.array(rate_old).argsort()
     # find unsolved tasks. i.e., indices where rate_old == 0
     unsolved = np.where(np.array(rate_old) == 0)[0]
-    print("Unsovable: ", unsolved)
+    print("Unsolvable: ", unsolved)
     # sort indices according to the differences between rate_old and rate_new
     diff_indices = (np.array(rate_old) - np.array(rate_new)).argsort()
     for i in reversed(diff_indices[-10:]):
