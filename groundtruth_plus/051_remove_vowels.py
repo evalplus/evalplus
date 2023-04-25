@@ -16,6 +16,7 @@ def remove_vowels(text):
     >>> remove_vowels('zbcd')
     'zbcd'
     """
+    assert type(text) == str, "invalid inputs" # $_CONTRACT_$
     return "".join(list(filter(lambda ch: ch not in "aeiouAEIOU", text)))
 
 

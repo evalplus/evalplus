@@ -8,7 +8,7 @@ def common(l1: list, l2: list):
     [2, 3]
 
     """
-    assert isinstance(l1, list) and isinstance(l2, list), "invalid inputs" # $_CONTRACT_$
+    assert type(l1) == type(l2) == list, "invalid inputs" # $_CONTRACT_$
     return sorted(list(set(l1).intersection(set(l2))))
 
 

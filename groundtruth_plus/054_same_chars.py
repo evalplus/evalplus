@@ -16,6 +16,7 @@ def same_chars(s0: str, s1: str):
     >>> same_chars('eabcdzzzz', 'dddzzzzzzzddddabc')
     False
     """
+    assert type(s0) == type(s1) == str, "invalid inputs" # $_CONTRACT_$
     return set(s0) == set(s1)
 
 

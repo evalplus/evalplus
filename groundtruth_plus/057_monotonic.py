@@ -10,7 +10,7 @@ def monotonic(l: list):
     True
     """
     assert type(l) == list, "invalid inputs" # $_CONTRACT_$
-    assert all(type(x) in [int, float] for x in l), "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) in (int, float, bool) for x in l), "invalid inputs" # $_CONTRACT_$
     inc, dec = True, True
     for i in range(len(l) - 1):
         if l[i] > l[i + 1]: inc = False

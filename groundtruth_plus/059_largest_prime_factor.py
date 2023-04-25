@@ -7,6 +7,7 @@ def largest_prime_factor(n: int):
     >>> largest_prime_factor(2048)
     2
     """
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     def is_prime(a): # $_CONTRACT_$
         return not (a < 2 or any(a % x == 0 for x in range(2, int(a ** 0.5) + 1))) # $_CONTRACT_$
     assert n > 1 and not is_prime(n), "invalid inputs" # $_CONTRACT_$
