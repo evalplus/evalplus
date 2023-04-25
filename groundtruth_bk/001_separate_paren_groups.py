@@ -9,6 +9,7 @@ def separate_paren_groups(paren_string: str) -> List[str]:
     >>> separate_paren_groups('( ) (( )) (( )( ))')
     ['()', '(())', '(()())']
     """
+    assert type(paren_string) == str, "invalid inputs" # $_CONTRACT_$
     cnt = 0 # $_CONTRACT_$
     for ch in paren_string: # $_CONTRACT_$
         assert ch in ["(", ")", " "], "invalid inputs"  # $_CONTRACT_$
