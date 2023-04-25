@@ -22,7 +22,7 @@ def modp(n: int, p: int):
             res = res * x % p
         x = x * x % p
         n //= 2
-    return res
+    return res % p
 
 
 
