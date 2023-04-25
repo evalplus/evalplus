@@ -11,6 +11,7 @@ def truncate_number(number: float) -> float:
     """
 
     assert number > 0, "invalid inputs" # $_CONTRACT_$
+    assert isinstance(number, float), "invalid inputs" # $_CONTRACT_$
     return number % 1.0
 
 
