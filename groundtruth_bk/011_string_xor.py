@@ -7,6 +7,7 @@ def string_xor(a: str, b: str) -> str:
     >>> string_xor('010', '110')
     '100'
     """
+    assert isinstance(a, str) and isinstance(b, str), "invalid inputs" # $_CONTRACT_$
     assert len(a) == len(b), "invalid inputs" # $_CONTRACT_$
     assert set(a).issubset({"0", "1"}) and set(b).issubset({"0", "1"}), "invalid inputs" # $_CONTRACT_$
 
