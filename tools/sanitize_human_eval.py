@@ -50,7 +50,7 @@ def {entry_point}(*args):
 
 def get_contract_and_ref(task_id: int, entry_point) -> Tuple[str, str]:
     # FIXME: may just use `canonical_solution`
-    mod = import_module(f"groundtruth_bk.{str(task_id).zfill(3)}_{entry_point}")
+    mod = import_module(f"groundtruth_plus.{str(task_id).zfill(3)}_{entry_point}")
     fn = getattr(mod, entry_point)
 
     doc = fn.__doc__

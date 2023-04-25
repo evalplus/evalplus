@@ -27,7 +27,7 @@ def write(new_input_dict):
 assert not os.path.exists(new_input_path)
 for i, p in enumerate(problems):
     entry_point = p["entry_point"]
-    mod = import_module(f"groundtruth_bk.{str(i).zfill(3)}_{entry_point}")
+    mod = import_module(f"groundtruth_plus.{str(i).zfill(3)}_{entry_point}")
     fn = getattr(mod, entry_point)
     task_id = p["task_id"].replace("/", "_")
     new_inputs = task_inputs[task_id]

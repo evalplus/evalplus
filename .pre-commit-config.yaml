@@ -17,5 +17,5 @@ repos:
     -   id: trailing-whitespace
 exclude: (?x)^(
         groundtruth/.* |
-        groundtruth_bk/.*
+        groundtruth_plus/.*
     )$
