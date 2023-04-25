@@ -8,6 +8,9 @@ def intersperse(numbers: List[int], delimeter: int) -> List[int]:
     >>> intersperse([1, 2, 3], 4)
     [1, 4, 2, 4, 3]
     """
+    assert all([isinstance(v, int) for v in numbers]), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(delimeter, int), "invalid inputs" # $_CONTRACT_$
+    
     if not numbers:
         return []
 
