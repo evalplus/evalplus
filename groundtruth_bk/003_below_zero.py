@@ -10,6 +10,7 @@ def below_zero(operations: List[int]) -> bool:
     >>> below_zero([1, 2, -4, 5])
     True
     """
+    assert all([isinstance(v, int) for v in operations]), "invalid inputs" # $_CONTRACT_$
     account = 0
     for operation in operations:
         account += operation
