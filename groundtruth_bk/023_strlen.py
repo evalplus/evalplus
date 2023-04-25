@@ -7,6 +7,7 @@ def strlen(string: str) -> int:
     >>> strlen('abc')
     3
     """
+    assert isinstance(string, str), "invalid inputs" # $_CONTRACT_$
     return len(string)
 
 
