@@ -15,7 +15,7 @@ if __name__ == "__main__":
     for i, task in track(enumerate(human_eval_plus)):
         fname = (
             pathlib.Path(__file__).parent.parent
-            / "groundtruth"
+            / "groundtruth_plus"
             / (str(i).zfill(3) + "_" + task["entry_point"] + ".py")
         )
         print(fname)
