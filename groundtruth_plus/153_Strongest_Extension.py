@@ -16,6 +16,9 @@ def Strongest_Extension(class_name, extensions):
     Example:
     for Strongest_Extension('my_class', ['AA', 'Be', 'CC']) == 'my_class.AA'
     """
+    assert isinstance(class_name, str), "invalid inputs" # $_CONTRACT_$
+    assert type(extensions) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(s, str) for s in extensions), "invalid inputs" # $_CONTRACT_$
     assert len(extensions) > 0, "invalid inputs" # $_CONTRACT_$
 
     def strength(s: str) -> int:

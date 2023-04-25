@@ -22,6 +22,7 @@ def even_odd_palindrome(n):
         1. 1 <= n <= 10^3
         2. returned tuple has the number of even and odd integer palindromes respectively.
     """
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert 1 <= n <= 1000, "invalid inputs" # $_CONTRACT_$
 
     odd_cnt, even_cnt = 0, 0

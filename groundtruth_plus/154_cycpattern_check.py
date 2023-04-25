@@ -9,6 +9,7 @@ def cycpattern_check(a , b):
     cycpattern_check("himenss","simen") => True
 
     """
+    assert isinstance(a, str) and isinstance(b, str), "invalid inputs" # $_CONTRACT_$
     if a == b:
         return True
     if b == "":

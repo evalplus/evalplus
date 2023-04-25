@@ -8,6 +8,7 @@ def choose_num(x, y):
     choose_num(12, 15) = 14
     choose_num(13, 12) = -1
     """
+    assert type(x) == int and type(y) == int, "invalid inputs" # $_CONTRACT_$
     assert x > 0 and y > 0, "invalid inputs" # $_CONTRACT_$
 
     if x > y: return -1

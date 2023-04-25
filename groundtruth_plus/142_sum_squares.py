@@ -12,6 +12,8 @@ def sum_squares(lst):
     For lst = []  the output should be 0
     For lst = [-1,-5,2,-1,-5]  the output should be -126
     """
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in lst), "invalid inputs" # $_CONTRACT_$
     ans = 0
     for i, num in enumerate(lst):
         if i % 3 == 0:

@@ -9,6 +9,7 @@ def generate_integers(a, b):
     generate_integers(8, 2) => [2, 4, 6, 8]
     generate_integers(10, 14) => []
     """
+    assert type(a) == int and type(b) == int, "invalid inputs" # $_CONTRACT_$
     assert a > 0 and b > 0, "invalid inputs" # $_CONTRACT_$
 
     if a > b: a, b = b, a

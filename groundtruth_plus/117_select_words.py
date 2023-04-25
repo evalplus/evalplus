@@ -12,7 +12,9 @@ def select_words(s, n):
     select_words("Hello world", 4) ==> ["world"]
     select_words("Uncle sam", 3) ==> ["Uncle"]
     """
+    assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
     assert all(ch == " " or ch.isalpha() for ch in s), "invalid inputs" # $_CONTRACT_$
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n >= 0, "invalid inputs" # $_CONTRACT_$
 
     ans = []

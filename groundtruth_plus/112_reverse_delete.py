@@ -10,6 +10,7 @@ def reverse_delete(s,c):
     For s = "abcdef", c = "b"  the result should be ('acdef',False)
     For s = "abcdedcba", c = "ab", the result should be ('cdedc',True)
     """
+    assert isinstance(s, str) and isinstance(c, str), "invalid inputs" # $_CONTRACT_$
     ss = "".join(filter(lambda ch: ch not in c, s))
     return ss, ss == ss[::-1]
 

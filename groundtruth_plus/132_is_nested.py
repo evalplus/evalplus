@@ -12,6 +12,7 @@ def is_nested(string):
     is_nested('[[][]]') ➞ True
     is_nested('[[]][[') ➞ True
     '''
+    assert isinstance(string, str), "invalid inputs" # $_CONTRACT_$
     assert all(ch == "[" or ch == "]" for ch in string), "invalid inputs" # $_CONTRACT_$
 
     for i in range(len(string)):

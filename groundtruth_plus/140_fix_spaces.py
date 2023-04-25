@@ -10,6 +10,7 @@ def fix_spaces(text):
     fix_spaces(" Example 2") == "_Example_2"
     fix_spaces(" Example   3") == "_Example-3"
     """
+    assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
     ans = text
     for i in range(len(text)-1, 2, -1):
         ans = ans.replace(" " * i, "-")

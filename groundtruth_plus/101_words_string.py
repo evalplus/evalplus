@@ -8,6 +8,7 @@ def words_string(s):
     words_string("Hi, my name is John") == ["Hi", "my", "name", "is", "John"]
     words_string("One, two, three, four, five, six") == ["One", "two", "three", "four", "five", "six"]
     """
+    assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
     words = (s.replace(",", " ")).split()
     return [word for word in words if word != ""]
 

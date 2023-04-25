@@ -7,6 +7,7 @@ def digits(n):
     digits(4)  == 0
     digits(235) == 15
     """
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n > 0, "invalid inputs" # $_CONTRACT_$
 
     has_odd, prod = False, 1

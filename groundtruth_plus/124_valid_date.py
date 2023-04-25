@@ -19,6 +19,7 @@ def valid_date(date):
 
     valid_date('06/04/2020') => False
     """
+    assert isinstance(date, str), "invalid inputs" # $_CONTRACT_$
     days = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     if len(date) != 10: return False
     if date[2] != "-" or date[5] != "-": return False

@@ -8,6 +8,8 @@ def solution(lst):
     solution([3, 3, 3, 3, 3]) ==> 9
     solution([30, 13, 24, 321]) ==>0
     """
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in lst), "invalid inputs" # $_CONTRACT_$
     assert len(lst) > 0, "invalid inputs" # $_CONTRACT_$
 
     return sum(lst[i] for i in range(len(lst)) if i % 2 == 0 and lst[i] % 2 == 1)

@@ -21,6 +21,7 @@ def by_length(arr):
             -> reverse arr -> [55, 1, -1]
       return = ['One']
     """
+    assert type(arr) == list, "invalid inputs" # $_CONTRACT_$
     assert all(type(x) == int for x in arr), "invalid inputs"  # $_CONTRACT_$
     def to_word(x: int) -> str:
       if x == 1:

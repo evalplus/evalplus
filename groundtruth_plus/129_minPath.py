@@ -29,6 +29,7 @@ def minPath(grid, k):
         Input: grid = [ [5,9,3], [4,1,6], [7,8,2]], k = 1
         Output: [1]
     """
+    assert type(k) == int, "invalid inputs" # $_CONTRACT_$
     assert k > 0, "invalid inputs" # $_CONTRACT_$
     assert len(grid) >= 2, "invalid inputs" # $_CONTRACT_$
     assert all(len(l) == len(grid) for l in grid), "invalid inputs" # $_CONTRACT_$

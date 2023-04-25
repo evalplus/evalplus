@@ -14,6 +14,7 @@ def get_closest_vowel(word):
     get_closest_vowel("quick") ==> ""
     get_closest_vowel("ab") ==> ""
     """
+    assert isinstance(word, str), "invalid inputs" # $_CONTRACT_$
     assert word == "" or word.isalpha(), "invalid inputs" # $_CONTRACT_$
 
     def is_vowel(ch: str) -> bool:

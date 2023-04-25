@@ -12,11 +12,13 @@ def simplify(x, n):
     simplify("7/10", "10/2") = False
     """
     def contract(x): # $_CONTRACT_$
+        assert isinstance(x, str), "invalid inputs" # $_CONTRACT_$
         xs = x.split("/") # $_CONTRACT_$
         assert len(xs) == 2, "invalid inputs" # $_CONTRACT_$
         assert xs[0].isdigit() and int(xs[0]) > 0, "invalid inputs" # $_CONTRACT_$
         assert xs[1].isdigit() and int(xs[1]) > 0, "invalid inputs" # $_CONTRACT_$
     contract(x) # $_CONTRACT_$
+    contract(n) # $_CONTRACT_$
 
     x1, x2 = map(int, x.split("/"))
     n1, n2 = map(int, n.split("/"))

@@ -13,6 +13,7 @@ def file_name_check(file_name):
     file_name_check("example.txt") # => 'Yes'
     file_name_check("1example.dll") # => 'No' (the name should start with a latin alphapet letter)
     """
+    assert isinstance(file_name, str), "invalid inputs" # $_CONTRACT_$
     if len(list(filter(lambda ch: ch.isdigit(), file_name))) > 3:
         return "No"
     f_list = file_name.split(".")

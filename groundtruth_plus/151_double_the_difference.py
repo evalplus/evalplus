@@ -11,6 +11,7 @@ def double_the_difference(lst):
    
     If the input list is empty, return 0.
     '''
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
     ans = 0
     for num in lst:
         if num % 2 == 1 and num > 0 and "." not in str(num):

@@ -9,6 +9,8 @@ def count_nums(arr):
     >>> count_nums([-1, 11, -11]) == 1
     >>> count_nums([1, 1, 2]) == 3
     """
+    assert type(arr) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in arr), "invalid inputs" # $_CONTRACT_$
     def judge(x: int) -> int:
         l = list(str(x))
         if l[0] == "-":

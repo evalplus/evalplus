@@ -8,6 +8,7 @@ def f(n):
     Example:
     f(5) == [1, 2, 6, 24, 15]
     """
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n >= 0, "invalid inputs" # $_CONTRACT_$
 
     if n == 0: return []

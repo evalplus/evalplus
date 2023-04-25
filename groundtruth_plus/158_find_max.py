@@ -9,6 +9,8 @@ def find_max(words):
     find_max(["name", "enam", "game"]) == "enam"
     find_max(["aaaaaaa", "bb" ,"cc"]) == ""aaaaaaa"
     """
+    assert type(words) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(s, str) for s in words), "invalid inputs" # $_CONTRACT_$
     assert len(words) > 0, "invalid inputs" # $_CONTRACT_$
 
     mx_ch_cnt, ans = 0, ""

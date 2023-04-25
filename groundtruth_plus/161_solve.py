@@ -10,6 +10,7 @@ def solve(s):
     solve("ab") = "AB"
     solve("#a@C") = "#A@c"
     """
+    assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
     ans, has_letter = "", False
     for ch in s:
         if ch.isalpha():

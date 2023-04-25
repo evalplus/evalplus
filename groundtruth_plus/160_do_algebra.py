@@ -24,9 +24,10 @@ def do_algebra(operator, operand):
         Operator list has at least one operator, and operand list has at least two operands.
 
     """
+    assert type(operator) == list and type(operand) == list, "invalid inputs" # $_CONTRACT_$
     assert len(operator) >= 1, "invalid inputs" # $_CONTRACT_$
     assert len(operand) == len(operator) + 1, "invalid inputs" # $_CONTRACT_$
-    assert all(x >= 0 for x in operand), "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int and x >= 0 for x in operand), "invalid inputs" # $_CONTRACT_$
     assert all(sgn in ["+", "-", "*", "//", "**"] for sgn in operator), "invalid inputs" # $_CONTRACT_$
 
     exp = ""

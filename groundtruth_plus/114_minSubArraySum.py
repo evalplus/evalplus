@@ -7,6 +7,7 @@ def minSubArraySum(nums):
     minSubArraySum([2, 3, 4, 1, 2, 4]) == 1
     minSubArraySum([-1, -2, -3]) == -6
     """
+    assert type(nums) == list, "invalid inputs" # $_CONTRACT_$
     assert len(nums) > 0, "invalid inputs" # $_CONTRACT_$
 
     if all(x >= 0 for x in nums): return min(nums)

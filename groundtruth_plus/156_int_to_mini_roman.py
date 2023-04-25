@@ -10,6 +10,7 @@ def int_to_mini_roman(number):
     >>> int_to_mini_roman(152) == 'clii'
     >>> int_to_mini_roman(426) == 'cdxxvi'
     """
+    assert type(number) == int, "invalid inputs" # $_CONTRACT_$
     assert 1 <= number <= 1000, "invalid inputs" # $_CONTRACT_$
 
     m = ["", "m"]

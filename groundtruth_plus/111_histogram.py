@@ -12,6 +12,7 @@ def histogram(test):
     histogram('') == {}
 
     """
+    assert isinstance(test, str), "invalid inputs" # $_CONTRACT_$
     words = test.split(" ") # $_CONTRACT_$
     for word in words: # $_CONTRACT_$
         if word != "": # $_CONTRACT_$

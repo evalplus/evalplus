@@ -19,6 +19,7 @@ def words_in_sentence(sentence):
         * 1 <= len(sentence) <= 100
         * sentence contains only letters
     """
+    assert isinstance(sentence, str), "invalid inputs" # $_CONTRACT_$
     assert 1 <= len(sentence) <= 100, "invalid inputs" # $_CONTRACT_$
     assert "  " not in sentence, "invalid inputs" # $_CONTRACT_$
     assert all(word.isalpha() for word in sentence.split(" ")), "invalid inputs" # $_CONTRACT_$

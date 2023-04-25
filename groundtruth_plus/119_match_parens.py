@@ -14,6 +14,8 @@ def match_parens(lst):
     match_parens(['()(', ')']) == 'Yes'
     match_parens([')', ')']) == 'No'
     '''
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(s, str) for s in lst), "invalid inputs" # $_CONTRACT_$
     assert len(lst) == 2, "invalid inputs" # $_CONTRACT_$
     assert all(ch == "(" or ch == ")" for ch in lst[0]), "invalid inputs" # $_CONTRACT_$
     assert all(ch == "(" or ch == ")" for ch in lst[1]), "invalid inputs" # $_CONTRACT_$

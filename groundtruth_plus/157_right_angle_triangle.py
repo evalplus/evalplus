@@ -9,6 +9,7 @@ def right_angle_triangle(a, b, c):
     right_angle_triangle(3, 4, 5) == True
     right_angle_triangle(1, 2, 3) == False
     '''
+    assert type(a) in [int, float] and type(b) in [int, float] and type(c) in [int, float], "invalid inputs" # $_CONTRACT_$
     assert a > 0 and b > 0 and c > 0, "invalid inputs" # $_CONTRACT_$
     
     return a ** 2 + b ** 2 == c ** 2 or a ** 2 + c ** 2 == b ** 2 or b ** 2 + c ** 2 == a ** 2

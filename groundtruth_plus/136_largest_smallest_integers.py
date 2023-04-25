@@ -11,6 +11,8 @@ def largest_smallest_integers(lst):
     largest_smallest_integers([]) == (None, None)
     largest_smallest_integers([0]) == (None, None)
     '''
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in lst), "invalid inputs" # $_CONTRACT_$
     neg = list(filter(lambda x: x < 0, lst))
     pos = list(filter(lambda x: x > 0, lst))
     return None if neg == [] else max(neg), None if pos == [] else min(pos)
