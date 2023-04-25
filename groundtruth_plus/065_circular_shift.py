@@ -8,6 +8,7 @@ def circular_shift(x, shift):
     >>> circular_shift(12, 2)
     "12"
     """
+    assert type(x) == type(shift) == int, "invalid inputs" # $_CONTRACT_$
     assert x >= 0 and shift >= 0, "invalid inputs" # $_CONTRACT_$
 
     s = str(x)

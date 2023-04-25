@@ -13,6 +13,7 @@ def correct_bracketing(brackets: str):
     >>> correct_bracketing(")(()")
     False
     """
+    assert type(brackets) == str, "invalid inputs" # $_CONTRACT_$
     assert all(x in "()" for x in brackets) # $_CONTRACT_$
 
     cnt = 0

@@ -10,6 +10,7 @@ def derivative(xs: list):
     [2, 6]
     """
     assert len(xs) > 0, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) in (int, float) for x in xs), "invalid inputs" # $_CONTRACT_$
 
     return [xs[i] * i for i in range(1, len(xs))]
 

@@ -10,7 +10,7 @@ def search(lst):
         search([1, 2, 2, 3, 3, 3, 4, 4, 4]) == 3
         search([5, 5, 4, 4, 4]) == -1
     '''
-    assert min(lst) > 0, "invalid inputs" # $_CONTRACT_$
+    assert all(type(val) == int and val > 0 for val in lst), "invalid inputs" # $_CONTRACT_$
 
     count = dict()
     for num in lst:

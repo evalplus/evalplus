@@ -15,6 +15,7 @@ def vowels_count(s):
     >>> vowels_count("ACEDY")
     3
     """
+    assert type(s) == str, "invalid inputs" # $_CONTRACT_$
     if s == "": return 0
     cnt = len(list(filter(lambda ch: ch in "aeiouAEIOU", s)))
     if s[-1] in "yY": cnt += 1

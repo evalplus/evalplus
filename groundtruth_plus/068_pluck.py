@@ -34,7 +34,7 @@ def pluck(arr):
         * 0 <= node.value
     """
     assert len(arr) <= 10000, "invalid inputs" # $_CONTRACT_$
-    assert all(val >= 0 for val in arr), "invalid inputs" # $_CONTRACT_$
+    assert all(type(val) == int and val >= 0 for val in arr), "invalid inputs" # $_CONTRACT_$
 
     if all(val % 2 == 1 for val in arr): return []
     min_even = min(filter(lambda x: x % 2 == 0, arr))
