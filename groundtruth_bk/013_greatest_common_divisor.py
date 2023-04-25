@@ -7,6 +7,7 @@ def greatest_common_divisor(a: int, b: int) -> int:
     >>> greatest_common_divisor(25, 15)
     5
     """
+    assert type(a) == int and type(b) == int, "invalid inputs" # $_CONTRACT_$
     assert a > 0 and b > 0, "invalid inputs" # $_CONTRACT_$
 
     def query_gcd(a: int, b: int) -> int:
