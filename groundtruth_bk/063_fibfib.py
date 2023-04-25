@@ -14,6 +14,7 @@ def fibfib(n: int):
     >>> fibfib(8)
     24
     """
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     assert n >= 0, "invalid inputs" # $_CONTRACT_$
 
     if n == 0 or n == 1:
