@@ -9,6 +9,7 @@ def how_many_times(string: str, substring: str) -> int:
     >>> how_many_times('aaaa', 'aa')
     3
     """
+    assert isinstance(string, str) and isinstance(substring, str), "invalid inputs" # $_CONTRACT_$
     assert substring != "", "invalid inputs" # $_CONTRACT_$
 
     occurences = 0
