@@ -10,6 +10,8 @@ def smallest_change(arr):
     smallest_change([1, 2, 3, 4, 3, 2, 2]) == 1
     smallest_change([1, 2, 3, 2, 1]) == 0
     """
+    assert type(arr) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in arr), "invalid inputs" # $_CONTRACT_$
     arr_reversed, cnt = arr[::-1], 0
     for i in range(len(arr) // 2):
         if arr[i] != arr_reversed[i]:

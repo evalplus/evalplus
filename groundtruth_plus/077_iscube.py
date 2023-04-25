@@ -12,6 +12,7 @@ def iscube(a):
     iscube(0) ==> True
     iscube(180) ==> False
     '''
+    assert type(a) == int, "invalid inputs" # $_CONTRACT_$
     a = abs(a)
     return int(round(a ** (1. / 3))) ** 3 == a
 
