@@ -9,6 +9,7 @@ def median(l: list):
     """
 
     assert len(l) > 0, "invalid inputs" # $_CONTRACT_$
+    assert all([isinstance(v, (int, float)) for v in l]), "invalid inputs" # $_CONTRACT_$
     l = sorted(l)
     if len(l) % 2 == 1:
         return l[len(l) // 2]
