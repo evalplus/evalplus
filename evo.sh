@@ -33,14 +33,14 @@ NCORES=${NCORES:-$DEFAULT_NCORES}
 
 export PYTHONPATH=$(pwd)
 
-models=("codegen-2b" "codegen-6b" "codegen-16b" "vicuna-7b" "vicuna-13b" "stablelm-7b" "chatgpt")
+models=("codegen-2b" "codegen-6b" "codegen-16b" "vicuna-7b" "vicuna-13b" "stablelm-7b" "chatgpt" "incoder-1b" "incoder-6b" "polycoder")
 temps=("0.2" "0.4" "0.6" "0.8")
 
 for model in "${models[@]}"; do
   for temp in "${temps[@]}"; do
     folder="${DATADIR}/${model}_temp_${temp}"
     if [ -d "$folder" ]; then
-      yes | python eval_plus/evaluation/evaluate.py --dataset humaneval --r_folder "$folder" --parallel ${NCORES} --i-just-wanna-run --extra --full
+      yes | python3 eval_plus/evaluation/evaluate.py --dataset humaneval --r_folder "$folder" --parallel ${NCORES} --i-just-wanna-run --extra --full
     else
       echo "Folder does not exist: $folder"
     fi
