@@ -2,6 +2,7 @@ import json
 import os
 import pickle
 from os import PathLike
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,17 +25,9 @@ plt.rc("text", usetex=True)
 SUCCESS = "success"
 
 
-def get_data(root: PathLike):
+def get_data(paths: List[PathLike]):
     task2rate_old = None
     task2rate_new = None
-
-    paths = []
-    for path in os.listdir(root):
-        eval_json_path = os.path.join(root, path, "eval_results.json")
-        if not os.path.isfile(eval_json_path) or not path[-1].isdigit():
-            print(f"skip {path}")
-            continue
-        paths.append(eval_json_path)
 
     for path in tqdm(paths):  # each experiment
         res = json.load(open(path, "r"))["eval"]
@@ -55,13 +48,9 @@ def get_data(root: PathLike):
             old_rate = np.mean(bbv)
             new_rate = np.mean(pbv & bbv)
             assert old_rate >= new_rate
-            # print(old_rate, new_rate)
 
             task2rate_old[i].append(old_rate)
             task2rate_new[i].append(new_rate)
-
-    task2rate_old = [np.mean(rs) for rs in task2rate_old]
-    task2rate_new = [np.mean(rs) for rs in task2rate_new]
 
     assert len(task2rate_old) == len(task2rate_new)
     return task2rate_old, task2rate_new
@@ -74,19 +63,31 @@ if __name__ == "__main__":
     parser.add_argument("--root", type=str, default="/JawTitan/EvalPlus/humaneval")
     args = parser.parse_args()
 
+    paths = []
+    for path in os.listdir(args.root):
+        eval_json_path = os.path.join(args.root, path, "eval_results.json")
+        if not os.path.isfile(eval_json_path) or not path[-1].isdigit():
+            print(f"skip {path}")
+            continue
+        paths.append(eval_json_path)
+
     CACHE_PATH = "passrate.pkl"
     if os.path.isfile(CACHE_PATH):
         rate_old, rate_new = pickle.load(open(CACHE_PATH, "rb"))
     else:
         # cache
-        rate_old, rate_new = get_data(args.root)
+        rate_old, rate_new = get_data(paths)
         pickle.dump((rate_old, rate_new), open(CACHE_PATH, "wb"))
 
-    ntask = len(rate_old)
+    for i, (rs_old, rs_new) in enumerate(zip(rate_old[47], rate_new[47])):
+        print(paths[i])
+        print(rs_old, rs_new)
 
     # scale to 100
-    rate_old = [r * 100 for r in rate_old]
-    rate_new = [r * 100 for r in rate_new]
+    rate_old = [np.mean(rs) * 100 for rs in rate_old]
+    rate_new = [np.mean(rs) * 100 for rs in rate_new]
+
+    ntask = len(rate_old)
 
     # sort by old pass rate
     # numpy argsort
@@ -94,6 +95,13 @@ if __name__ == "__main__":
     # find unsolved tasks. i.e., indices where rate_old == 0
     unsolved = np.where(np.array(rate_old) == 0)[0]
     print("Unsovable: ", unsolved)
+    # sort indices according to the differences between rate_old and rate_new
+    diff_indices = (np.array(rate_old) - np.array(rate_new)).argsort()
+    for i in reversed(diff_indices[-10:]):
+        print(
+            f"#{i} drops {rate_old[i] - rate_new[i] :.1f}: {rate_old[i]:.1f} -> {rate_new[i]:.1f}"
+        )
+
     rate_old = np.array(rate_old)[indices]
     rate_new = np.array(rate_new)[indices]
     # rate_old, rate_new = zip(*sorted(zip(rate_old, rate_new), key=lambda x: x[0]))
@@ -123,8 +131,6 @@ if __name__ == "__main__":
 
     # log scale
     ax.set_yscale("log")
-    # y ticks
-    # ax.set_yticks([0.001, 0.1, 1.0])
 
     ax.legend()
     fig.tight_layout()
