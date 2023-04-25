@@ -8,6 +8,7 @@ def common(l1: list, l2: list):
     [2, 3]
 
     """
+    assert isinstance(l1, list) and isinstance(l2, list), "invalid inputs" # $_CONTRACT_$
     ret = set()
     for e1 in l1:
         for e2 in l2:
