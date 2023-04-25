@@ -6,6 +6,7 @@ def all_prefixes(string: str) -> List[str]:
     >>> all_prefixes('abc')
     ['a', 'ab', 'abc']
     """
+    assert isinstance(string, str), "invalid inputs" # $_CONTRACT_$
     return [string[:(i + 1)] for i in range(len(string))]
 
 
