@@ -444,7 +444,11 @@ def make_model(
             temperature=temperature,
         )
     elif name == "gptneo-2b":
-        return HFTorchDecoder(batch_size=batch_size, name="EleutherAI/gpt-neo-2.7B")
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="EleutherAI/gpt-neo-2.7B",
+            temperature=temperature,
+        )
 
     raise ValueError(
         f"Invalid model name: {name}"
