@@ -33,7 +33,7 @@ NCORES=${NCORES:-$DEFAULT_NCORES}
 
 export PYTHONPATH=$(pwd)
 
-models=("codegen-2b" "codegen-6b" "codegen-16b" "vicuna-7b" "vicuna-13b" "stablelm-7b" "chatgpt" "incoder-1b" "incoder-6b" "polycoder")
+models=("codegen-2b" "codegen-6b" "codegen-16b" "vicuna-7b" "vicuna-13b" "stablelm-7b" "incoder-1b" "incoder-6b" "polycoder" "chatgpt" "santacoder")
 temps=("0.2" "0.4" "0.6" "0.8")
 
 for model in "${models[@]}"; do

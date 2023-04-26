@@ -74,7 +74,7 @@ if __name__ == "__main__":
         chunks = new_code.split(fndef)
         # prefix
         # impl
-        if len(chunks) > 1:
+        if len(chunks) == 2:
             new_code = fndef + chunks[-1]  # fn + impl
 
         if "chatgpt" in args.folder:
@@ -104,10 +104,10 @@ if __name__ == "__main__":
                 new_code = new_code.split(eof)[0]
 
         # remove lines that are not indented
-        new_code = remove_unindented_lines(new_code, ok_starts=fndef)
+        new_code = remove_unindented_lines(new_code, ok_starts=[fndef])
 
-        if len(chunks) > 1:
-            new_code = "".join(chunks[:-1]) + new_code
+        if len(chunks) == 2:
+            new_code = chunks[0] + new_code
 
         # write to new folder
         new_pyf = pyf.replace(str(old_folder), str(new_folder))
