@@ -162,8 +162,7 @@ class HFTorchDecoder(DecoderBase):
         super().__init__(name=name, batch_size=batch_size, temperature=temperature)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(name)
-        kwargs = {}
-        kwargs["trust_remote_code"] = name in {"bigcode/santacoder"}
+        kwargs = {"trust_remote_code": name in {"bigcode/santacoder"}}
         if "codegen-" in name:  # use fp16 for codegen models
             kwargs["torch_dtype"] = torch.float16
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
@@ -212,11 +211,11 @@ class HFTorchDecoder(DecoderBase):
         outputs = []
         # removes eof tokens.
         for output in gen_strs:
-            min_index = None
+            min_index = 10000
             for eof_string in EOF_STRINGS:
                 if eof_string in output:
-                    min_index = output.index(eof_string)
-                    break
+                    # could be multiple eof in outputs, better pick minimum one
+                    min_index = min(min_index, output.index(eof_string))
             outputs.append(output[:min_index])
         return outputs
 
@@ -297,7 +296,8 @@ class ChatGPTDecoder(DecoderBase):
         )
         config = create_chatgpt_config(
             message=message,
-            max_tokens=512,
+            # max_tokens = 512, # for regular generation
+            max_tokens=1024,
             temperature=self.temperature,
             batch_size=batch_size,
         )
@@ -443,6 +443,8 @@ def make_model(
             name="ChatGPT",
             temperature=temperature,
         )
+    elif name == "gptneo-2b":
+        return HFTorchDecoder(batch_size=batch_size, name="EleutherAI/gpt-neo-2.7B")
 
     raise ValueError(
         f"Invalid model name: {name}"
