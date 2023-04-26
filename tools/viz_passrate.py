@@ -79,10 +79,6 @@ if __name__ == "__main__":
         rate_old, rate_new = get_data(paths)
         pickle.dump((rate_old, rate_new), open(CACHE_PATH, "wb"))
 
-    for i, (rs_old, rs_new) in enumerate(zip(rate_old[47], rate_new[47])):
-        print(paths[i])
-        print(rs_old, rs_new)
-
     # scale to 100
     rate_old = [np.mean(rs) * 100 for rs in rate_old]
     rate_new = [np.mean(rs) * 100 for rs in rate_new]
