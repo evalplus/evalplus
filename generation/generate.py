@@ -75,6 +75,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase):
                     construct_contract_prompt(
                         task["prompt"], args.use_contracts, task["contract"]
                     ),
+                    do_sample=not args.greedy,
                     num_samples=args.n_samples - sidx,
                 )
                 for impl in outputs:
@@ -104,6 +105,7 @@ def main():
     parser.add_argument("--n_samples", default=200, type=int)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--use_contracts", default="no", type=str)
+    parser.add_argument("--greedy", action="store_true")
     args = parser.parse_args()
 
     if args.dataset not in ["humaneval"]:
@@ -112,6 +114,11 @@ def main():
     if args.use_contracts not in ["no", "code", "docstring"]:
         raise NotImplementedError(
             "Unsupported contract usage: {}".format(args.use_contracts)
+        )
+    if args.greedy and (args.temperature != 0 or args.bs != 1 or args.n_samples != 1):
+        raise ValueError(
+            f"Greedy decoding is only supported with temperature({args.temperature}) = 0, batch_size({args.bs}) = 1"
+            f" and n_samples({args.n_samples}) = 1"
         )
 
     # Make project dir
@@ -126,9 +133,9 @@ def main():
     workdir = os.path.join(
         args.root,
         args.dataset,
-        args.model + f"_temp_{args.temperature}" + ""
-        if args.use_contracts == "no"
-        else f"-contract-{args.use_contracts}",
+        args.model
+        + f"_temp_{args.temperature}"
+        + ("" if args.use_contracts == "no" else f"-contract-{args.use_contracts}"),
     )
     os.makedirs(workdir, exist_ok=True)
 

@@ -137,7 +137,7 @@ class OpenAIDecoder(DecoderBase):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        assert do_sample, "Currently we let OpenAI API only support sampling"
+        # assert do_sample, "Currently we let OpenAI API only support sampling"
         batch_size = min(self.batch_size, num_samples)
         assert batch_size <= 20, "Use larger batch size could blow up the memory!"
 
@@ -286,7 +286,7 @@ class ChatGPTDecoder(DecoderBase):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        assert do_sample, "Currently we let OpenAI API only support sampling"
+        # assert do_sample, "Currently we let OpenAI API only support sampling"
         batch_size = min(self.batch_size, num_samples)
         assert batch_size <= 20, "Use larger batch size could blow up the memory!"
 
