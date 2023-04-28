@@ -9,7 +9,7 @@
 
 To address this, we started the EvalPlus project -- a rigourous evaluation framework for LLM4Code that:
 
-+ ✨ improves programming benchmarks by patching up to thounds of new tests! `EvalPlus(HumanEval) => HumanEval+` (81x new tests!)
++ ✨ improves programming benchmarks by patching up to thousands of new tests! `EvalPlus(HumanEval) => HumanEval+` (81x new tests!)
 + ✨ crafts a set utility tools to sanitize, visualize and inspect LLM-generated code and evaluation results!
 + ✨ accelerates LLM4Code research by open-sourcing LLM-generated samples for 10+ models -- no to re-run the expensive benchmarks!
 
