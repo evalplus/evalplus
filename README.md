@@ -56,7 +56,7 @@ python tools/render.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
 
 ![](./gallary/render.gif)
 
-### Perfrom Test Input Generation from Scratch (TBD)
+### Perform Test Input Generation from Scratch (TBD)
 
 
 ## Development
