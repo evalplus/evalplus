@@ -1,4 +1,5 @@
 import ast
+import os
 import pathlib
 import random
 from typing import Dict, List
@@ -18,9 +19,13 @@ class ChatGPTGen(BaseGen):
     def __init__(self, inputs: List, signature: str, contract_code: str, gd_code: str):
         super().__init__(inputs, signature, contract_code)
         self.gd_code = gd_code
-        self.prompt_message = "Please generate more inputs to test the function."
-        key_file = pathlib.Path(__file__).parent / "api_key.txt"
-        openai.api_key = open(key_file, "r").read().strip()
+        self.prompt_messages = [
+            "Please generate complex inputs to test the function.",
+            "Please generate corner case inputs to test the function.",
+            "Please generate difficult inputs to test the function.",
+        ]
+        self.iteration = 20
+        openai.api_key = os.environ.get("OPENAI_API_KEY", "dummy")
 
     def seed_selection(self) -> List:
         # get 5 for now.
@@ -53,14 +58,13 @@ class ChatGPTGen(BaseGen):
             ]
         )
         message += f"\nThese are some example inputs used to test the function:\n```\n{str_inputs}\n```"
-        message += f"\n{self.prompt_message}"
-        print(message)
+        message += f"\n{random.choice(self.prompt_messages)}"
         config = create_chatgpt_config(message, 256)
         ret = request_chatgpt_engine(config)
         return self._parse_ret(ret)
 
     def generate(self, num: int):
-        while len(self.new_inputs) < num:
+        while len(self.new_inputs) < num and self.iteration >= 0:
             seeds = self.seed_selection()
             new_inputs = self.chatgpt_generate(seeds)
             for new_input in new_inputs:
@@ -71,4 +75,5 @@ class ChatGPTGen(BaseGen):
                         self.seed_pool.append(new_input)
                         self.seed_hash.add(hash(str(new_input)))
                         self.new_inputs.append(new_input)
+            self.iteration -= 1
         return self.new_inputs[:num]

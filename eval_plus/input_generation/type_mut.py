@@ -1,6 +1,7 @@
 import copy
 import random
 import string
+import time
 from typing import Any, Dict, List, Set, Tuple
 
 from multipledispatch import dispatch
@@ -33,6 +34,7 @@ class use_ingredient:
 class TypedMutGen(MutateGen):
     def __init__(self, inputs: List, signature: str, contract_code: str):
         super().__init__(inputs, signature, contract_code)
+        self.timeout = 60 * 60  # 1 hour
         self.ingredients = {
             int: set(),
             float: set(),
@@ -303,8 +305,9 @@ class TypedMutGen(MutateGen):
         self._fetch_list_like(seed_input.values())
 
     def generate(self, num: int):
+        start = time.time()
         num_generated = 1
-        while len(self.new_inputs) < num:
+        while len(self.new_inputs) < num and time.time() - start < self.timeout:
             if num_generated % 1000 == 0:
                 print(
                     f"generated {num_generated} already with {len(self.new_inputs)} new inputs ... "
