@@ -48,7 +48,7 @@ python generation/code_sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??
 # Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
 ```
 
-### Render pass@k results to `rich` and LaTeX tables
+### Render `pass@k` Results to `rich` and LaTeX Tables
 
 ```shell
 python tools/render.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
