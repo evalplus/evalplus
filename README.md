@@ -4,7 +4,14 @@ TOC (TBD)...
 
 Introduction (TBD)...
 
-## Use Enhanced Dataset
+## Use EvalPlus-Enhanced Dataset
+
+To get started, please first setup the environment:
+
+```bash
+git clone https://github.com/evalplus/evalplus.git
+pip install -r requirements.txt
+```
 
 ### HumanEval+
 
@@ -26,7 +33,7 @@ fe = get_human_eval_plus() # -> a list of dictionaries (each is a programming pr
 
 ## Useful tools
 
-### Baby Checker
+### Syntax Checker for LLM-generated Code
 
 Check LLM-produced code and answer the following questions:
 
@@ -44,7 +51,7 @@ But some of them can be easily fixable by doing simple post-processing.
 This tool will make the LLM-generated code more clean/compilable by doing certain post-processing such as trimming with more magical EOFs and some garbage non-code tokens.
 
 ```shell
-python generation/code_sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??]
+python tools/sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??]
 # Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
 ```
 
