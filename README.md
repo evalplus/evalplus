@@ -1,14 +1,22 @@
 # `EvalPlus(📖) => 📚`
 
-EvalPlus is a rigorous evaluation framework for code synthesis using LLMs.
-EvalPlus takes in base evaluation dataset (e.g., HumanEval) and automatically enhances the original evaluation test cases with additional complex and diverse test inputs.
+> **Warning** 
+> <div align="center">
+> <b>
+> 🚨 Evaluating LLM-generated code on a dataset with just _3_ test-cases is NOT enough! 🚨
+> </b>
+> </div>
+
+To address this, we started the EvalPlus project -- a rigourous evaluation framework for LLM4Code that:
+
++ ✨ improves programming benchmarks by patching up to thounds of new tests! `EvalPlus(HumanEval) => HumanEval+` (81x new tests!)
++ ✨ crafts a set utility tools to sanitize, visualize and inspect LLM-generated code and evaluation results!
++ ✨ accelerates LLM4Code research by open-sourcing LLM-generated samples for 10+ models -- no to re-run the expensive benchmarks!
 
 ![](./gallary/evalplus_overview.jpg)
 
 This repo contains the enhanced versions of popular code synthesis evaluation datasets along with tools for you to easily use our enhanced dataset to evaluate LLM generated code and even
 create your own enhanced datasets!
-
-TOC (TBD)...
 
 ## Use EvalPlus-Enhanced Dataset
 
