@@ -25,8 +25,10 @@ def input_generation(args, problems):
             p_name = problem["task_id"].replace("/", "_")
             print(f"generating inputs for {p_name} ...")
             # by default we do not include constraints in the prompt
-            code = problem["prompt"] + problem["reference"]
-            c_code = problem["prompt"] + problem["contract"] + problem["reference"]
+            code = problem["prompt"] + problem["canonical_solution"]
+            c_code = (
+                problem["prompt"] + problem["contract"] + problem["canonical_solution"]
+            )
             # first generate chatgpt
             input_gen = ChatGPTGen(
                 problem["base_input"], problem["entry_point"], c_code, code

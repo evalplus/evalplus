@@ -18,7 +18,7 @@ from evalplus.gen.util import trusted_exec
 def evaluate_one(problem: dict, r_folder: str, extra: bool, fast_check=False):
     p_name = problem["task_id"].replace("/", "_")
     atol = problem["atol"]
-    code = problem["prompt"] + problem["reference"]
+    code = problem["prompt"] + problem["canonical_solution"]
     gen_files = glob.glob(r_folder + f"/{p_name}/*.py")
     entry_point = problem["entry_point"]
 
