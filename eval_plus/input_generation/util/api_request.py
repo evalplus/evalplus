@@ -13,9 +13,10 @@ def create_chatgpt_config(
     temperature: float = 1,
     batch_size: int = 1,
     system_message: str = "You are a helpful assistant.",
+    model: str = "gpt-3.5-turbo",
 ) -> Dict:
     config = {
-        "model": "gpt-3.5-turbo",
+        "model": model,
         "max_tokens": max_tokens,
         "temperature": temperature,
         "n": batch_size,

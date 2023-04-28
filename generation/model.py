@@ -237,9 +237,14 @@ class FsChatDecoder(HFTorchDecoder):
 
 class ChatGPTDecoder(DecoderBase):
     def __init__(
-        self, name: str, batch_size: int = 1, temperature: float = 0.8
+        self,
+        name: str,
+        batch_size: int = 1,
+        temperature: float = 0.8,
+        model_name: str = "gpt-3.5-turbo",
     ) -> None:
         super().__init__(name, batch_size, temperature)
+        self.model_name = model_name
         openai.api_key = os.environ.get("OPENAI_API_KEY", "dummy")
 
     @staticmethod
@@ -265,6 +270,8 @@ class ChatGPTDecoder(DecoderBase):
             raw_o = returns["message"]["content"]
             if "```" in raw_o:
                 gen = raw_o.split("```")[1].strip()
+                if gen.startswith("python"):
+                    gen = gen[len("python") :].strip()
                 if gen.startswith(prompt.strip()):
                     suf = gen.split(prompt.strip())[-1]
                     suf = self._remove_eof(suf)
@@ -300,6 +307,7 @@ class ChatGPTDecoder(DecoderBase):
             max_tokens=1024,
             temperature=self.temperature,
             batch_size=batch_size,
+            model=self.model_name,
         )
         ret = request_chatgpt_engine(config)
         return self._chatgpt_parse(ret, prompt.strip())
@@ -496,6 +504,14 @@ def make_model(
             batch_size=batch_size,
             name="ChatGPT",
             temperature=temperature,
+            model_name="gpt-3.5-turbo",
+        )
+    elif name == "gpt-4":
+        return ChatGPTDecoder(
+            batch_size=batch_size,
+            name="GPT4",
+            temperature=temperature,
+            model_name="gpt-4",
         )
     elif name == "gptneo-2b":
         return HFTorchDecoder(
