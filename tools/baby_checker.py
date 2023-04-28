@@ -24,7 +24,7 @@ def syntax_check(code, verbose=False):
     try:
         ast.parse(code)
         return True
-    except SyntaxError as e:
+    except SyntaxError:
         if verbose:
             traceback.print_exc()
         return False
@@ -36,10 +36,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", type=str, required=True)
     parser.add_argument("--dataset", type=str, default="humaneval")
-    parser.add_argument("--nsample", type=int, default=200)
+    parser.add_argument("--nsample", type=int)
     parser.add_argument("--verbose", action="store_true")
 
     args = parser.parse_args()
+
+    if args.nsample is None:
+        if "temp_0.0" in args.folder:
+            print(colored("Setting nsample = 1 for 0 temp.", "yellow"))
+            args.nsample = 1
+        else:
+            print(colored("Setting nsample = 200 for non-0 temp.", "yellow"))
+            args.nsample = 200
 
     if args.dataset == "humaneval":
         ntask = 164

@@ -9,6 +9,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from typing import Any, List, Tuple, Union
+from warnings import warn
 
 import numpy as np
 from tqdm import tqdm
@@ -268,7 +269,7 @@ def evaluate(flags, problems, extra_inputs=None):
     result_path = os.path.join(flags.r_folder, "eval_results.json")
 
     if os.path.isfile(result_path) and not flags.i_just_wanna_run:
-        print(f"Load from {flags.r_folder + '/eval_results.json'}")
+        print(f"Load from {result_path}")
         with open(result_path, "r") as f:
             results = json.load(f)
     else:
@@ -339,7 +340,7 @@ def evaluate(flags, problems, extra_inputs=None):
     pass_at_k = {
         f"pass@{k}": estimate_pass_at_k(total, base_correct, k).mean()
         for k in [1, 10, 100]
-        if (total >= k).all()
+        if total.min() >= k
     }
     print("Base")
     print(pass_at_k)
