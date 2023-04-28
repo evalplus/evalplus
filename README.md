@@ -1,4 +1,4 @@
-# EvalPlus
+# `EvalPlus(📖) => 📚`
 
 EvalPlus is a rigorous evaluation framework for code synthesis using LLMs.
 EvalPlus takes in base evaluation dataset (e.g., HumanEval) and automatically enhances the original evaluation test cases with additional complex and diverse test inputs.
