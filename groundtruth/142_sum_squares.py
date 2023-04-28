@@ -12,16 +12,17 @@ def sum_squares(lst):
     For lst = []  the output should be 0
     For lst = [-1,-5,2,-1,-5]  the output should be -126
     """
-    result =[]
-    for i in range(len(lst)):
-        if i %3 == 0:
-            result.append(lst[i]**2)
-        elif i % 4 == 0 and i%3 != 0:
-            result.append(lst[i]**3)
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in lst), "invalid inputs" # $_CONTRACT_$
+    ans = 0
+    for i, num in enumerate(lst):
+        if i % 3 == 0:
+            ans += num ** 2
+        elif i % 4 == 0:
+            ans += num ** 3
         else:
-            result.append(lst[i])
-    return sum(result)
-
+            ans += num
+    return ans
 
 def check(candidate):
 

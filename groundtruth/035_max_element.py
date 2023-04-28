@@ -7,13 +7,9 @@ def max_element(l: list):
     >>> max_element([5, 3, -5, 2, -3, 3, 9, 0, 123, 1, -10])
     123
     """
-    m = l[0]
-    for e in l:
-        if e > m:
-            m = e
-    return m
-
-
+    assert type(l) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) in [int, float] for x in l), "invalid inputs"
+    return max(l)
 
 
 METADATA = {}

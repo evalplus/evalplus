@@ -7,11 +7,10 @@ def below_threshold(l: list, t: int):
     >>> below_threshold([1, 20, 4, 10], 5)
     False
     """
-    for e in l:
-        if e >= t:
-            return False
-    return True
-
+    assert type(l) == list, "invalid inputs" # $_CONTRACT_$
+    assert type(t) == int, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float, bool)) for x in l), "invalid inputs" # $_CONTRACT_$
+    return all(x < t for x in l)
 
 
 

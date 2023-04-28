@@ -9,25 +9,18 @@ def find_closest_elements(numbers: List[float]) -> Tuple[float, float]:
     >>> find_closest_elements([1.0, 2.0, 3.0, 4.0, 5.0, 2.0])
     (2.0, 2.0)
     """
-
+    assert all(type(x) in [int, float] for x in numbers), "invalid inputs" # $_CONTRACT_$
     assert len(numbers) >= 2, "invalid inputs"  # $_CONTRACT_$
-    closest_pair = None
-    distance = None
 
-    for idx, elem in enumerate(numbers):
-        for idx2, elem2 in enumerate(numbers):
-            if idx != idx2:
-                if distance is None:
-                    distance = abs(elem - elem2)
-                    closest_pair = tuple(sorted([elem, elem2]))
-                else:
-                    new_distance = abs(elem - elem2)
-                    if new_distance < distance:
-                        distance = new_distance
-                        closest_pair = tuple(sorted([elem, elem2]))
-
-    return closest_pair
-
+    numbers.sort()
+    min_diff = float("inf")
+    min_pair = None
+    for l, r in zip(numbers[:-1], numbers[1:]):
+        diff = r - l
+        if diff < min_diff:
+            min_diff = diff
+            min_pair = (l, r)
+    return min_pair
 
 
 

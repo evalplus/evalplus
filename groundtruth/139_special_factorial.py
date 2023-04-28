@@ -11,15 +11,14 @@ def special_factorial(n):
     The function will receive an integer as input and should return the special
     factorial of this integer.
     """
-
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n > 0, "invalid inputs" # $_CONTRACT_$
-    fact_i = 1
-    special_fact = 1
-    for i in range(1, n+1):
-        fact_i *= i
-        special_fact *= fact_i
-    return special_fact
 
+    fac, ans = 1, 1
+    for i in range(2, n + 1):
+        fac *= i
+        ans *= fac
+    return ans
 
 def check(candidate):
 

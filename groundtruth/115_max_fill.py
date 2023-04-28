@@ -1,6 +1,6 @@
+import math
 
 def max_fill(grid, capacity):
-    import math
     """
     You are given a rectangular grid of wells. Each row represents a single well,
     and each 1 in a row represents a single unit of water.
@@ -34,7 +34,6 @@ def max_fill(grid, capacity):
         * grid[i][j] -> 0 | 1
         * 1 <= capacity <= 10
     """
-
     assert 1 <= len(grid) <= 100, "invalid inputs" # $_CONTRACT_$
     lens = list(map(len, grid)) # $_CONTRACT_$
     assert max(lens) == min(lens) and 1 <= max(lens) <= 100, "invalid inputs" # $_CONTRACT_$
@@ -42,8 +41,11 @@ def max_fill(grid, capacity):
         for x in l: # $_CONTRACT_$
             assert x == 0 or x == 1, "invalid inputs" # $_CONTRACT_$
     assert 1 <= capacity <= 10, "invalid inputs" # $_CONTRACT_$
-    return sum([math.ceil(sum(arr)/capacity) for arr in grid])
 
+    ans = 0    
+    for l in grid:
+        ans += math.ceil(sum(l) / capacity)
+    return ans
 
 def check(candidate):
 

@@ -28,15 +28,15 @@ def eat(number, need, remaining):
 
     Have fun :)
     """
-
+    assert type(number) == int and type(need) == int and type(remaining) == int, "invalid inputs" # $_CONTRACT_$
     assert 0 <= number <= 1000, "invalid inputs" # $_CONTRACT_$
     assert 0 <= need <= 1000, "invalid inputs" # $_CONTRACT_$
     assert 0 <= remaining <= 1000, "invalid inputs" # $_CONTRACT_$
-    if(need <= remaining):
-        return [ number + need , remaining-need ]
-    else:
-        return [ number + remaining , 0]
 
+    if need <= remaining:
+        return [number + need, remaining - need]
+    else:
+        return [number + remaining, 0]
 
 def check(candidate):
 

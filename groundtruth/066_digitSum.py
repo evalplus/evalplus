@@ -12,9 +12,8 @@ def digitSum(s):
         digitSum("woArBld") => 131
         digitSum("aAaaaXa") => 153
     """
-    if s == "": return 0
-    return sum(ord(char) if char.isupper() else 0 for char in s)
-
+    assert type(s) == str, "invalid inputs" # $_CONTRACT_$
+    return sum([ord(ch) for ch in s if ch.isupper()])
 
 def check(candidate):
 

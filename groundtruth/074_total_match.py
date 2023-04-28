@@ -13,19 +13,11 @@ def total_match(lst1, lst2):
     total_match(['hi', 'admin'], ['hI', 'hi', 'hi']) ➞ ['hI', 'hi', 'hi']
     total_match(['4'], ['1', '2', '3', '4', '5']) ➞ ['4']
     '''
-    l1 = 0
-    for st in lst1:
-        l1 += len(st)
-    
-    l2 = 0
-    for st in lst2:
-        l2 += len(st)
-    
-    if l1 <= l2:
-        return lst1
-    else:
-        return lst2
-
+    assert type(lst1) == type(lst2) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == str for x in lst1), "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == str for x in lst2), "invalid inputs" # $_CONTRACT_$
+    c1, c2 = sum(map(lambda s: len(s), lst1)), sum(map(lambda s: len(s), lst2))
+    return lst1 if c1 <= c2 else lst2
 
 def check(candidate):
 

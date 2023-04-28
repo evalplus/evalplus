@@ -13,19 +13,15 @@ def correct_bracketing(brackets: str):
     >>> correct_bracketing(")(()")
     False
     """
-
+    assert type(brackets) == str, "invalid inputs" # $_CONTRACT_$
     assert all(x in "()" for x in brackets) # $_CONTRACT_$
-    depth = 0
-    for b in brackets:
-        if b == "(":
-            depth += 1
-        else:
-            depth -= 1
-        if depth < 0:
-            return False
-    return depth == 0
 
-
+    cnt = 0
+    for x in brackets:
+        if x == "(": cnt += 1
+        if x == ")": cnt -= 1
+        if cnt < 0: return False
+    return cnt == 0
 
 
 METADATA = {}

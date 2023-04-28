@@ -11,10 +11,11 @@ def largest_smallest_integers(lst):
     largest_smallest_integers([]) == (None, None)
     largest_smallest_integers([0]) == (None, None)
     '''
-    smallest = list(filter(lambda x: x < 0, lst))
-    largest = list(filter(lambda x: x > 0, lst))
-    return (max(smallest) if smallest else None, min(largest) if largest else None)
-
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in lst), "invalid inputs" # $_CONTRACT_$
+    neg = list(filter(lambda x: x < 0, lst))
+    pos = list(filter(lambda x: x > 0, lst))
+    return None if neg == [] else max(neg), None if pos == [] else min(pos)
 
 def check(candidate):
 

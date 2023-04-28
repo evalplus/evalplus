@@ -21,20 +21,22 @@ def find_zero(xs: list):
     >>> round(find_zero([-6, 11, -6, 1]), 2) # (x - 1) * (x - 2) * (x - 3) = -6 + 11x - 6x^2 + x^3
     1.0
     """
-
     assert len(xs) > 0 and len(xs) % 2 == 0, "invalid inputs" # $_CONTRACT_$
-    begin, end = -1., 1.
-    while poly(xs, begin) * poly(xs, end) > 0:
-        begin *= 2.0
-        end *= 2.0
-    while end - begin > 1e-10:
-        center = (begin + end) / 2.0
-        if poly(xs, center) * poly(xs, begin) > 0:
-            begin = center
-        else:
-            end = center
-    return begin
 
+    dxs = [xs[i] * i for i in range(1, len(xs))]
+    def func(x):
+        return poly(xs, x)
+    def derivative(x):
+        return poly(dxs, x)
+    
+    x, tol = 0, 1e-5
+    for _ in range(1000):
+        fx = func(x)
+        dfx = derivative(x)
+        if abs(fx) < tol: break
+        x = x - fx / dfx
+
+    return x
 
 
 

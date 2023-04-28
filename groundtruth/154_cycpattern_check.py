@@ -9,14 +9,15 @@ def cycpattern_check(a , b):
     cycpattern_check("himenss","simen") => True
 
     """
-    l = len(b)
-    pat = b + b
-    for i in range(len(a) - l + 1):
-        for j in range(l + 1):
-            if a[i:i+l] == pat[j:j+l]:
-                return True
+    assert isinstance(a, str) and isinstance(b, str), "invalid inputs" # $_CONTRACT_$
+    if a == b:
+        return True
+    if b == "":
+        return True
+    for i in range(0, len(b)):
+        if b[i:] + b[:i] in a:
+            return True
     return False
-
 
 def check(candidate):
 

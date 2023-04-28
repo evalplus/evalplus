@@ -4,11 +4,10 @@ def starts_one_ends(n):
     Given a positive integer n, return the count of the numbers of n-digit
     positive integers that start or end with 1.
     """
+    assert type(n) == int and n > 0, "invalid inputs" # $_CONTRACT_$
 
-    assert n >= 1, "invalid inputs" # $_CONTRACT_$
     if n == 1: return 1
-    return 18 * (10 ** (n - 2))
-
+    return 18 * 10 ** (n - 2)
 
 def check(candidate):
 

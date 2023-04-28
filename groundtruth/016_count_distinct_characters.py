@@ -7,8 +7,8 @@ def count_distinct_characters(string: str) -> int:
     >>> count_distinct_characters('Jerry')
     4
     """
+    assert isinstance(string, str), "invalid inputs" # $_CONTRACT_$
     return len(set(string.lower()))
-
 
 
 

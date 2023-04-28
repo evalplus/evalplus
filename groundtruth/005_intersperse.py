@@ -10,20 +10,13 @@ def intersperse(numbers: List[int], delimeter: int) -> List[int]:
     """
     assert all([isinstance(v, int) for v in numbers]), "invalid inputs" # $_CONTRACT_$
     assert isinstance(delimeter, int), "invalid inputs" # $_CONTRACT_$
-    
-    if not numbers:
-        return []
 
-    result = []
-
-    for n in numbers[:-1]:
-        result.append(n)
-        result.append(delimeter)
-
-    result.append(numbers[-1])
-
-    return result
-
+    res = []
+    for i in range(len(numbers)):
+        res.append(numbers[i])
+        if i != len(numbers) - 1:
+            res.append(delimeter)
+    return res
 
 
 

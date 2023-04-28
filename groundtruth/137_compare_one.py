@@ -11,19 +11,18 @@ def compare_one(a, b):
     compare_one("5,1", "6") ➞ "6"
     compare_one("1", 1) ➞ None
     """
-
     assert isinstance(a, (int, float, str)), "invalid inputs" # $_CONTRACT_$
     assert isinstance(b, (int, float, str)), "invalid inputs" # $_CONTRACT_$
     try: # $_CONTRACT_$
         float(str(a).replace(",", ".")) # $_CONTRACT_$
         float(str(b).replace(",", ".")) # $_CONTRACT_$
     except ValueError: raise Exception("invalid inputs") # $_CONTRACT_$
-    temp_a, temp_b = a, b
-    if isinstance(temp_a, str): temp_a = temp_a.replace(',','.')
-    if isinstance(temp_b, str): temp_b = temp_b.replace(',','.')
-    if float(temp_a) == float(temp_b): return None
-    return a if float(temp_a) > float(temp_b) else b 
 
+    num_a = float(str(a).replace(",", "."))
+    num_b = float(str(b).replace(",", "."))
+    if num_a == num_b:
+        return None
+    return a if num_a > num_b else b
 
 def check(candidate):
 

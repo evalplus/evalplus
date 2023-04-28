@@ -8,20 +8,9 @@ def words_string(s):
     words_string("Hi, my name is John") == ["Hi", "my", "name", "is", "John"]
     words_string("One, two, three, four, five, six") == ["One", "two", "three", "four", "five", "six"]
     """
-    if not s:
-        return []
-
-    s_list = []
-
-    for letter in s:
-        if letter == ',':
-            s_list.append(' ')
-        else:
-            s_list.append(letter)
-
-    s_list = "".join(s_list)
-    return s_list.split()
-
+    assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
+    words = (s.replace(",", " ")).split()
+    return [word for word in words if word != ""]
 
 def check(candidate):
 

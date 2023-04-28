@@ -12,7 +12,7 @@ def factorize(n: int) -> List[int]:
     >>> factorize(70)
     [2, 5, 7]
     """
-
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n >= 2, "invalid inputs" # $_CONTRACT_$
     import math
     fact = []
@@ -27,7 +27,6 @@ def factorize(n: int) -> List[int]:
     if n > 1:
         fact.append(n)
     return fact
-
 
 
 

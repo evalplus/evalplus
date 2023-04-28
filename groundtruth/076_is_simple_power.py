@@ -11,13 +11,16 @@ def is_simple_power(x, n):
     is_simple_power(3, 1) => false
     is_simple_power(5, 3) => false
     """
-    if (n == 1): 
-        return (x == 1) 
-    power = 1
-    while (power < x): 
-        power = power * n 
-    return (power == x) 
-
+    assert type(x) == int and type(n) == int, "invalid inputs" # $_CONTRACT_$
+    if x == 1: return True
+    if n == 0: return x == 0
+    if n == 1: return x == 1
+    if n == -1: return abs(x) == 1
+    p = n
+    while abs(p) <= abs(x):
+        if p == x: return True
+        p = p * n
+    return False
 
 def check(candidate):
 

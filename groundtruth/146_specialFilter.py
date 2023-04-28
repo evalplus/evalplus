@@ -7,17 +7,13 @@ def specialFilter(nums):
     specialFilter([15, -73, 14, -15]) => 1 
     specialFilter([33, -2, -3, 45, 21, 109]) => 2
     """
-    
-    count = 0
+    assert type(nums) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in nums), "invalid inputs" # $_CONTRACT_$
+    ans, odd = 0, ["1", "3", "5", "7", "9"]
     for num in nums:
-        if num > 10:
-            odd_digits = (1, 3, 5, 7, 9)
-            number_as_string = str(num)
-            if int(number_as_string[0]) in odd_digits and int(number_as_string[-1]) in odd_digits:
-                count += 1
-        
-    return count 
-
+        if num > 10 and str(num)[0] in odd and str(num)[-1] in odd:
+            ans += 1
+    return ans
 
 def check(candidate):
 

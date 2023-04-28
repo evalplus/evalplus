@@ -8,12 +8,12 @@ def count_upper(s):
     count_upper('abcdefg') returns 0
     count_upper('dBBE') returns 0
     """
-    count = 0
-    for i in range(0,len(s),2):
+    assert type(s) == str, "invalid inputs" # $_CONTRACT_$
+    cnt = 0
+    for i in range(0, len(s), 2):
         if s[i] in "AEIOU":
-            count += 1
-    return count
-
+            cnt += 1
+    return cnt
 
 def check(candidate):
 

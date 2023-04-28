@@ -11,11 +11,10 @@ def is_bored(S):
     >>> is_bored("The sky is blue. The sun is shining. I love this weather")
     1
     """
-    import re
-    sentences = re.split(r'[.?!]\s*', S)
-    return sum(sentence[0:2] == 'I ' for sentence in sentences)
-
-
+    assert type(S) == str, "invalid inputs" # $_CONTRACT_$
+    sentences = map(lambda x: x.strip(), ((S.replace("?", ".")).replace("!", ".")).split("."))
+    return len([s for s in sentences if s.startswith("I ")])
+    
 def check(candidate):
 
     # Check some simple cases

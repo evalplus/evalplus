@@ -11,15 +11,12 @@ def below_zero(operations: List[int]) -> bool:
     True
     """
     assert all([isinstance(v, int) for v in operations]), "invalid inputs" # $_CONTRACT_$
-    balance = 0
-
-    for op in operations:
-        balance += op
-        if balance < 0:
+    account = 0
+    for operation in operations:
+        account += operation
+        if account < 0:
             return True
-
     return False
-
 
 
 

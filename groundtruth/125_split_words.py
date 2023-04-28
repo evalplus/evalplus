@@ -9,13 +9,15 @@ def split_words(txt):
     split_words("Hello,world!") ➞ ["Hello", "world!"]
     split_words("abcdef") == 3 
     '''
-    if " " in txt:
-        return txt.split()
-    elif "," in txt:
-        return txt.replace(',',' ').split()
-    else:
-        return len([i for i in txt if i.islower() and ord(i)%2 == 0])
-
+    assert type(txt) == str, "invalid inputs" # $_CONTRACT_$
+    assert not txt.startswith(" ") and not txt.startswith(",") and not txt.endswith(" ") and not txt.endswith(","), "invalid inputs" # $_CONTRACT_$
+    whitespace = tuple(' \n\r\t')
+    if any([x in txt for x in whitespace]): return txt.split()
+    if "," in txt: return txt.split(",")
+    cnt = 0
+    for ch in txt:
+        if ch.islower() and (ord(ch) - ord("a")) % 2 == 1: cnt += 1
+    return cnt
 
 def check(candidate):
 

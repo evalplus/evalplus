@@ -11,15 +11,12 @@ def has_close_elements(numbers: List[float], threshold: float) -> bool:
     """
     assert threshold > 0, "invalid inputs" # $_CONTRACT_$
     assert all([isinstance(v, (int, float)) for v in numbers]), "invalid inputs" # $_CONTRACT_$
-    for idx, elem in enumerate(numbers):
-        for idx2, elem2 in enumerate(numbers):
-            if idx != idx2:
-                distance = abs(elem - elem2)
-                if distance < threshold:
-                    return True
 
+    sorted_numbers = sorted(numbers)
+    for i in range(len(sorted_numbers) - 1):
+        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:
+            return True
     return False
-
 
 
 

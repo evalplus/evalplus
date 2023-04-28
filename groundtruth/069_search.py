@@ -10,19 +10,18 @@ def search(lst):
         search([1, 2, 2, 3, 3, 3, 4, 4, 4]) == 3
         search([5, 5, 4, 4, 4]) == -1
     '''
+    assert all(type(val) == int and val > 0 for val in lst), "invalid inputs" # $_CONTRACT_$
 
-    assert min(lst) > 0, "invalid inputs" # $_CONTRACT_$
-    frq = [0] * (max(lst) + 1)
-    for i in lst:
-        frq[i] += 1;
-
+    count = dict()
+    for num in lst:
+        if num not in count:
+            count[num] = 0
+        count[num] += 1
     ans = -1
-    for i in range(1, len(frq)):
-        if frq[i] >= i:
-            ans = i
-    
+    for num, cnt in count.items():
+        if cnt >= num:
+            ans = max(ans, num)
     return ans
-
 
 def check(candidate):
 

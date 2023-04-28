@@ -13,12 +13,10 @@ def sum_squares(lst):
     
 
     """
+    assert type(lst) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) in [int, float] for x in lst), "invalid inputs" # $_CONTRACT_$
     import math
-    squared = 0
-    for i in lst:
-        squared += math.ceil(i)**2
-    return squared
-
+    return sum(map(lambda x: math.ceil(x) ** 2, lst))
 
 def check(candidate):
 

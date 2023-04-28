@@ -10,9 +10,12 @@ def next_smallest(lst):
     next_smallest([]) == None
     next_smallest([1, 1]) == None
     """
-    lst = sorted(set(lst))
-    return None if len(lst) < 2 else lst[1]
-
+    assert all(type(x) == int for x in lst), "invalid inputs" # $_CONTRACT_$
+    if len(lst) <= 1: return None
+    sorted_list = sorted(lst)
+    for x in sorted_list:
+        if x != sorted_list[0]:
+            return x 
 
 def check(candidate):
 

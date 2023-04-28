@@ -16,23 +16,15 @@ def get_odd_collatz(n):
     For example:
     get_odd_collatz(5) returns [1, 5] # The collatz sequence for 5 is [5, 16, 8, 4, 2, 1], so the odd numbers are only 1, and 5.
     """
-
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n > 0, "invalid inputs" # $_CONTRACT_$
-    if n%2==0:
-        odd_collatz = [] 
-    else:
-        odd_collatz = [n]
-    while n > 1:
-        if n % 2 == 0:
-            n = n/2
-        else:
-            n = n*3 + 1
-            
-        if n%2 == 1:
-            odd_collatz.append(int(n))
 
-    return sorted(odd_collatz)
-
+    ans, x = [], n
+    while x != 1:
+        if x % 2 == 1: ans.append(x)
+        x = x // 2 if x % 2 == 0 else x * 3 + 1
+    ans.append(1)
+    return sorted(ans)
 
 def check(candidate):
 

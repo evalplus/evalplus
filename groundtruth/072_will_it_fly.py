@@ -17,17 +17,9 @@ def will_it_fly(q,w):
     will_it_fly([3], 5) ➞ True
     # 3 is less than the maximum possible weight, and it's balanced.
     '''
-    if sum(q) > w:
-        return False
-
-    i, j = 0, len(q)-1
-    while i<j:
-        if q[i] != q[j]:
-            return False
-        i+=1
-        j-=1
-    return True
-
+    assert type(q) == list and all(type(x) in [int, float] for x in q), "invalid inputs" # $_CONTRACT_$
+    assert type(w) in [int, float], "invalid inputs" # $_CONTRACT_$
+    return q == q[::-1] and sum(q) <= w
 
 def check(candidate):
 

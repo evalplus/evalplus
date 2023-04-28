@@ -59,7 +59,7 @@ if __name__ == "__main__":
     # check existance
     for t in TEMPS:
         f = os.path.join(f"{args.type}_temp_{t}", f"eval_results.json")
-        assert os.path.exists(f)
+        assert os.path.exists(f), f"{f} not found"
         resfiles.append(f)
 
     before_summary = {}

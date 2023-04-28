@@ -13,10 +13,10 @@ def sum_to_n(n: int):
     >>> sum_to_n(1)
     1
     """
-
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n >= 1, "invalid inputs" # $_CONTRACT_$
-    return sum(range(n + 1))
 
+    return (n + 1) * n // 2
 
 
 

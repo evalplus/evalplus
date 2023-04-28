@@ -24,16 +24,13 @@ def maximum(arr, k):
         2. The elements in the array will be in the range of [-1000, 1000].
         3. 0 <= k <= len(arr)
     """
-
+    assert type(arr) == list, "invalid inputs" # $_CONTRACT_$
     assert 1 <= len(arr) <= 1000, "invalid inputs" # $_CONTRACT_$
     assert all(-1000 <= x <= 1000 for x in arr), "invalid inputs" # $_CONTRACT_$
+    assert type(k) == int, "invalid inputs" # $_CONTRACT_$
     assert 0 <= k <= len(arr), "invalid inputs" # $_CONTRACT_$
-    if k == 0:
-        return []
-    arr.sort()
-    ans = arr[-k:]
-    return ans
 
+    return sorted(sorted(arr)[::-1][:k])
 
 def check(candidate):
 

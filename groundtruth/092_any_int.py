@@ -17,13 +17,9 @@ def any_int(x, y, z):
 
     
     '''
-    
-    if isinstance(x,int) and isinstance(y,int) and isinstance(z,int):
-        if (x+y==z) or (x+z==y) or (y+z==x):
-            return True
-        return False
-    return False
-
+    assert all(isinstance(v, (int, float, bool)) for v in [x, y, z]), "invalid inputs" # $_CONTRACT_$
+    if type(x) != int or type(y) != int or type(z) != int: return False
+    return x == y + z or y == x + z or z == y + x
 
 def check(candidate):
 

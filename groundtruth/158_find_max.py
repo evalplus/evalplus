@@ -9,10 +9,16 @@ def find_max(words):
     find_max(["name", "enam", "game"]) == "enam"
     find_max(["aaaaaaa", "bb" ,"cc"]) == ""aaaaaaa"
     """
-
+    assert type(words) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(s, str) for s in words), "invalid inputs" # $_CONTRACT_$
     assert len(words) > 0, "invalid inputs" # $_CONTRACT_$
-    return sorted(words, key = lambda x: (-len(set(x)), x))[0]
 
+    mx_ch_cnt, ans = 0, ""
+    for word in words:
+        ch_cnt = len(set(word)) 
+        if ch_cnt > mx_ch_cnt or (ch_cnt == mx_ch_cnt and word < ans):
+            mx_ch_cnt, ans = ch_cnt, word
+    return ans
 
 def check(candidate):
 

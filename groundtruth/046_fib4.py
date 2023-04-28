@@ -15,19 +15,22 @@ def fib4(n: int):
     >>> fib4(7)
     14
     """
-
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n >= 0, "invalid inputs" # $_CONTRACT_$
-    results = [0, 0, 2, 0]
-    if n < 4:
-        return results[n]
-
-    for _ in range(4, n + 1):
-        results.append(results[-1] + results[-2] + results[-3] + results[-4])
-        results.pop(0)
-
-    return results[-1]
-
-
+    
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 0
+    elif n == 2:
+        return 2
+    elif n == 3:
+        return 0
+    else:
+        a, b, c, d = 0, 0, 2, 0
+        for i in range(4, n + 1):
+            a, b, c, d = b, c, d, a + b + c + d
+        return d
 
 
 METADATA = {}

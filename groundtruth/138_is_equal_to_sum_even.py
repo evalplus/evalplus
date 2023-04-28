@@ -6,8 +6,8 @@ def is_equal_to_sum_even(n):
     is_equal_to_sum_even(6) == False
     is_equal_to_sum_even(8) == True
     """
-    return n%2 == 0 and n >= 8
-
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
+    return n >= 8 and n % 2 == 0
 
 def check(candidate):
     assert candidate(4) == False

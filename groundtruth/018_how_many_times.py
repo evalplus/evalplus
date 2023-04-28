@@ -9,16 +9,14 @@ def how_many_times(string: str, substring: str) -> int:
     >>> how_many_times('aaaa', 'aa')
     3
     """
-
+    assert isinstance(string, str) and isinstance(substring, str), "invalid inputs" # $_CONTRACT_$
     assert substring != "", "invalid inputs" # $_CONTRACT_$
-    times = 0
 
-    for i in range(len(string) - len(substring) + 1):
-        if string[i:i+len(substring)] == substring:
-            times += 1
-
-    return times
-
+    occurences = 0
+    for i in range(len(string)):
+        if string[i:].startswith(substring):
+            occurences += 1
+    return occurences
 
 
 

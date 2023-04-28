@@ -8,9 +8,10 @@ def filter_by_substring(strings: List[str], substring: str) -> List[str]:
     >>> filter_by_substring(['abc', 'bacd', 'cde', 'array'], 'a')
     ['abc', 'bacd', 'array']
     """
-    return [x for x in strings if substring in x]
-
-
+    assert type(strings) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == str for x in strings), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(substring, str), "invalid inputs" # $_CONTRACT_$
+    return list(filter(lambda s: substring in s, strings))
 
 
 METADATA = {

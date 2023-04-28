@@ -8,19 +8,7 @@ def rolling_max(numbers: List[int]) -> List[int]:
     [1, 2, 3, 3, 3, 4, 4]
     """
     assert all([isinstance(v, int) for v in numbers]), "invalid inputs" # $_CONTRACT_$
-    running_max = None
-    result = []
-
-    for n in numbers:
-        if running_max is None:
-            running_max = n
-        else:
-            running_max = max(running_max, n)
-
-        result.append(running_max)
-
-    return result
-
+    return [max(numbers[:(i+1)]) for i in range(len(numbers))]
 
 
 

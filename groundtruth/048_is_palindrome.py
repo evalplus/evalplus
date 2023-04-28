@@ -12,12 +12,8 @@ def is_palindrome(text: str):
     >>> is_palindrome('zbcd')
     False
     """
-    assert isinstance(text, str), "invalid input" # $_CONTRACT_$
-    for i in range(len(text)):
-        if text[i] != text[len(text) - 1 - i]:
-            return False
-    return True
-
+    assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
+    return text == text[::-1]
 
 
 

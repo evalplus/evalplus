@@ -13,10 +13,11 @@ def solve(N):
     Output:
          a string of binary number
     """
+    assert type(N) == int, "invalid inputs" # $_CONTRACT_$
+    assert 0 < N <= 10000, "invalid inputs" # $_CONTRACT_$
 
-    assert 0 <= N <= 10000, "invalid inputs" # $_CONTRACT_$
-    return bin(sum(int(i) for i in str(N)))[2:]
-
+    s = sum(map(lambda x: int(x), str(N)))
+    return bin(s)[2:]
 
 def check(candidate):
 

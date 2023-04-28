@@ -11,6 +11,7 @@ def longest(strings: List[str]) -> Optional[str]:
     >>> longest(['a', 'bb', 'ccc'])
     'ccc'
     """
+    assert type(strings) == list, "invalid inputs" # $_CONTRACT_$
     assert all([isinstance(v, str) for v in strings]), "invalid inputs" # $_CONTRACT_$
     if not strings:
         return None
@@ -19,7 +20,6 @@ def longest(strings: List[str]) -> Optional[str]:
     for s in strings:
         if len(s) == maxlen:
             return s
-
 
 
 

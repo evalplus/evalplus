@@ -12,25 +12,23 @@ def histogram(test):
     histogram('') == {}
 
     """
-
+    assert isinstance(test, str), "invalid inputs" # $_CONTRACT_$
     words = test.split(" ") # $_CONTRACT_$
     for word in words: # $_CONTRACT_$
         if word != "": # $_CONTRACT_$
             assert len(word) == 1 and word.islower(), "invalid inputs" # $_CONTRACT_$
-    dict1={}
-    list1=test.split(" ")
-    t=0
 
-    for i in list1:
-        if(list1.count(i)>t) and i!='':
-            t=list1.count(i)
-    if t>0:
-        for i in list1:
-            if(list1.count(i)==t):
-                
-                dict1[i]=t
-    return dict1
-
+    if test == "": return {}    
+    count, ans = dict(), dict()
+    for word in test.split(" "):
+        if word != "":
+            if word not in count: count[word] = 0
+            count[word] += 1
+    mx = max(list(count.values()))
+    for ch, c in count.items():
+        if c == mx:
+            ans[ch] = c
+    return ans
 
 def check(candidate):
 

@@ -19,26 +19,16 @@ def intersection(interval1, interval2):
     intersection((-1, 1), (0, 4)) ==> "NO"
     intersection((-3, -1), (-5, 5)) ==> "YES"
     """
-
     assert len(interval1) == 2 and interval1[0] <= interval1[1], "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in interval1), "invalid inputs" # $_CONTRACT_$
     assert len(interval2) == 2 and interval2[0] <= interval2[1], "invalid inputs" # $_CONTRACT_$
-    def is_prime(num):
-        if num == 1 or num == 0:
-            return False
-        if num == 2:
-            return True
-        for i in range(2, num):
-            if num%i == 0:
-                return False
-        return True
+    assert all(type(x) == int for x in interval2), "invalid inputs" # $_CONTRACT_$
 
-    l = max(interval1[0], interval2[0])
-    r = min(interval1[1], interval2[1])
-    length = r - l
-    if length > 0 and is_prime(length):
-        return "YES"
-    return "NO"
-
+    def is_prime(a):
+        return not (a < 2 or any(a % x == 0 for x in range(2, int(a ** 0.5) + 1)))
+    if interval1[0] > interval2[0]: interval1, interval2 = interval2, interval1
+    l, r = interval2[0], min(interval1[1], interval2[1])
+    return "YES" if is_prime(r - l) else "NO"
 
 def check(candidate):
 

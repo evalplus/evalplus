@@ -11,10 +11,15 @@ def prod_signs(arr):
     >>> prod_signs([0, 1]) == 0
     >>> prod_signs([]) == None
     """
-    if not arr: return None
-    prod = 0 if 0 in arr else (-1) ** len(list(filter(lambda x: x < 0, arr)))
-    return prod * sum([abs(i) for i in arr])
-
+    assert type(arr) == list, "invalid inputs" # $_CONTRACT_$
+    assert all(type(x) == int for x in arr), "invalid inputs" # $_CONTRACT_$
+    if arr == []: return None
+    if 0 in arr: return 0
+    s, sgn = 0, 1
+    for x in arr:
+        s += abs(x)
+        sgn *= (x // abs(x))
+    return s * sgn
 
 def check(candidate):
 

@@ -12,17 +12,17 @@ def fruit_distribution(s,n):
     fruit_distribution("2 apples and 3 oranges", 100) -> 100 - 2 - 3 = 95
     fruit_distribution("100 apples and 1 oranges",120) -> 120 - 100 - 1 = 19
     """
-
+    assert type(s) == str and type(n) == int, "invalid inputs" # $_CONTRACT_$
     words = s.split(" ") # $_CONTRACT_$
     assert len(words) == 5, "invalid inputs" # $_CONTRACT_$
     assert words[1] == "apples" and words[2] == "and" and words[4] == "oranges", "invalid inputs" # $_CONTRACT_$
     assert words[0].isdigit() and words[3].isdigit(), "invalid inputs" # $_CONTRACT_$
-    lis = list()
-    for i in s.split(' '):
-        if i.isdigit():
-            lis.append(int(i))
-    return n - sum(lis)
 
+    words = s.split(" ")
+    c1, c2 = int(words[0]), int(words[3])
+    assert n - c1 - c2 >= 0, "invalid inputs" # $_CONTRACT_$
+    
+    return n - c1 - c2
 
 def check(candidate):
 

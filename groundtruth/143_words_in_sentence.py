@@ -19,22 +19,14 @@ def words_in_sentence(sentence):
         * 1 <= len(sentence) <= 100
         * sentence contains only letters
     """
-
+    assert isinstance(sentence, str), "invalid inputs" # $_CONTRACT_$
     assert 1 <= len(sentence) <= 100, "invalid inputs" # $_CONTRACT_$
     assert "  " not in sentence, "invalid inputs" # $_CONTRACT_$
     assert all(word.isalpha() for word in sentence.split(" ")), "invalid inputs" # $_CONTRACT_$
-    new_lst = []
-    for word in sentence.split():
-        flg = 0
-        if len(word) == 1:
-            flg = 1
-        for i in range(2, len(word)):
-            if len(word)%i == 0:
-                flg = 1
-        if flg == 0 or len(word) == 2:
-            new_lst.append(word)
-    return " ".join(new_lst)
 
+    def is_prime(a):
+        return not (a < 2 or any(a % x == 0 for x in range(2, int(a ** 0.5) + 1)))
+    return " ".join(list(filter(lambda word: is_prime(len(word)), sentence.split(" "))))
 
 def check(candidate):
 

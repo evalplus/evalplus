@@ -12,20 +12,17 @@ def select_words(s, n):
     select_words("Hello world", 4) ==> ["world"]
     select_words("Uncle sam", 3) ==> ["Uncle"]
     """
-
+    assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
     assert all(ch == " " or ch.isalpha() for ch in s), "invalid inputs" # $_CONTRACT_$
+    assert type(n) == int, "invalid inputs" # $_CONTRACT_$
     assert n >= 0, "invalid inputs" # $_CONTRACT_$
-    result = []
-    for word in s.split():
-        n_consonants = 0
-        for i in range(0, len(word)):
-            if word[i].lower() not in ["a","e","i","o","u"]:
-                n_consonants += 1 
-        if n_consonants == n:
-            result.append(word)
-    return result
 
-
+    ans = []
+    for word in s.split(" "):
+        if word != "":
+            c_cnt = len(list(filter(lambda ch: ch not in "aeiouAEIOU", word)))
+            if c_cnt == n: ans.append(word)
+    return ans
 
 def check(candidate):
 

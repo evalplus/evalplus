@@ -8,8 +8,8 @@ def concatenate(strings: List[str]) -> str:
     >>> concatenate(['a', 'b', 'c'])
     'abc'
     """
-    return ''.join(strings)
-
+    assert all(isinstance(s, str) for s in strings), "invalid inputs" # $_CONTRACT_$
+    return "".join(strings)
 
 
 

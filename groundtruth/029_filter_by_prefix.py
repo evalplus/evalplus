@@ -8,8 +8,9 @@ def filter_by_prefix(strings: List[str], prefix: str) -> List[str]:
     >>> filter_by_prefix(['abc', 'bcd', 'cde', 'array'], 'a')
     ['abc', 'array']
     """
-    return [x for x in strings if x.startswith(prefix)]
-
+    assert all(isinstance(s, str) for s in strings), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(prefix, str), "invalid inputs" # $_CONTRACT_$
+    return list(filter(lambda x: x.startswith(prefix), strings))
 
 
 

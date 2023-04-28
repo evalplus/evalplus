@@ -6,9 +6,12 @@ def string_to_md5(text):
 
     >>> string_to_md5('Hello world') == '3e25960a79dbc69b674cd4ec67a72c62'
     """
+    assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
+    if text == "": return None
     import hashlib
-    return hashlib.md5(text.encode('ascii')).hexdigest() if text else None
-
+    m = hashlib.md5()
+    m.update(text.encode("utf-8"))
+    return m.hexdigest()
 
 def check(candidate):
 
