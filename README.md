@@ -1,8 +1,14 @@
 # EvalPlus
 
-TOC (TBD)...
+EvalPlus is a rigorous evaluation framework for code synthesis using LLMs.
+EvalPlus takes in base evaluation dataset (e.g., HumanEval) and automatically enhances the original evaluation test cases with additional complex and diverse test inputs.
 
-Introduction (TBD)...
+![](./gallary/evalplus_overview.jpg)
+
+This repo contains the enhanced versions of popular code synthesis evaluation datasets along with tools for you to easily use our enhanced dataset to evaluate LLM generated code and even
+create your own enhanced datasets!
+
+TOC (TBD)...
 
 ## Use EvalPlus-Enhanced Dataset
 
