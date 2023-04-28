@@ -38,10 +38,7 @@ from transformers import (
     StoppingCriteriaList,
 )
 
-from eval_plus.input_generation.util.api_request import (
-    create_chatgpt_config,
-    request_chatgpt_engine,
-)
+from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine
 
 NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "<|endofmask|>"]
 EOF_STRINGS = [

@@ -11,7 +11,7 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from eval_plus.utils import get_human_eval_plus
+from evalplus.data import get_human_eval_plus
 
 
 def construct_contract_prompt(prompt: str, contract_type: str, contract: str) -> str:

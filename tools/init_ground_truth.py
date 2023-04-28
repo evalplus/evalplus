@@ -1,11 +1,11 @@
 import os
 import pathlib
 
-from eval_plus.utils import get_human_eval
+from evalplus.data import get_human_eval
 
 if __name__ == "__main__":
     # check existance of ground truth folder
-    GT_DIR = pathlib.Path(__file__).parent.parent / "groundtruth"
+    GT_DIR = pathlib.Path(__file__).parent.parent / "groundtruth" / "humaneval"
 
     assert not os.path.exists(
         GT_DIR

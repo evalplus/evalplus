@@ -7,7 +7,7 @@ import os
 
 from tqdm import tqdm
 
-from eval_plus.utils import get_human_eval
+from evalplus.data import get_human_eval
 
 INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
 POLYCODER_EXTRA = ["\n//", "\n/*"]

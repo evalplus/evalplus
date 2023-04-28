@@ -1,23 +1,63 @@
 # EvalPlus
 
-## HOWTO
+TOC (TBD)...
+
+Introduction (TBD)...
+
+## Use Enhanced Dataset
+
+### HumanEval+
 
 ```python
-from eval_plus.utils import get_human_eval_plus
+from evalplus.data import get_human_eval_plus
 
-fe = get_human_eval_plus() # -> a list of tasks (each is a dict)
-# "task_id" is the identifier string for the task.
-# "prompt" is the function signature with docstring.
-# "contract" is the assertions for the function's input (empty if no constraints).
-# "canonical_solution" is the ground-truth implementation.
-# "base_input" is the test inputs.
-# "atol": absolute tolerance for diff-testing
+fe = get_human_eval_plus() # -> a list of dictionaries (each is a programming problem)
+# "task_id" is the identifier string for the task
+# "entry_point": name of the function
+# "prompt" is the function signature with docstring
+# + "canonical_solution" is the ground-truth implementation (re-implemented to fix bugs in HumanEval)
+# + "base_input" is the test inputs in original HumanEval
+# + "plus_input" is the test inputs brought by EvalPlus
+# and others...
 ```
 
-> **Note**:
-> + To build a HumanEval prompt: use `prompt`
-> + To build a prompt with contracts: use `prompt` + `contract`
-> + The program should work without `contract` (Run `python tools/check_ground_truth.py` to check)
+### MBPP+ (TBD)
+
+
+## Useful tools
+
+### Baby Checker
+
+Check LLM-produced code and answer the following questions:
+
+1. Is the generation entirely done for all samples / all problems in the dataset?
+2. Are LLM-generated code compilable? (if no, something could be wrong and you'd better check)
+
+```shell
+python tools/checker.py --folder /path/to/[model]-[??]b_temp_[??] --dataset humaneval
+```
+
+### Post Code Sanitizer
+
+LLM-generated code may contain some syntax errors.
+But some of them can be easily fixable by doing simple post-processing.
+This tool will make the LLM-generated code more clean/compilable by doing certain post-processing such as trimming with more magical EOFs and some garbage non-code tokens.
+
+```shell
+python generation/code_sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??]
+# Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
+```
+
+### Render pass@k results to `rich` and LaTeX tables
+
+```shell
+python tools/render.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
+```
+
+![](./gallary/render.gif)
+
+### Perfrom Test Input Generation from Scratch (TBD)
+
 
 ## Development
 
@@ -31,31 +71,10 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 ### Name Convention
 
-- `eval_plus` is the package name.
-- `${DATASET}_plus` is the name of dataset applied with `eval_plus`.
+- `evalplus` is the package name.
+- `${DATASET}_plus` is the name of dataset applied with `evalplus`.
 
-### Post Fixes
 
-```shell
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-# --vicuna: fix vicuna where some lines starts with only 3 whitespaces.
-# --eof:    fix LLMs which needs to consider more EOF tokens.
-python generation/code_sanitize.py --vicuna --eof --folder /path/to/vicuna-[??]b_temp_[??]
-# Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
-```
+## Acknowledgement
 
-### Baby Checker
-
-Warn at incomplete tasks and uncompilable code.
-
-```shell
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-python tools/baby_checker.py --folder /path/to/[model]-[??]b_temp_[??]
-```
-
-### Result to LaTeX Table Ingredient
-
-```shell
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-python tools/res2tex.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
-```
+- [HumanEval](https://github.com/openai/human-eval)

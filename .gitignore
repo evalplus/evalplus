@@ -166,4 +166,4 @@ EvalPlus/
 backup/
 passrate.p*
 min_cov_dir/
-HumanEvalPlusInputsMin.jsonl
+HumanEvalPlus*.jsonl
