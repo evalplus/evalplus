@@ -1,4 +1,4 @@
-"""This baby checker checks two things:
+"""This file checks two things:
 1. Is the LLMs codegen completed for each benchmark?
 2. Warn the code that are not compilable (it could be some impl issues).
 """
