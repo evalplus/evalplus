@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
+from evalplus.eval import estimate_pass_at_k
+
 SMALL_SIZE = 10
 MEDIUM_SIZE = 14
 BIGGER_SIZE = 18
@@ -25,9 +27,62 @@ plt.rc("text", usetex=True)
 SUCCESS = "success"
 
 
+def passk_rel_drop(task2bvs_old, task2bvs_new):
+    # old_rate:
+    # dim0: problems
+    # dim1: each experiment (model@temperature)
+    # dim2: pass/fail booleans for each sample
+    # this fn computes the relative drop in pass@k averaged over experiments
+
+    passk_old = {}
+    passk_new = {}
+    # sample size => k => List[pass@k]
+
+    for exp_i in range(len(task2bvs_old[0])):
+        ntotal = []
+        npass_old = []
+        npass_new = []
+        nsamples = None
+        for task_i in range(len(task2bvs_old)):
+            bv_old = task2bvs_old[task_i][exp_i]
+            bv_new = task2bvs_new[task_i][exp_i]
+            ntotal.append(len(bv_old))
+            npass_old.append(bv_old.sum())
+            npass_new.append(bv_new.sum())
+            if nsamples is None:
+                nsamples = len(bv_old)
+            assert len(bv_old) == len(bv_new) == nsamples
+
+        d_old = passk_old.setdefault(nsamples, {})
+        d_new = passk_new.setdefault(nsamples, {})
+        for k in [1, 10, 100]:
+            if nsamples >= k:
+                pass_at_k_old = estimate_pass_at_k(ntotal, npass_old, k).mean() * 100
+                pass_at_k_new = estimate_pass_at_k(ntotal, npass_new, k).mean() * 100
+                d_old.setdefault(k, []).append(pass_at_k_old)
+                d_new.setdefault(k, []).append(pass_at_k_new)
+
+    for nsamples in passk_old:
+        print("=====================================")
+        print(f"{nsamples = }")
+        do = passk_old[nsamples]
+        dn = passk_new[nsamples]
+        drops = []
+        for k in [1, 10, 100]:
+            if k in do:
+                pko = np.array(do[k]).mean()
+                pkn = np.array(dn[k]).mean()
+                drop = 100 * (pko - pkn) / pko
+                drops.append(drop)
+                print(f"pass@{k}: \t{pko:.1f}% -> {pkn:.1f}% (drop {drop:.1f}%)")
+        drops = np.array(drops)
+        print(f"+++ {drops.mean() = :.1f}%")
+        print("=====================================")
+
+
 def get_data(paths: List[PathLike]):
-    task2rate_old = None
-    task2rate_new = None
+    task2bvs_old = None
+    task2bvs_new = None
 
     for path in tqdm(paths):  # each experiment
         res = json.load(open(path, "r"))["eval"]
@@ -35,25 +90,23 @@ def get_data(paths: List[PathLike]):
 
         assert ntask == 164
 
-        if task2rate_old is None and task2rate_new is None:
-            task2rate_old = [[] for _ in range(ntask)]
-            task2rate_new = [[] for _ in range(ntask)]
+        if task2bvs_old is None and task2bvs_new is None:
+            task2bvs_old = [[] for _ in range(ntask)]
+            task2bvs_new = [[] for _ in range(ntask)]
             # i-th => task-i pass rate for an experiment
 
         for i, v in enumerate(res.values()):  # each task
             base = v["base"]
             plus = v["plus"]
             bbv = np.array([s == SUCCESS for s, _ in base])
-            pbv = np.array([s == SUCCESS for s, _ in plus])
-            old_rate = np.mean(bbv)
-            new_rate = np.mean(pbv & bbv)
-            assert old_rate >= new_rate
+            pbv = np.array([s == SUCCESS for s, _ in plus]) & bbv
+            assert bbv.mean() >= pbv.mean()
 
-            task2rate_old[i].append(old_rate)
-            task2rate_new[i].append(new_rate)
+            task2bvs_old[i].append(bbv)
+            task2bvs_new[i].append(pbv)
 
-    assert len(task2rate_old) == len(task2rate_new)
-    return task2rate_old, task2rate_new
+    assert len(task2bvs_old) == len(task2bvs_new)
+    return task2bvs_old, task2bvs_new
 
 
 if __name__ == "__main__":
@@ -72,16 +125,19 @@ if __name__ == "__main__":
         paths.append(eval_json_path)
 
     CACHE_PATH = "passrate.pkl"
-    if os.path.isfile(CACHE_PATH):
-        rate_old, rate_new = pickle.load(open(CACHE_PATH, "rb"))
+    if os.path.isfile(CACHE_PATH):  # use cache
+        task2bvs_old, task2bvs_new = pickle.load(open(CACHE_PATH, "rb"))
     else:
-        # cache
-        rate_old, rate_new = get_data(paths)
-        pickle.dump((rate_old, rate_new), open(CACHE_PATH, "wb"))
+        task2bvs_old, task2bvs_new = get_data(paths)
+        pickle.dump((task2bvs_old, task2bvs_new), open(CACHE_PATH, "wb"))
 
-    # scale to 100
-    rate_old = [np.mean(rs) * 100 for rs in rate_old]
-    rate_new = [np.mean(rs) * 100 for rs in rate_new]
+    passk_rel_drop(task2bvs_old, task2bvs_new)
+
+    rate_old = [[bv.mean() for bv in task] for task in task2bvs_old]
+    rate_new = [[bv.mean() for bv in task] for task in task2bvs_new]
+
+    rate_old = 100 * np.array(rate_old).mean(axis=1)
+    rate_new = 100 * np.array(rate_new).mean(axis=1)
 
     ntask = len(rate_old)
 
