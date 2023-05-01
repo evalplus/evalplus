@@ -92,10 +92,12 @@ if __name__ == "__main__":
     unsolved = np.where(np.array(rate_old) == 0)[0]
     print("Unsolvable: ", unsolved)
     # sort indices according to the differences between rate_old and rate_new
-    diff_indices = (np.array(rate_old) - np.array(rate_new)).argsort()
+    diff = np.array(rate_old) - np.array(rate_new)
+    diff_indices = diff.argsort()
     for i in reversed(diff_indices[-10:]):
         print(
-            f"#{i} drops {rate_old[i] - rate_new[i] :.1f}: {rate_old[i]:.1f} -> {rate_new[i]:.1f}"
+            f"#{i} drops {diff[i] :.1f} ~ {100 * diff[i] / rate_old[i]:.1f}%:"
+            f" {rate_old[i]:.1f} -> {rate_new[i]:.1f}"
         )
 
     rate_old = np.array(rate_old)[indices]
@@ -110,7 +112,7 @@ if __name__ == "__main__":
     HUMANEVAL = r"\textsc{HumanEval}"
     HUMANEVAL_PLUS = r"\textsc{HumanEval\textsuperscript{+}}"
     rects1 = ax.bar(x, rate_old, color="coral", label=HUMANEVAL, alpha=0.5)
-    rects2 = ax.bar(x, rate_new, color="darkorchid", label=HUMANEVAL_PLUS, alpha=0.8)
+    rects2 = ax.bar(x, rate_new, color="firebrick", label=HUMANEVAL_PLUS, alpha=0.6)
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel("Average Pass Rate (\%)")
