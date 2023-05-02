@@ -1,6 +1,6 @@
 # `EvalPlus(📖) => 📚`
 
-> **Warning** 
+> **Warning**
 > <div align="center">
 > <b>
 > 🚨 Evaluating LLM-generated code on a dataset with just _3_ test-cases is NOT enough! 🚨
@@ -11,12 +11,9 @@ To address this, we started the EvalPlus project -- a rigourous evaluation frame
 
 + ✨ improves programming benchmarks by patching up to thousands of new tests! `EvalPlus(HumanEval) => HumanEval+` (81x new tests!)
 + ✨ crafts a set utility tools to sanitize, visualize and inspect LLM-generated code and evaluation results!
-+ ✨ accelerates LLM4Code research by open-sourcing LLM-generated samples for 10+ models -- no to re-run the expensive benchmarks!
++ ✨ accelerates LLM4Code research by open-sourcing LLM-generated samples for 14+ models -- no to re-run the expensive benchmarks!
 
-![](./gallary/evalplus_overview.jpg)
-
-This repo contains the enhanced versions of popular code synthesis evaluation datasets along with tools for you to easily use our enhanced dataset to evaluate LLM generated code and even
-create your own enhanced datasets!
+![](./gallary/overview.png)
 
 ## Use EvalPlus-Enhanced Dataset
 
