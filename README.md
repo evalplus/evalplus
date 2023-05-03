@@ -23,7 +23,9 @@ To get started, please first setup the environment:
 
 ```bash
 git clone https://github.com/evalplus/evalplus.git
+cd evalplus
 pip install -r requirements.txt
+export PYTHONPATH=$PYTHONPATH:$(pwd)
 ```
 
 ### HumanEval+
