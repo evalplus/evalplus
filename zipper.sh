@@ -23,7 +23,7 @@ done
 
 DATADIR=${DATADIR:-$DEFAULT_DATADIR}
 
-models=("codegen-2b" "codegen-6b" "codegen-16b" "vicuna-7b" "vicuna-13b" "stablelm-7b" "incoder-1b" "incoder-6b" "polycoder" "chatgpt" "santacoder" "gptneo-2b")
+models=("codegen-2b" "codegen-6b" "codegen-16b" "vicuna-7b" "vicuna-13b" "stablelm-7b" "incoder-1b" "incoder-6b" "polycoder" "chatgpt" "santacoder" "gptneo-2b" "gpt-4")
 temps=("0.0" "0.2" "0.4" "0.6" "0.8")
 
 for model in "${models[@]}"; do
