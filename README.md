@@ -10,12 +10,12 @@
 To address this, we started the EvalPlus project -- a rigourous evaluation framework for LLM4Code that:
 
 + ✨ improves programming benchmarks by patching up to thousands of new tests! `EvalPlus(HumanEval) => HumanEval+` (81x new tests!)
-+ ✨ crafts a set utility tools to sanitize, visualize and inspect LLM-generated code and evaluation results!
-+ ✨ accelerates LLM4Code research by open-sourcing LLM-generated samples for 14+ models -- no to re-run the expensive benchmarks!
++ ✨ crafts a set [utility tools](#useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
++ ✨ accelerates LLM4Code research by open-sourcing [LLM-generated samples](https://github.com/evalplus/evalplus/releases/tag/v0.1.0) for 14+ models -- no need to re-run the expensive benchmarks!
 
 ![](./gallary/overview.png)
 
-## Use EvalPlus-Enhanced Dataset
+## Use EvalPlus-enhanced dataset
 
 To get started, please first setup the environment:
 
@@ -44,7 +44,7 @@ fe = get_human_eval_plus() # -> a list of dictionaries (each is a programming pr
 
 ## Useful tools
 
-### Syntax Checker for LLM-generated Code
+### Syntax checker for LLM-generated code
 
 Check LLM-produced code and answer the following questions:
 
@@ -55,7 +55,7 @@ Check LLM-produced code and answer the following questions:
 python tools/checker.py --folder /path/to/[model]-[??]b_temp_[??] --dataset humaneval
 ```
 
-### Post Code Sanitizer
+### Post code sanitizer
 
 LLM-generated code may contain some syntax errors.
 But some of them can be easily fixable by doing simple post-processing.
@@ -66,7 +66,7 @@ python tools/sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??]
 # Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
 ```
 
-### Render `pass@k` Results to `rich` and LaTeX Tables
+### Render `pass@k` results to `rich` and LaTeX tables
 
 ```shell
 python tools/render.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
@@ -74,7 +74,7 @@ python tools/render.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
 
 ![](./gallary/render.gif)
 
-### Perform Test Input Generation from Scratch (TBD)
+### Perform test input generation from scratch (TBD)
 
 
 ## Development
@@ -87,7 +87,7 @@ pre-commit install
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 ```
 
-### Name Convention
+### Name convention
 
 - `evalplus` is the package name.
 - `${DATASET}_plus` is the name of dataset applied with `evalplus`.
