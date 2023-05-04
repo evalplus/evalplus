@@ -159,12 +159,29 @@ class HFTorchDecoder(DecoderBase):
         super().__init__(name=name, batch_size=batch_size, temperature=temperature)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(name)
-        kwargs = {"trust_remote_code": name in {"bigcode/santacoder"}}
+        kwargs = {
+            "trust_remote_code": name
+            in {
+                "bigcode/santacoder",
+                "Salesforce/codegen2-1B",
+                "Salesforce/codegen2-3_7B",
+                "Salesforce/codegen2-7B",
+                "Salesforce/codegen2-16B",
+            }
+        }
         if "codegen-" in name:  # use fp16 for codegen models
             kwargs["torch_dtype"] = torch.float16
+        if (
+            "codegen2-" in name
+        ):  # specify a branch to avoid warning of trust remote code
+            kwargs["revision"] = "main"
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
         if name in {"StabilityAI/stablelm-base-alpha-7b"}:
             self.skip_special_tokens = True
+            print("Switching to float16 ...")
+            self.model = self.model.half()
+        if "codegen2-" in name:  # switch codegen2 to float16
+            kwargs["revision"] = "main"
             print("Switching to float16 ...")
             self.model = self.model.half()
         self.model = self.model.to(self.device)
@@ -372,6 +389,62 @@ class IncoderDecoder(HFTorchDecoder):
         return outputs
 
 
+class Codegen2Decoder(HFTorchDecoder):
+    def __init__(
+        self, name: str, batch_size: int = 1, temperature: float = 0.8
+    ) -> None:
+        super().__init__(name, batch_size, temperature)
+        self.infill_ph = "<mask_1>"
+        # taken from: https://huggingface.co/Salesforce/codegen2-16B
+        self.extra_end = "<|endoftext|><sep><mask_1>"
+        self.extra_eof = ["<eom>"]
+        self.eofs = self.eofs + self.extra_eof
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        input = prompt + self.infill_ph + self.extra_end
+        input_tokens = (
+            self.tokenizer.encode(input, return_tensors="pt")
+            .repeat(min(self.batch_size, num_samples), 1)
+            .to(self.device)
+        )
+        scores = StoppingCriteriaList(
+            [
+                EndOfFunctionCriteria(
+                    start_length=len(input_tokens[0]),
+                    eof_strings=self.eofs,
+                    tokenizer=self.tokenizer,
+                )
+            ]
+        )
+        raw_outputs = self.model.generate(
+            input_tokens,
+            max_new_tokens=512,
+            stopping_criteria=scores,
+            do_sample=do_sample,
+            top_p=0.95,
+            top_k=None,
+            temperature=self.temperature,
+            output_scores=True,
+            return_dict_in_generate=True,
+            pad_token_id=self.tokenizer.eos_token_id,
+        )
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
+        outputs = []
+        # removes eof tokens.
+        for output in gen_strs:
+            min_index = 10000
+            for eof_string in self.eofs:
+                if eof_string in output:
+                    min_index = min(min_index, output.index(eof_string))
+            outputs.append(output[:min_index])
+        return outputs
+
+
 class SantaDecoder(HFTorchDecoder):
     def __init__(
         self, name: str, batch_size: int = 1, temperature: float = 0.8
@@ -458,6 +531,30 @@ def make_model(
         return OpenAIDecoder(
             batch_size=batch_size,
             name="codegen-16b",
+            temperature=temperature,
+        )
+    elif name == "codegen2-1b":
+        return Codegen2Decoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen2-1B",
+            temperature=temperature,
+        )
+    elif name == "codegen2-3b":
+        return Codegen2Decoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen2-3_7B",
+            temperature=temperature,
+        )
+    elif name == "codegen2-7b":
+        return Codegen2Decoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen2-7B",
+            temperature=temperature,
+        )
+    elif name == "codegen2-16b":
+        return Codegen2Decoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen2-16B",
             temperature=temperature,
         )
     elif name == "polycoder":
