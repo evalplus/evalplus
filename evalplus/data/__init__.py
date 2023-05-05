@@ -13,7 +13,7 @@ CACHE_DIR = user_cache_dir("evalplus")
 HUMANEVAL_URL = (
     "https://github.com/openai/human-eval/raw/master/data/HumanEval.jsonl.gz"
 )
-HUMANEVAL_PLUS_URL = "https://raw.githubusercontent.com/ganler/release/main/dataset/HumanEvalPlus/HumanEvalPlus-v0.1.0.jsonl.gz"
+HUMANEVAL_PLUS_URL = "https://github.com/ganler/release/releases/download/humanevalplus-v0.1.0/HumanEvalPlus-v0.1.0.jsonl.gz"
 
 
 # hacky way to handle \n\r, etc in strings
