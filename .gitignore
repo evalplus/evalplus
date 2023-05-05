@@ -167,3 +167,4 @@ backup/
 passrate.p*
 min_cov_dir/
 HumanEvalPlus*.jsonl
+HumanEvalPlus*.gz
