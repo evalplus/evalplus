@@ -1,13 +1,13 @@
 import json
 import os
-from importlib import import_module
 
 from evalplus.data import get_human_eval_plus
+from evalplus.gen.util import trusted_exec
 
 
-def execute(fn, input_list) -> bool:
+def execute(code, input_list) -> bool:
     try:
-        fn(*input_list)
+        trusted_exec(code, [input_list], entry_point)
     except Exception as e:
         assert str(e) == "invalid inputs"
         return False
@@ -36,16 +36,15 @@ if __name__ == "__main__":
         plus = json.loads(line)
         task_inputs[plus["task_id"]] = plus["inputs"]
 
-    for i, p in enumerate(get_human_eval_plus()):
+    for p in get_human_eval_plus().values():
         entry_point = p["entry_point"]
-        mod = import_module(f"groundtruth.humaneval.{str(i).zfill(3)}_{entry_point}")
-        fn = getattr(mod, entry_point)
-        task_id = p["task_id"].replace("/", "_")
+        code = p["prompt"] + p["canonical_solution"]
+        task_id = p["task_id"]
         new_inputs = task_inputs[task_id]
         count = 0
         new_input_dict = {"task_id": task_id, "inputs": []}
         for input_list in new_inputs:
-            res = execute(fn, input_list)
+            res = execute(code, input_list)
             if res:
                 new_input_dict["inputs"].append(input_list)
             else:

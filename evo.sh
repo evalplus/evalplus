@@ -52,9 +52,9 @@ for model in "${models[@]}"; do
     folder="${DATADIR}/${model}_temp_${temp}"
     if [ -d "$folder" ]; then
       if [ $JUST_RUN -eq 1 ]; then
-        yes | python3 evalplus/evaluate.py --dataset humaneval --r_folder "$folder" --parallel ${NCORES} --i-just-wanna-run --extra --full
+        yes | python3 evalplus/evaluate.py --dataset humaneval --samples "$folder" --parallel ${NCORES} --i-just-wanna-run --full
       else
-        python3 evalplus/evaluate.py --dataset humaneval --r_folder "$folder" --parallel ${NCORES} --extra --full
+        python3 evalplus/evaluate.py --dataset humaneval --samples "$folder" --parallel ${NCORES} --full
       fi
     else
       echo "Folder does not exist: $folder"

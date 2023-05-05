@@ -13,14 +13,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     plus_inputs = get_human_eval_plus_inputs()
-    problems = get_human_eval_plus()
+    problems = get_human_eval_plus().values()
 
     base_bvs = {}
     plus_bvs = {}
     id2idx = {}
 
     for i, problem in enumerate(problems):
-        task_id = problem["task_id"].replace("/", "_")
+        task_id = problem["task_id"]
         id2idx[task_id] = i
         base_bvs[task_id] = np.zeros(len(problem["base_input"]), dtype=bool)
         plus_bvs[task_id] = np.zeros(len(plus_inputs[task_id]), dtype=bool)

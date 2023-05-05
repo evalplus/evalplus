@@ -1,7 +1,8 @@
 import gzip
 import json
 import os
-from typing import Dict, List
+from os import PathLike
+from typing import Dict, Iterable, List
 
 import tempdir
 import wget
@@ -13,7 +14,8 @@ CACHE_DIR = user_cache_dir("evalplus")
 HUMANEVAL_URL = (
     "https://github.com/openai/human-eval/raw/master/data/HumanEval.jsonl.gz"
 )
-HUMANEVAL_PLUS_URL = "https://github.com/ganler/release/releases/download/humanevalplus-v0.1.0/HumanEvalPlus-v0.1.0.jsonl.gz"
+HUMANEVAL_PLUS_VERSION = "v0.1.1"
+HUMANEVAL_PLUS_URL = f"https://github.com/ganler/release/releases/download/humanevalplus/HumanEvalPlus-{HUMANEVAL_PLUS_VERSION}.jsonl.gz"
 
 
 # hacky way to handle \n\r, etc in strings
@@ -21,7 +23,72 @@ def to_raw(string):
     return string.encode("unicode-escape").decode().replace("\\\\", "\\")
 
 
-def get_human_eval_plus(err_incomplete=True) -> List[Dict[str, str]]:
+def write_jsonl(filename: str, data: Iterable[Dict], append: bool = False):
+    """
+    Writes an iterable of dictionaries to jsonl
+    """
+    if append:
+        mode = "ab"
+    else:
+        mode = "wb"
+    filename = os.path.expanduser(filename)
+    if filename.endswith(".gz"):
+        with open(filename, mode) as fp:
+            with gzip.GzipFile(fileobj=fp, mode="wb") as gzfp:
+                for x in data:
+                    gzfp.write((json.dumps(x) + "\n").encode("utf-8"))
+    else:
+        with open(filename, mode) as fp:
+            for x in data:
+                fp.write((json.dumps(x) + "\n").encode("utf-8"))
+
+
+def stream_jsonl(filename: str) -> Iterable[Dict]:
+    """
+    Parses each jsonl line and yields it as a dictionary
+    """
+    if filename.endswith(".gz"):
+        with open(filename, "rb") as gzfp:
+            with gzip.open(gzfp, "rt") as fp:
+                for line in fp:
+                    if any(not x.isspace() for x in line):
+                        yield json.loads(line)
+    else:
+        with open(filename, "r") as fp:
+            for line in fp:
+                if any(not x.isspace() for x in line):
+                    yield json.loads(line)
+
+
+def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
+    """We accept two formats of inputs.
+    + `sample.jsonl` which is the format from HumanEval, i.e., {task_id, completion}.
+    + A folder which contains sub-folders named after the task_id. Each sub-folder
+    contains samples named in `[?].py` where `?` is the solution id starting with 0.
+    Different from `sample.jsonl`, the solutions must be complete (with prompt prefix).
+    """
+
+    # if it is a file
+    if os.path.isfile(sample_path):
+        for sample in stream_jsonl(sample_path):
+            yield sample
+
+    # if it is a folder
+    for task_id in os.listdir(sample_path):
+        task_path = os.path.join(sample_path, task_id)
+        if os.path.isdir(task_path):
+            for solution_id in os.listdir(task_path):
+                solution_path = os.path.join(task_path, solution_id)
+                if os.path.isfile(solution_path) and solution_path.endswith(".py"):
+                    with open(solution_path, "r") as f:
+                        completion = f.read()
+                    yield {
+                        "task_id": task_id.replace("HumanEval_", "HumanEval/"),
+                        "solution": completion,
+                    }
+
+
+def get_human_eval_plus(err_incomplete=True) -> Dict[str, Dict]:
     """Get HumanEvalPlus locally.
     Args:
         err_incomplete (bool, optional): Whether to raise error if HumanEvalPlus is not complete. Defaults to True.
@@ -45,7 +112,9 @@ def get_human_eval_plus(err_incomplete=True) -> List[Dict[str, str]]:
         # https://github.com/openai/human-eval/blob/master/data/HumanEval.jsonl.gz
         print("Downloading HumanEvalPlus dataset...")
         with tempdir.TempDir() as tmpdir:
-            plus_gz_path = os.path.join(tmpdir, "HumanEvalPlus.jsonl.gz")
+            plus_gz_path = os.path.join(
+                tmpdir, f"HumanEvalPlus-{HUMANEVAL_PLUS_VERSION}.jsonl.gz"
+            )
             wget.download(HUMANEVAL_PLUS_URL, plus_gz_path)
 
             with gzip.open(plus_gz_path, "rb") as f:
@@ -59,12 +128,9 @@ def get_human_eval_plus(err_incomplete=True) -> List[Dict[str, str]]:
         with open(plus_path, "w") as f:
             f.write(plus)
 
-    plus = open(plus_path, "r").read() if not plus else plus
-    plus = plus.split("\n")
-    plus = [json.loads(line) for line in plus if line]
+    plus = {task["task_id"]: task for task in stream_jsonl(plus_path)}
     if err_incomplete:
-        for task in plus:
-            task_id = task["task_id"]
+        for task_id, task in plus.items():
             for key in [
                 "prompt",
                 "contract",
@@ -121,4 +187,4 @@ def get_human_eval() -> List[Dict[str, str]]:
         "import math\n", ""
     )
 
-    return human_eval
+    return {task["task_id"]: task for task in human_eval}

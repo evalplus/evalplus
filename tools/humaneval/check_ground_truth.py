@@ -10,7 +10,7 @@ from rich.progress import track
 from evalplus.data import get_human_eval_plus
 
 if __name__ == "__main__":
-    human_eval_plus = get_human_eval_plus()
+    human_eval_plus = get_human_eval_plus().values()
 
     for i, task in track(enumerate(human_eval_plus)):
         fname = (

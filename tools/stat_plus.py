@@ -5,7 +5,7 @@ from evalplus.data import get_human_eval_plus
 if __name__ == "__main__":
     sizes = [
         [len(inp["base_input"]), len(inp["plus_input"])]
-        for inp in get_human_eval_plus()
+        for inp in get_human_eval_plus().values()
     ]
     size_base = sizes[:, 0]
     print(f"{size_base.min() = }", f"{size_base.argmin() = }")

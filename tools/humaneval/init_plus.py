@@ -105,7 +105,7 @@ if __name__ == "__main__":
                     task["entry_point"], task["prompt"], task["test"]
                 )
                 task["atol"] = get_atol(task_id)
-                task["task_id"] = task["task_id"].replace("/", "_")
+                task["task_id"] = task["task_id"]
 
                 writer.write(json.dumps(task) + "\n")
         # move tmp_file to HUMANEVAL_PLUS_PATH

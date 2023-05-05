@@ -22,7 +22,7 @@ def analyze_resfile(resfile):
     before_pass = []
     after_pass = []
     for v in res.values():
-        total.append(len(v["files"]))
+        total.append(v["nfiles"])
         bc = sum([r[0] == SUCCESS for r in v["base"]])
         before_pass.append(bc)
         if v["plus"]:

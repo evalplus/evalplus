@@ -8,7 +8,7 @@ from evalplus.data import get_human_eval_plus, get_human_eval_plus_inputs
 LLM_HOME_PATH = "/JawTitan/EvalPlus/humaneval"
 model_paths = os.listdir(LLM_HOME_PATH)
 
-problems = get_human_eval_plus()
+problems = get_human_eval_plus().values()
 new_inputs = get_human_eval_plus_inputs()
 cover_info = {f"HumanEval_{i}": {} for i in range(164)}
 

@@ -22,8 +22,8 @@ def input_generation(args, problems):
     with open(args.output, "w") as file:
         for problem in problems:
             new_input = {}
-            p_name = problem["task_id"].replace("/", "_")
-            print(f"generating inputs for {p_name} ...")
+            task_id = problem["task_id"]
+            print(f"generating inputs for {task_id} ...")
             # by default we do not include constraints in the prompt
             code = problem["prompt"] + problem["canonical_solution"]
             c_code = (
@@ -40,12 +40,12 @@ def input_generation(args, problems):
                 )
             )
             print(f"generated {len(input_gen)} inputs")
-            new_input["task_id"] = p_name
+            new_input["task_id"] = task_id
             new_input["inputs"] = input_gen
             file.write(json.dumps(new_input, cls=SetEncoder) + "\n")
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", required=True, type=str)
     parser.add_argument("--chatgpt_len", required=True, type=int)
@@ -69,3 +69,7 @@ if __name__ == "__main__":
 
     assert os.path.isfile(args.output), f"{args.output} already exists!"
     input_generation(args, problems)
+
+
+if __name__ == "__main__":
+    main()
