@@ -1,8 +1,4 @@
 wget
 appdirs
-pre-commit
 tempdir
-openai
-rich
 multipledispatch
-fschat
