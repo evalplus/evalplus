@@ -1,11 +1,11 @@
 # `EvalPlus(📖) => 📚`
 
 <p align="center">
-    <a href="#🔥-Quick-Start">🔥Quick Start</a> •
-    <a href="#📜-Papers">📜Papers</a> •
-    <a href="#🔨-Useful-tools">🔨Useful tools</a> •
-    <a href="#👷-Development">👷Development</a> •
-    <a href="#🙏-Acknowledgement">🙏Acknowledgement</a>
+    <a href="#-Quick-Start">🔥Quick Start</a> •
+    <a href="#-Papers">📜Papers</a> •
+    <a href="#-Useful-tools">🔨Useful tools</a> •
+    <a href="#-Development">👷Development</a> •
+    <a href="#-Acknowledgement">🙏Acknowledgement</a>
 </p>
 
 > **Warning**
@@ -28,14 +28,14 @@ To address this, we started the EvalPlus project -- a rigourous evaluation frame
 To get started, please first setup the environment:
 
 ```bash
-pip install evalplus
+pip install evalplus --upgrade
 ```
 
 ...Or you can try out the latest developing version:
 
 
 ```bash
-pip install "git+https://github.com/evalplus/evalplus.git"
+pip install "git+https://github.com/evalplus/evalplus.git" --upgrade
 ```
 
 <details><summary>🤔 Want to use local GitHub repo?<i>:: click to expand ::</i></summary>
