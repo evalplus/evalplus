@@ -17,7 +17,7 @@
 
 To address this, we started the EvalPlus project -- a rigourous evaluation framework for LLM4Code that:
 
-+ ✨ improves programming benchmarks by patching up to thousands of new tests! `EvalPlus(HumanEval) => HumanEval+` (81x new tests!)
++ ✨ improves code benchmarks by adding up to thousands of new tests! (81x new tests for HumanEval!)
 + ✨ crafts a set [utility tools](#useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
 + ✨ accelerates LLM4Code research by open-sourcing [LLM-generated samples](https://github.com/evalplus/evalplus/releases/tag/v0.1.0) for 14+ models -- no need to re-run the expensive benchmarks!
 
@@ -38,7 +38,7 @@ pip install evalplus --upgrade
 pip install "git+https://github.com/evalplus/evalplus.git" --upgrade
 ```
 
-<details><summary>🤔 Want to use local GitHub repo?<i>:: click to expand ::</i></summary>
+<details><summary>🤔 Want to use local GitHub repo? <i>:: click to expand ::</i></summary>
 <div>
 
 ```bash
@@ -53,7 +53,7 @@ pip install -r requirements.txt
 
 ### HumanEval+
 
-The usage is just like the original HumanEval dataset where you just need to implement the `generate_one_completion` function!
+The usage is just like the original HumanEval where you just need to implement the `generate_one_completion` function!
 
 ```python
 from evalplus.data import get_human_eval_plus, write_jsonl
@@ -69,7 +69,7 @@ samples = [
 write_jsonl("samples.jsonl", samples)
 ```
 
-<details><summary>🤔 What is in a `problem`?<i> :: click to expand ::</i></summary>
+<details><summary>🤔 What is in a `problem`? <i>:: click to expand ::</i></summary>
 <div>
 
 * "task_id" is the identifier string for the task
@@ -88,7 +88,7 @@ To evaluate the samples:
 evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
 
-<details><summary>🤔 Want to use local GitHub repo?<i>:: click to expand ::</i></summary>
+<details><summary>🤔 Want to use local GitHub repo? <i>:: click to expand ::</i></summary>
 <div>
 
 ```bash
