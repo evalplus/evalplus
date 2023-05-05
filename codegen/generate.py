@@ -47,8 +47,8 @@ def code_generate(args, workdir: PathLike, model: DecoderBase):
         TextColumn("•"),
         TimeElapsedColumn(),
     ) as p:
-        for task in p.track(get_human_eval_plus()):
-            p_name = task["task_id"].replace("/", "_")
+        for task_id, task in p.track(get_human_eval_plus().items()):
+            p_name = task_id.replace("/", "_")
             if args.use_contracts != "no" and task["contract"] == "":
                 continue
             os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
