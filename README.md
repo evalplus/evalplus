@@ -84,6 +84,14 @@ write_jsonl("samples.jsonl", samples)
 
 To evaluate the samples:
 
+You are strongly recommended to use a sandbox such as [docker](https://docs.docker.com/get-docker/):
+
+```bash
+docker run -v $(pwd):/app ganler/evalplus:v0.1.1 --dataset humaneval --samples samples.jsonl
+```
+
+...Or if you want to try it locally regardless of the risks ⚠️:
+
 ```bash
 evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
@@ -126,6 +134,7 @@ Base + Extra
 - `Base` is the `pass@k` for the original HumanEval
 - `Base + Extra` is the `pass@k` for the our **HumanEval+** (with extra tests)
 - The "k" includes `[1, 10, 100]` where k values `<=` the sample size will be used
+- A cache file named like `samples_eval_results.jsonl` will be cached. Remove it to re-run the evaluation
 
 ### MBPP+ (TBD)
 
