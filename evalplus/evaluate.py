@@ -143,7 +143,9 @@ def evaluate(flags, problems):
             results["eval"][task_id] = {
                 "nfiles": len(task_results),
                 "base": [x["base"] for x in task_results],
-                "plus": [x["plus"] for x in task_results],
+                "plus": [x["plus"] for x in task_results]
+                if not flags.base_only
+                else [],
             }
 
     if os.path.isfile(result_path) and flags.i_just_wanna_run:
