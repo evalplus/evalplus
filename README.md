@@ -108,6 +108,25 @@ python evalplus/evaluate.py --dataset humaneval --samples samples.jsonl
 </div>
 </details>
 
+The output should be like (below is GPT-4 greedy decoding example):
+
+```
+Computing expected output...
+Expected outputs computed in 15.18s
+Reading samples...
+164it [00:04, 37.79it/s]
+Evaluating samples...
+100%|██████████████████████████████████████████| 164/164 [00:03<00:00, 44.75it/s]
+Base
+{'pass@1': 0.8841463414634146}
+Base + Extra
+{'pass@1': 0.75}
+```
+
+- `Base` is the `pass@k` for the original HumanEval
+- `Base + Extra` is the `pass@k` for the our **HumanEval+** (with extra tests)
+- The "k" includes `[1, 10, 100]` where k values `<=` the sample size will be used
+
 ### MBPP+ (TBD)
 
 
