@@ -1,6 +1,13 @@
 # `EvalPlus(📖) => 📚`
 
 <p align="center">
+    <a href="https://pypi.org/project/evalplus/"><img src="https://img.shields.io/pypi/v/evalplus?color=g"></a>
+    <a href="https://github.com/evalplus/evalplus/blob/master/LICENSE"><img src="https://img.shields.io/pypi/l/evalplus"></a>
+    <a href="https://hub.docker.com/r/ganler/evalplus" title="Docker"><img src="https://img.shields.io/docker/image-size/ganler/evalplus"></a>
+</p>
+
+
+<p align="center">
     <a href="#-Quick-Start">🔥Quick Start</a> •
     <a href="#-Papers">📜Papers</a> •
     <a href="#-Useful-tools">🔨Useful tools</a> •
