@@ -102,6 +102,7 @@ def evaluate(flags, problems):
                     record_time=True,
                 )
             expected_output[task_id] = oracle
+        exec_time = time.time() - tbegin
         print(f"Expected outputs computed in {time.time() - tbegin:.2f}s")
 
         with ThreadPoolExecutor(max_workers=n_workers) as executor:
@@ -152,7 +153,8 @@ def evaluate(flags, problems):
         decision = ""
         while decision.lower() not in ["y", "n"]:
             print(f"{result_path} already exists. Press [Y/N] to overwrite or exit...")
-            decision = input()
+            # decision = input()
+            decision = "y"
 
         if decision.lower() == "y":
             # mv the file to a backup
@@ -201,6 +203,8 @@ def evaluate(flags, problems):
             if (total >= k).all()
         }
         print(pass_at_k)
+
+    return exec_time, pass_at_k
 
 
 def main():
