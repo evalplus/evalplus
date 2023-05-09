@@ -196,8 +196,8 @@ def untrusted_check(
         ),
     )
     p.start()
-    p.join(timeout=timeout + 1)
-    # p.join(timeout=sum(time_limits) + max(sum(time_limits) / 2, 3))
+    # p.join(timeout=timeout + 1)
+    p.join(timeout=sum(time_limits) + max(sum(time_limits) / 2, 3))
     if p.is_alive():
         p.terminate()
         time.sleep(0.1)
