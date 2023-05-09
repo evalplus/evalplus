@@ -52,8 +52,7 @@ if __name__ == "__main__":
 
     # task_id -> entry_point
     entry_point = {}
-    for problem in get_human_eval():
-        task_id = problem["task_id"].replace("/", "_")
+    for task_id, problem in get_human_eval().items():
         entry_point[task_id] = problem["entry_point"]
 
     # make a new folder with "-sanitized" suffix
@@ -64,7 +63,7 @@ if __name__ == "__main__":
     ntotal = 0
     for pyf in tqdm(get_all_python_files(args.folder)):
         # Get [?] from "[prefix]/HumanEval_[?]/[number].py":
-        task_id = pyf.split("/")[-2]
+        task_id = pyf.split("/")[-2].replace("HumanEval_", "HumanEval/")
 
         ntotal += 1
         old_code = open(pyf).read()

@@ -38,7 +38,7 @@ JUST_RUN=${JUST_RUN:-$DEFAULT_JUST_RUN}
 
 export PYTHONPATH=$(pwd)
 
-models=("codegen-2b" "codegen-6b" "codegen-16b" "vicuna-7b" "vicuna-13b" "stablelm-7b" "incoder-1b" "incoder-6b" "polycoder" "chatgpt" "santacoder" "gptneo-2b" "gpt-4")
+models=("codegen-2b" "codegen-6b" "codegen-16b" "codegen2-1b"  "codegen2-3b"  "codegen2-7b" "vicuna-7b" "vicuna-13b" "stablelm-7b" "incoder-1b" "incoder-6b" "polycoder" "chatgpt" "santacoder" "gptneo-2b" "gpt-4")
 temps=("0.0" "0.2" "0.4" "0.6" "0.8")
 
 if [ $JUST_RUN -eq 0 ]; then

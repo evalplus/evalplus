@@ -143,7 +143,7 @@ def get_human_eval_plus(err_incomplete=True) -> Dict[str, Dict]:
     return plus
 
 
-def get_human_eval() -> List[Dict[str, str]]:
+def get_human_eval() -> Dict[str, Dict]:
     """Get HumanEval from OpenAI's github repo and return as a list of parsed dicts.
 
     Returns:
