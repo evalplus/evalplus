@@ -72,20 +72,20 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
     if os.path.isfile(sample_path):
         for sample in stream_jsonl(sample_path):
             yield sample
-
-    # if it is a folder
-    for task_id in os.listdir(sample_path):
-        task_path = os.path.join(sample_path, task_id)
-        if os.path.isdir(task_path):
-            for solution_id in os.listdir(task_path):
-                solution_path = os.path.join(task_path, solution_id)
-                if os.path.isfile(solution_path) and solution_path.endswith(".py"):
-                    with open(solution_path, "r") as f:
-                        completion = f.read()
-                    yield {
-                        "task_id": task_id.replace("HumanEval_", "HumanEval/"),
-                        "solution": completion,
-                    }
+    else:
+        # if it is a folder
+        for task_id in os.listdir(sample_path):
+            task_path = os.path.join(sample_path, task_id)
+            if os.path.isdir(task_path):
+                for solution_id in os.listdir(task_path):
+                    solution_path = os.path.join(task_path, solution_id)
+                    if os.path.isfile(solution_path) and solution_path.endswith(".py"):
+                        with open(solution_path, "r") as f:
+                            completion = f.read()
+                        yield {
+                            "task_id": task_id.replace("HumanEval_", "HumanEval/"),
+                            "solution": completion,
+                        }
 
 
 def get_human_eval_plus(err_incomplete=True) -> Dict[str, Dict]:

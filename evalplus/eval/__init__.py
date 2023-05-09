@@ -214,7 +214,7 @@ def untrusted_check(
         if len(details) != len(inputs) or not all(details):
             stat = FAILED
 
-    return stat, np.array(details)
+    return stat, details
 
 
 def evaluate_files(
