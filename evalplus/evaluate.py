@@ -67,8 +67,8 @@ def evaluate(flags, problems):
     if os.path.isdir(flags.samples):
         result_path = os.path.join(flags.samples, "eval_results.json")
     else:
-        assert flags.samples.endswith(".json")
-        result_path = flags.samples.replace(".json", "_eval_results.json")
+        assert flags.samples.endswith(".jsonl")
+        result_path = flags.samples.replace(".jsonl", "_eval_results.json")
 
     if os.path.isfile(result_path) and not flags.i_just_wanna_run:
         print(f"Load from {result_path}")

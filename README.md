@@ -1,6 +1,13 @@
 # `EvalPlus(📖) => 📚`
 
 <p align="center">
+    <a href="https://pypi.org/project/evalplus/"><img src="https://img.shields.io/pypi/v/evalplus?color=g"></a>
+    <a href="https://github.com/evalplus/evalplus/blob/master/LICENSE"><img src="https://img.shields.io/pypi/l/evalplus"></a>
+    <a href="https://hub.docker.com/r/ganler/evalplus" title="Docker"><img src="https://img.shields.io/docker/image-size/ganler/evalplus"></a>
+</p>
+
+
+<p align="center">
     <a href="#-Quick-Start">🔥Quick Start</a> •
     <a href="#-Papers">📜Papers</a> •
     <a href="#-Useful-tools">🔨Useful tools</a> •
@@ -72,12 +79,12 @@ write_jsonl("samples.jsonl", samples)
 <details><summary>🤔 What is in a `problem`? <i>:: click to expand ::</i></summary>
 <div>
 
-* "task_id" is the identifier string for the task
-* "entry_point": name of the function
-* "prompt" is the function signature with docstring
-+ "canonical_solution" is the ground-truth implementation (re-implemented to fix bugs in HumanEval)
-+ "base_input" is the test inputs in original HumanEval
-+ "plus_input" is the test inputs brought by EvalPlus
+* `task_id` is the identifier string for the task
+* `entry_point` is name of the function
+* `prompt` is the function signature with docstring
++ `canonical_solution` is the ground-truth implementation (re-implemented to fix bugs in HumanEval)
++ `base_input` is the test inputs in original HumanEval
++ `plus_input` is the test inputs brought by EvalPlus
 
 </div>
 </details>
