@@ -6,8 +6,8 @@ from typing import Any, Dict, List
 
 from rich.progress import track
 
-from evalplus.data import get_human_eval_plus
-from evalplus.evaluate import evaluate
+from evalplus.data import get_human_eval_plus, write_jsonl
+from evalplus.evaluate import evaluate_humaneval
 
 LLM_HOME_PATH = "/JawTitan/yuyao-data/humaneval"
 K = 5
@@ -48,6 +48,7 @@ pass_at_k = {
     "gpt-j": 10.4,
 }
 temps = ["0.0", "0.2", "0.4", "0.6", "0.8"]
+cover_info = {f"HumanEval/{i}": {} for i in range(164)}
 
 
 def compute_score(model_path: str):
@@ -57,8 +58,7 @@ def compute_score(model_path: str):
     return 0
 
 
-def get_cover_info():
-    cover_info = {f"HumanEval/{i}": {} for i in range(164)}
+def add_kill_info():
     for model_path in track(model_paths, description="Collecting sets..."):
         if not model_path[-1].isdigit():
             continue
@@ -70,15 +70,6 @@ def get_cover_info():
         with open(eval_json_path, "r") as f:
             res = json.load(f)["eval"]
             for task_id, v in res.items():
-                for i_code, (status, res_list) in enumerate(v["base"]):
-                    if status == "success":
-                        continue
-                    for i_test, res in enumerate(res_list):
-                        test_id = f"base_{i_test}"
-                        if res == False:
-                            cover_info[task_id].setdefault(test_id, []).append(
-                                (model_path, i_code)
-                            )
                 for i_code, (status, res_list) in enumerate(v["plus"]):
                     if status == "success":
                         continue
@@ -88,7 +79,18 @@ def get_cover_info():
                             cover_info[task_id].setdefault(test_id, []).append(
                                 (model_path, i_code)
                             )
-    return cover_info
+
+
+def add_coverage_info():
+    COVERAGE = os.path.join(LLM_HOME_PATH, "coverage_info")
+    for i in range(164):
+        task_id = f"HumanEval/{i}"
+        with open(os.path.join(COVERAGE, f"{i}.json"), "r") as f:
+            cov_dict = json.load(f)
+        for test_id, branch_cover in cov_dict.items():
+            cover_info[task_id].setdefault(test_id, []).extend(
+                [(br, "gt") for br in branch_cover]
+            )
 
 
 def get_score_info(cover_info: Dict[str, Dict[str, List[Any]]], exclude: str):
@@ -110,11 +112,12 @@ def compute_avg_test(problem: Dict[str, Dict[str, Any]]):
     return sum_tests / len(problem)
 
 
-cover_info = get_cover_info()
+add_kill_info()
+add_coverage_info()
 
 for model in models:
-    if "gpt-4" not in model:
-        continue
+    # if "gpt-4" not in model:
+    # continue
     score_info = get_score_info(cover_info, model)
     new_problems = {}
     for i in range(164):
@@ -126,7 +129,7 @@ for model in models:
             "contract": otask["contract"],
             "canonical_solution": otask["canonical_solution"],
             "entry_point": otask["entry_point"],
-            "base_input": [],
+            "base_input": otask["base_input"],
             "plus_input": [],
             "atol": otask["atol"],
         }
@@ -174,14 +177,9 @@ for model in models:
             : K * len(problems[task_id]["base_input"])
         ]:
             index = int(test_id.split("_")[-1])
-            if test_id.startswith("base"):
-                inputs = problems[task_id]["base_input"][index]
-                new_problems[task_id]["base_input"].append(inputs)
-            else:
-                inputs = problems[task_id]["plus_input"][index]
-                if inputs not in new_problems[task_id]["plus_input"]:
-                    new_problems[task_id]["plus_input"].append(inputs)
-        new_problems[task_id]["base_input"] = problems[task_id]["base_input"]
+            inputs = problems[task_id]["plus_input"][index]
+            if inputs not in new_problems[task_id]["plus_input"]:
+                new_problems[task_id]["plus_input"].append(inputs)
     args = argparse.Namespace(
         dataset="humaneval",
         samples=f"{LLM_HOME_PATH}/{model}_temp_0.0",
@@ -190,8 +188,8 @@ for model in models:
         i_just_wanna_run=True,
         full=True,
     )
-    exec_time, pass_at_k_dict = evaluate(args, new_problems)
-    o_exec_time, o_pass_at_k_dict = evaluate(args, problems)
+    exec_time, pass_at_k_dict = evaluate_humaneval(args, new_problems)
+    o_exec_time, o_pass_at_k_dict = evaluate_humaneval(args, problems)
     tsr_dict = {
         "ntests": compute_avg_test(new_problems),
         "pass@1_before": o_pass_at_k_dict["pass@1"],
@@ -199,5 +197,6 @@ for model in models:
         "runtime_before": o_exec_time,
         "runtime_after": exec_time,
     }
+    dataset_path = os.path.join(LLM_HOME_PATH, f"HumanEvanPlus_{model}.jsonl")
     with open(os.path.join(LLM_HOME_PATH, f"{model}.json"), "w") as f:
         json.dump(tsr_dict, f, indent=4)

@@ -33,11 +33,11 @@ Result = Tuple[str, List[bool]]
 
 
 def get_groundtruth(problems, hashcode):
-    cache_file = os.path.join(CACHE_DIR, f"{hashcode}.pkl")
-    if os.path.exists(cache_file):
-        print(f"Load from {cache_file}")
-        with open(cache_file, "rb") as f:
-            return pickle.load(f)
+    # cache_file = os.path.join(CACHE_DIR, f"{hashcode}.pkl")
+    # if os.path.exists(cache_file):
+    # print(f"Load from {cache_file}")
+    # with open(cache_file, "rb") as f:
+    # return pickle.load(f)
 
     print("Computing expected output...")
     tbegin = time.time()
@@ -58,12 +58,14 @@ def get_groundtruth(problems, hashcode):
             record_time=True,
         )
         expected_output[task_id] = oracle
+    exec_time = time.time() - tbegin
     print(f"Expected outputs computed in {time.time() - tbegin:.2f}s")
 
-    with open(cache_file, "wb") as f:
-        pickle.dump(expected_output, f)
+    # with open(cache_file, "wb") as f:
+    # pickle.dump(expected_output, f)
 
-    return expected_output
+    return exec_time, expected_output
+    # return expected_output
 
 
 def check_correctness(
@@ -104,7 +106,8 @@ def check_correctness(
     return ret
 
 
-def evaluate_humaneval(flags):
+def evaluate_humaneval(flags, problems):
+    # def evaluate_humaneval(flags):
     if flags.parallel is None:
         n_workers = max(1, multiprocessing.cpu_count() // 2)
     else:
@@ -123,10 +126,11 @@ def evaluate_humaneval(flags):
 
         results = compatible_eval_result(results)
     else:
-        problems = get_human_eval_plus()
+        # problems = get_human_eval_plus()
 
         problem_hash = get_human_eval_plus_hash()
-        expected_output = get_groundtruth(problems, problem_hash)
+        exec_time, expected_output = get_groundtruth(problems, problem_hash)
+        # expected_output = get_groundtruth(problems, problem_hash)
 
         results = {
             "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -262,7 +266,7 @@ def main():
     args = parser.parse_args()
 
     if args.dataset == "humaneval":
-        evaluate_humaneval(args)
+        evaluate_humaneval(args, get_human_eval_plus())
     else:
         raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
 
