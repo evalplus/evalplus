@@ -58,7 +58,7 @@ def check_correctness(
     return ret
 
 
-def evaluate(flags, problems):
+def evaluate_humaneval(flags):
     if flags.parallel is None:
         n_workers = max(1, multiprocessing.cpu_count() // 2)
     else:
@@ -77,6 +77,8 @@ def evaluate(flags, problems):
 
         results = compatible_eval_result(results)
     else:
+        problems = get_human_eval_plus()
+
         results = {
             "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "hash": hash(str(problems)),
@@ -213,12 +215,10 @@ def main():
     parser.add_argument("--full", action="store_true")
     args = parser.parse_args()
 
-    if args.dataset not in ["humaneval"]:
+    if args.dataset == "humaneval":
+        evaluate_humaneval(args)
+    else:
         raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
-
-    problems = get_human_eval_plus()
-
-    evaluate(args, problems)
 
 
 if __name__ == "__main__":
