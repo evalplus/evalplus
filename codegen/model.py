@@ -134,9 +134,9 @@ class OpenAIDecoder(DecoderBase):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        # assert do_sample, "Currently we let OpenAI API only support sampling"
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
         batch_size = min(self.batch_size, num_samples)
-        assert batch_size <= 20, "Use larger batch size could blow up the memory!"
 
         ret = openai.Completion.create(
             model="fastertransformer",
@@ -144,6 +144,7 @@ class OpenAIDecoder(DecoderBase):
             max_tokens=512,
             temperature=self.temperature,
             n=batch_size,
+            top_p=0.95,
             stop=EOF_STRINGS,
         )
 
@@ -307,7 +308,9 @@ class ChatGPTDecoder(DecoderBase):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        # assert do_sample, "Currently we let OpenAI API only support sampling"
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be positive for sampling"
+
         batch_size = min(self.batch_size, num_samples)
         assert batch_size <= 20, "Use larger batch size could blow up the memory!"
 
