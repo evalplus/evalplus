@@ -1,8 +1,9 @@
 import gzip
+import hashlib
 import json
 import os
 from os import PathLike
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable
 
 import tempdir
 import wget
@@ -70,7 +71,8 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
 
     # if it is a file
     if os.path.isfile(sample_path):
-        for sample in stream_jsonl(sample_path):
+        for i, sample in enumerate(stream_jsonl(sample_path)):
+            sample["identifier"] = sample["task_id"] + "_" + str(i)
             yield sample
     else:
         # if it is a folder
@@ -83,30 +85,16 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
                         with open(solution_path, "r") as f:
                             completion = f.read()
                         yield {
+                            "_identifier": solution_path,
                             "task_id": task_id.replace("HumanEval_", "HumanEval/"),
                             "solution": completion,
                         }
 
 
-def get_human_eval_plus(err_incomplete=True) -> Dict[str, Dict]:
-    """Get HumanEvalPlus locally.
-    Args:
-        err_incomplete (bool, optional): Whether to raise error if HumanEvalPlus is not complete. Defaults to True.
-    Returns:
-        List[Dict[str, str]]: List of dicts with keys "task_id", "prompt", "contract", "canonical_solution", "base_input"
-    Notes:
-        "task_id" is the identifier string for the task
-        "prompt" is the function signature with docstring
-        "contract" is the assertions for the function's input (validity)
-        "canonical_solution" is the ground-truth implementation for diff-testing
-        "base_input" is the test inputs from original HumanEval
-        "plus_input" is the test inputs brought by EvalPlus
-        "atol" is the absolute tolerance for diff-testing
-    """
-    # Check if human eval file exists in CACHE_DIR
-    plus_path = os.path.join(CACHE_DIR, "HumanEval.jsonl")
+def _ready_human_eval_plus_path() -> str:
+    plus_path = os.path.join(CACHE_DIR, f"HumanEvalPlus-{HUMANEVAL_PLUS_VERSION}.jsonl")
 
-    plus = None
+    # Check if human eval file exists in CACHE_DIR
     if not os.path.exists(plus_path):
         # Install HumanEval dataset and parse as jsonl
         # https://github.com/openai/human-eval/blob/master/data/HumanEval.jsonl.gz
@@ -128,6 +116,36 @@ def get_human_eval_plus(err_incomplete=True) -> Dict[str, Dict]:
         with open(plus_path, "w") as f:
             f.write(plus)
 
+    return plus_path
+
+
+def get_human_eval_plus_hash() -> str:
+    """Get the hash of HumanEvalPlus.
+    Returns:
+        str: The hash of HumanEvalPlus
+    """
+    plus_path = _ready_human_eval_plus_path()
+    with open(plus_path, "rb") as f:
+        plus = f.read()
+    return hashlib.md5(plus).hexdigest()
+
+
+def get_human_eval_plus(err_incomplete=True, get_hash=False) -> Dict[str, Dict]:
+    """Get HumanEvalPlus locally.
+    Args:
+        err_incomplete (bool, optional): Whether to raise error if HumanEvalPlus is not complete. Defaults to True.
+    Returns:
+        List[Dict[str, str]]: List of dicts with keys "task_id", "prompt", "contract", "canonical_solution", "base_input"
+    Notes:
+        "task_id" is the identifier string for the task
+        "prompt" is the function signature with docstring
+        "contract" is the assertions for the function's input (validity)
+        "canonical_solution" is the ground-truth implementation for diff-testing
+        "base_input" is the test inputs from original HumanEval
+        "plus_input" is the test inputs brought by EvalPlus
+        "atol" is the absolute tolerance for diff-testing
+    """
+    plus_path = _ready_human_eval_plus_path()
     plus = {task["task_id"]: task for task in stream_jsonl(plus_path)}
     if err_incomplete:
         for task_id, task in plus.items():
@@ -143,7 +161,7 @@ def get_human_eval_plus(err_incomplete=True) -> Dict[str, Dict]:
     return plus
 
 
-def get_human_eval() -> List[Dict[str, str]]:
+def get_human_eval() -> Dict[str, Dict]:
     """Get HumanEval from OpenAI's github repo and return as a list of parsed dicts.
 
     Returns:
