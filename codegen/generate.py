@@ -85,8 +85,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase):
                             "w",
                             encoding="utf-8",
                         ) as f:
-                            if args.model == "chatgpt" or args.model == "gpt-4":
-                                # TODO: contracts for chatgpt if we have time?
+                            if args.model in {"chatgpt", "gpt-4"}:
                                 f.write(impl)
                             else:
                                 f.write(task["prompt"] + impl)

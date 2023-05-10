@@ -114,7 +114,7 @@ python evalplus/evaluate.py --dataset humaneval --samples samples.jsonl
 </div>
 </details>
 
-<details><summary>⌨️ More command-line flags<i> :: click to expand ::</i></summary>
+<details><summary>⌨️ More command-line flags <i>:: click to expand ::</i></summary>
 <div>
 
 * `--parallel`: by default half of the cores
