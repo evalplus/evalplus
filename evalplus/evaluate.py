@@ -4,7 +4,7 @@ import multiprocessing
 import os
 import time
 from collections import Counter, defaultdict
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -104,7 +104,7 @@ def evaluate(flags, problems):
             expected_output[task_id] = oracle
         print(f"Expected outputs computed in {time.time() - tbegin:.2f}s")
 
-        with ThreadPoolExecutor(max_workers=n_workers) as executor:
+        with ProcessPoolExecutor(max_workers=n_workers) as executor:
             futures = []
             completion_id = Counter()
             n_samples = 0
