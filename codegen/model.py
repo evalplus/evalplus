@@ -513,8 +513,7 @@ class StarCoder(HFTorchDecoder):
                 )
             ]
         )
-        if self.temperature < 1e-2:
-            temperature = 1e-2
+        temperature = max(self.temperature, 1e-2)
         raw_outputs = self.model.generate(
             input_tokens,
             max_new_tokens=self.max_new_tokens,
