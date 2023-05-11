@@ -155,7 +155,6 @@ class HFTorchDecoder(DecoderBase):
     def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
         super().__init__(name=name, batch_size=batch_size, temperature=temperature)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        tkwargs = {}
         kwargs = {
             "trust_remote_code": name
             in {
@@ -170,7 +169,7 @@ class HFTorchDecoder(DecoderBase):
             kwargs["torch_dtype"] = torch.float16
         if "codegen2-" in name:  # avoid warning of trust remote code
             kwargs["revision"] = "main"
-        self.tokenizer = AutoTokenizer.from_pretrained(name, **tkwargs)
+        self.tokenizer = AutoTokenizer.from_pretrained(name)
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
         if name in {"StabilityAI/stablelm-base-alpha-7b"}:
             print("Switching to float16 ...")
@@ -193,7 +192,7 @@ class HFTorchDecoder(DecoderBase):
         scores = StoppingCriteriaList(
             [
                 EndOfFunctionCriteria(
-                    start_length=len(input_tokens),
+                    start_length=len(input_tokens[0]),
                     eos=self.eos,
                     tokenizer=self.tokenizer,
                 )
@@ -208,10 +207,11 @@ class HFTorchDecoder(DecoderBase):
             top_k=None,
             temperature=self.temperature,
             output_scores=True,
+            return_dict_in_generate=True,
             num_return_sequences=min(self.batch_size, num_samples),
             pad_token_id=self.tokenizer.eos_token_id,
         )  # remove warning
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens) :]
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
         gen_strs = self.tokenizer.batch_decode(
             gen_seqs, skip_special_tokens=self.skip_special_tokens
         )
@@ -348,7 +348,7 @@ class IncoderDecoder(HFTorchDecoder):
         scores = StoppingCriteriaList(
             [
                 EndOfFunctionCriteria(
-                    start_length=len(input_tokens),
+                    start_length=len(input_tokens[0]),
                     eos=self.eos,
                     tokenizer=self.tokenizer,
                 )
@@ -364,8 +364,9 @@ class IncoderDecoder(HFTorchDecoder):
             temperature=self.temperature,
             num_return_sequences=min(self.batch_size, num_samples),
             output_scores=True,
+            return_dict_in_generate=True,
         )
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens) :]
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
         gen_strs = self.tokenizer.batch_decode(
             gen_seqs, skip_special_tokens=self.skip_special_tokens
         )
@@ -399,7 +400,7 @@ class Codegen2Decoder(HFTorchDecoder):
         scores = StoppingCriteriaList(
             [
                 EndOfFunctionCriteria(
-                    start_length=len(input_tokens),
+                    start_length=len(input_tokens[0]),
                     eos=self.eos,
                     tokenizer=self.tokenizer,
                 )
@@ -414,10 +415,11 @@ class Codegen2Decoder(HFTorchDecoder):
             top_k=None,
             temperature=self.temperature,
             output_scores=True,
+            return_dict_in_generate=True,
             num_return_sequences=min(self.batch_size, num_samples),
             pad_token_id=self.tokenizer.eos_token_id,
         )
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens) :]
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
         gen_strs = self.tokenizer.batch_decode(
             gen_seqs, skip_special_tokens=self.skip_special_tokens
         )
@@ -450,7 +452,7 @@ class SantaDecoder(HFTorchDecoder):
         scores = StoppingCriteriaList(
             [
                 EndOfFunctionCriteria(
-                    start_length=len(input_tokens),
+                    start_length=len(input_tokens[0]),
                     eos=self.eos,
                     tokenizer=self.tokenizer,
                 )
@@ -466,9 +468,10 @@ class SantaDecoder(HFTorchDecoder):
             temperature=self.temperature,
             num_return_sequences=min(self.batch_size, num_samples),
             output_scores=True,
+            return_dict_in_generate=True,
             pad_token_id=self.tokenizer.eos_token_id,
         )
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens) :]
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
         gen_strs = self.tokenizer.batch_decode(
             gen_seqs, skip_special_tokens=self.skip_special_tokens
         )
