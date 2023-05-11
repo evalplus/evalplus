@@ -170,9 +170,9 @@ class HFTorchDecoder(DecoderBase):
         if "codegen2-" in name:  # avoid warning of trust remote code
             kwargs["revision"] = "main"
             kwargs["torch_dtype"] = torch.float16
-            if "16b" in name.lower():  # int8 acceleration
+            if "16b" in name.lower():
                 kwargs["device_map"] = "auto"
-                # Not working...
+                # Not working... # int8 acceleration
                 # kwargs["load_in_8bit"] = True
         if "starcoder" in name:
             kwargs["torch_dtype"] = torch.bfloat16
@@ -478,7 +478,9 @@ class SantaCoder(HFTorchDecoder):
         )
         gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
         gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
+            gen_seqs,
+            skip_special_tokens=self.skip_special_tokens,
+            truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"],
         )
         outputs = []
         # removes eos tokens.
@@ -543,11 +545,7 @@ class StarCoder(HFTorchDecoder):
         return outputs
 
 
-def make_model(
-    name: str,
-    batch_size: int = 1,
-    temperature: float = 0.8,
-):
+def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     if name == "codegen-2b":
         return HFTorchDecoder(
             batch_size=batch_size,
