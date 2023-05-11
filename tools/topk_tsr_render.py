@@ -43,4 +43,10 @@ for model in models:
         info_dict = json.load(f)
     pass_at_k_before.append(f'{info_dict["pass@1_before"] * 100:.1f}')
     pass_at_k_after.append(f'{info_dict["pass@1_after"] * 100:.1f}')
-    print(model, pass_at_k_before[-1], pass_at_k_after[-1])
+    print(
+        model,
+        pass_at_k_before[-1],
+        pass_at_k_after[-1],
+        f"#test: {info_dict['ntests']}",
+        f"runtime: {info_dict['runtime_after']}",
+    )

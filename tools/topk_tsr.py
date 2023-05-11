@@ -49,6 +49,14 @@ pass_at_k = {
 }
 temps = ["0.0", "0.2", "0.4", "0.6", "0.8"]
 cover_info = {f"HumanEval/{i}": {} for i in range(164)}
+"""
+cover_info dictionary structure:
+task_id (e.g. HumanEval_{x}):
+    test_id (e.g., plus_{x}):
+        a list, each element is a tuple (X, Y), where
+        * X \in {"mutant"(mutation testing), model_name(sample killing), branch_name(coverage)}
+        * Y \in {code_id(mutation testing, sample killing), "gt"(coverage)}
+"""
 
 
 def compute_score(model_path: str):
@@ -79,6 +87,22 @@ def add_kill_info():
                             cover_info[task_id].setdefault(test_id, []).append(
                                 (model_path, i_code)
                             )
+
+
+def add_mutation_info():
+    eval_json_path = os.path.join(LLM_HOME_PATH, "mutants", "eval_results.json")
+    with open(eval_json_path, "r") as f:
+        res = json.load(f)["eval"]
+        for task_id, v in res.items():
+            for i_code, (status, res_list) in enumerate(v["plus"]):
+                if status == "success":
+                    continue
+                for i_test, res in enumerate(res_list):
+                    test_id = f"plus_{i_test}"
+                    if res == False:
+                        cover_info[task_id].setdefault(test_id, []).append(
+                            ("mutant", i_code)
+                        )
 
 
 def add_coverage_info():
@@ -114,6 +138,7 @@ def compute_avg_test(problem: Dict[str, Dict[str, Any]]):
 
 add_kill_info()
 add_coverage_info()
+add_mutation_info()
 
 for model in models:
     # if "gpt-4" not in model:
@@ -141,12 +166,12 @@ for model in models:
         for test_name, test_cover in tests.items():
             cover_set = set()
             for model_path, i_code in test_cover:
-                # if True:
+                # For LLM sample killing info, filter out elements in the test set
                 if model not in model_path:
                     cover_set.add((model_path, i_code))
             q.append((test_name, cover_set))
             U = U.union(cover_set)
-        # Greedy
+        # Greedy algorithm for min set cover
         min_cover = []
         while len(U) > 0:
             max_uncover_set, max_test_name = {}, ""
@@ -186,7 +211,7 @@ for model in models:
         parallel=32,
         base_only=False,
         i_just_wanna_run=True,
-        full=True,
+        full=False,
     )
     exec_time, pass_at_k_dict = evaluate_humaneval(args, new_problems)
     o_exec_time, o_pass_at_k_dict = evaluate_humaneval(args, problems)
