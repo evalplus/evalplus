@@ -9,8 +9,9 @@
 
 <p align="center">
     <a href="#-Quick-Start">🔥Quick Start</a> •
+    <a href="#-LLM-generated-code">💻LLM code</a> •
     <a href="#-Papers">📜Papers</a> •
-    <a href="#-Useful-tools">🔨Useful tools</a> •
+    <a href="#-Useful-tools">🔨Tools</a> •
     <a href="#-Development">👷Development</a> •
     <a href="#-Acknowledgement">🙏Acknowledgement</a>
 </p>
@@ -113,7 +114,7 @@ python evalplus/evaluate.py --dataset humaneval --samples samples.jsonl
 </div>
 </details>
 
-<details><summary>⌨️ More command-line flags<i> :: click to expand ::</i></summary>
+<details><summary>⌨️ More command-line flags <i>:: click to expand ::</i></summary>
 <div>
 
 * `--parallel`: by default half of the cores
@@ -145,6 +146,16 @@ Base + Extra
 
 ### MBPP+ (TBD)
 
+
+## 💻 LLM-generated code
+
+Please kindly find the LLM-pre-generated code samples [in the attachment of our v0.1.0 release](https://github.com/evalplus/evalplus/releases/tag/v0.1.0).
+Each sample file is packaged in a zip file named like `${model_name}_temp_${temperature}.zip`.
+You can unzip them to a folder named like `${model_name}_temp_${temperature}` and run the evaluation from scratch with:
+
+```bash
+evalplus.evaluate --dataset humaneval --samples ${model_name}_temp_${temperature}
+```
 
 ## 📜 Papers
 
