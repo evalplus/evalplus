@@ -169,15 +169,20 @@ class HFTorchDecoder(DecoderBase):
             kwargs["torch_dtype"] = torch.float16
         if "codegen2-" in name:  # avoid warning of trust remote code
             kwargs["revision"] = "main"
+            kwargs["torch_dtype"] = torch.float16
+            if "16b" in name.lower():  # int8 acceleration
+                kwargs["device_map"] = "auto"
+                # Not working...
+                # kwargs["load_in_8bit"] = True
+        if "starcoder" in name:
+            kwargs["torch_dtype"] = torch.bfloat16
+
         self.tokenizer = AutoTokenizer.from_pretrained(name)
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
         if name in {"StabilityAI/stablelm-base-alpha-7b"}:
             print("Switching to float16 ...")
             self.model = self.model.half()
             self.skip_special_tokens = True
-        if "codegen2-" in name:  # switch codegen2 to float16
-            print("Switching to float16 ...")
-            self.model = self.model.half()
         self.model = self.model.to(self.device)
 
     # Assumption is that all inputs should probably fit under maximum context. but can add a checking function
@@ -434,7 +439,7 @@ class Codegen2Decoder(HFTorchDecoder):
         return outputs
 
 
-class SantaDecoder(HFTorchDecoder):
+class SantaCoder(HFTorchDecoder):
     def __init__(
         self, name: str, batch_size: int = 1, temperature: float = 0.8
     ) -> None:
@@ -469,6 +474,59 @@ class SantaDecoder(HFTorchDecoder):
             num_return_sequences=min(self.batch_size, num_samples),
             output_scores=True,
             return_dict_in_generate=True,
+            pad_token_id=self.tokenizer.eos_token_id,
+        )
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
+        outputs = []
+        # removes eos tokens.
+        for output in gen_strs:
+            min_index = 10000
+            for eos in self.eos:
+                if eos in output:
+                    min_index = min(min_index, output.index(eos))
+            outputs.append(output[:min_index])
+        return outputs
+
+
+class StarCoder(HFTorchDecoder):
+    def __init__(
+        self, name: str, batch_size: int = 1, temperature: float = 0.8
+    ) -> None:
+        super().__init__(name, batch_size, temperature)
+        self.prefix_token = "<fim_prefix>"
+        self.suffix_token = "<fim_suffix><fim_middle>"
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        input = self.prefix_token + prompt + self.suffix_token
+        input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
+        scores = StoppingCriteriaList(
+            [
+                EndOfFunctionCriteria(
+                    start_length=len(input_tokens[0]),
+                    eos=self.eos,
+                    tokenizer=self.tokenizer,
+                )
+            ]
+        )
+        if self.temperature < 1e-2:
+            temperature = 1e-2
+        raw_outputs = self.model.generate(
+            input_tokens,
+            max_new_tokens=self.max_new_tokens,
+            stopping_criteria=scores,
+            do_sample=do_sample,
+            top_p=0.95,
+            top_k=None,
+            temperature=temperature,
+            num_return_sequences=min(self.batch_size, num_samples),
+            output_scores=True,
+            return_dict_in_generate=True,
+            repetition_penalty=1.0,
             pad_token_id=self.tokenizer.eos_token_id,
         )
         gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
@@ -548,7 +606,7 @@ def make_model(
     elif name == "vicuna-7b" or name == "vicuna-13b":
         return FsChatDecoder(batch_size=batch_size, name=name, temperature=temperature)
     elif name == "santacoder":
-        return SantaDecoder(
+        return SantaCoder(
             batch_size=batch_size, name="bigcode/santacoder", temperature=temperature
         )
     elif name == "incoder-1b":
@@ -588,5 +646,9 @@ def make_model(
     elif name == "gpt-j":
         return HFTorchDecoder(
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
+        )
+    elif name == "starcoder":
+        return StarCoder(
+            batch_size=batch_size, name="bigcode/starcoder", temperature=temperature
         )
     raise ValueError(f"Invalid model name: {name}")
