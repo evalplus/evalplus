@@ -397,6 +397,7 @@ class Codegen2Decoder(HFTorchDecoder):
         self.extra_eos = ["<eom>"]
         self.eos = self.eos + self.extra_eos
 
+    @torch.inference_mode()
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
@@ -589,6 +590,10 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name == "codegen2-16b":
+        warn(
+            "codegen2-16b checkpoint is `unfinished` at this point (05/11/2023) according to their paper. "
+            "So it might not make sense to use it."
+        )
         return Codegen2Decoder(
             batch_size=batch_size,
             name="Salesforce/codegen2-16B",
