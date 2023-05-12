@@ -170,9 +170,11 @@ def untrusted_check(
     ref_time: List[float],
     fast_check: bool = False,
 ) -> Tuple[str, np.ndarray]:
-    min_limit = 0.05 if fast_check else 0.1
+    min_limit = 0.05
     time_limits = [max(min_limit, 2 * t) for t in ref_time]
-    timeout = min(5, sum(ref_time) + 1)
+    timeout = sum(time_limits) + 1
+    if not fast_check:
+        timeout += 1  # extra time for data collection
 
     # shared memory objects
     progress = Value("i", 0)

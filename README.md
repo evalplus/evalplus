@@ -124,6 +124,20 @@ python evalplus/evaluate.py --dataset humaneval --samples samples.jsonl
 </div>
 </details>
 
+<details><summary>🤔 How long it would take? <i>:: click to expand ::</i></summary>
+<div>
+
+When running 200 samples x 164 tasks x ~775 tests, it can take around 4-8 minute by using `--parallel 64` and `--full`.
+Here are some tips to speed up the evaluation:
+
+* Use `--parallel $(nproc)`
+* Do not use `--full` if you just want to quickly get pass@k as `--full` will run all tests (~775 on average for each task), while without `--full` the testing for a sample stops immediately when it fails the first test.
+* Use our pre-evaluated results (see [LLM-generated code](#-LLM-generated-code))
+* We will release an distilled version of HumanEval+ soon. Stay tuned!
+
+</div>
+</details>
+
 The output should be like (below is GPT-4 greedy decoding example):
 
 ```
