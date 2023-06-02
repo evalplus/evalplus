@@ -104,6 +104,14 @@ docker run -v $(pwd):/app ganler/evalplus:v0.1.1 --dataset humaneval --samples s
 evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
 
+🚀 **Try out `HumanEvalPlus-Mini`!** which selects a *minimal* set of additional tests with the highest quality, achieving almost the same effectiveness of the full version. Just add a **`--mini`** flag, it can run 23+% faster! (even faster if you evaluate all tests regardless of fail-stop).
+
+```bash
+docker run -v $(pwd):/app ganler/evalplus:v0.1.1 --dataset humaneval --samples samples.jsonl --mini
+# ...Or locally ⚠️
+# evalplus.evaluate --dataset humaneval --samples samples.jsonl
+```
+
 <details><summary>🤔 Want to use local GitHub repo? <i>:: click to expand ::</i></summary>
 <div>
 

@@ -123,7 +123,7 @@ def evaluate_humaneval(flags):
 
         results = compatible_eval_result(results)
     else:
-        problems = get_human_eval_plus()
+        problems = get_human_eval_plus(mini=flags.mini)
 
         dataset_hash = get_human_eval_plus_hash()
         expected_output = get_groundtruth(problems, dataset_hash)
@@ -256,6 +256,7 @@ def main():
     parser.add_argument("--parallel", default=None, type=int)
     parser.add_argument("--i-just-wanna-run", action="store_true")
     parser.add_argument("--test-details", action="store_true")
+    parser.add_argument("--mini", action="store_true")
     args = parser.parse_args()
 
     if args.dataset == "humaneval":

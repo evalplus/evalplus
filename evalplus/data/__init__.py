@@ -16,7 +16,14 @@ HUMANEVAL_URL = (
     "https://github.com/openai/human-eval/raw/master/data/HumanEval.jsonl.gz"
 )
 HUMANEVAL_PLUS_VERSION = "v0.1.1"
-HUMANEVAL_PLUS_URL = f"https://github.com/ganler/release/releases/download/humanevalplus/HumanEvalPlus-{HUMANEVAL_PLUS_VERSION}.jsonl.gz"
+
+
+def get_dataset_metadata(name, version, mini):
+    assert name in ["HumanEvalPlus"], f"Unknown/unsupported dataset: {name}"
+    extra = "-Mini" if mini else ""
+    url = f"https://github.com/ganler/release/releases/download/humanevalplus/{name}{extra}-{version}.jsonl.gz"
+    cache_path = os.path.join(CACHE_DIR, f"{name}{extra}-{version}.jsonl")
+    return url, cache_path
 
 
 # hacky way to handle \n\r, etc in strings
@@ -91,8 +98,8 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
                         }
 
 
-def _ready_human_eval_plus_path() -> str:
-    plus_path = os.path.join(CACHE_DIR, f"HumanEvalPlus-{HUMANEVAL_PLUS_VERSION}.jsonl")
+def _ready_human_eval_plus_path(mini=False) -> str:
+    url, plus_path = get_dataset_metadata("HumanEvalPlus", HUMANEVAL_PLUS_VERSION, mini)
 
     # Check if human eval file exists in CACHE_DIR
     if not os.path.exists(plus_path):
@@ -100,10 +107,8 @@ def _ready_human_eval_plus_path() -> str:
         # https://github.com/openai/human-eval/blob/master/data/HumanEval.jsonl.gz
         print("Downloading HumanEvalPlus dataset...")
         with tempdir.TempDir() as tmpdir:
-            plus_gz_path = os.path.join(
-                tmpdir, f"HumanEvalPlus-{HUMANEVAL_PLUS_VERSION}.jsonl.gz"
-            )
-            wget.download(HUMANEVAL_PLUS_URL, plus_gz_path)
+            plus_gz_path = os.path.join(tmpdir, f"data.jsonl.gz")
+            wget.download(url, plus_gz_path)
 
             with gzip.open(plus_gz_path, "rb") as f:
                 plus = f.read().decode("utf-8")
@@ -130,10 +135,11 @@ def get_human_eval_plus_hash() -> str:
     return hashlib.md5(plus).hexdigest()
 
 
-def get_human_eval_plus(err_incomplete=True, get_hash=False) -> Dict[str, Dict]:
+def get_human_eval_plus(err_incomplete=True, mini=False) -> Dict[str, Dict]:
     """Get HumanEvalPlus locally.
     Args:
         err_incomplete (bool, optional): Whether to raise error if HumanEvalPlus is not complete. Defaults to True.
+        mini (bool, optional): Whether to use the mini version of HumanEvalPlus. Defaults to False.
     Returns:
         List[Dict[str, str]]: List of dicts with keys "task_id", "prompt", "contract", "canonical_solution", "base_input"
     Notes:
@@ -145,7 +151,7 @@ def get_human_eval_plus(err_incomplete=True, get_hash=False) -> Dict[str, Dict]:
         "plus_input" is the test inputs brought by EvalPlus
         "atol" is the absolute tolerance for diff-testing
     """
-    plus_path = _ready_human_eval_plus_path()
+    plus_path = _ready_human_eval_plus_path(mini=mini)
     plus = {task["task_id"]: task for task in stream_jsonl(plus_path)}
     if err_incomplete:
         for task_id, task in plus.items():
