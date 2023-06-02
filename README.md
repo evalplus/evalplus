@@ -109,7 +109,7 @@ evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```bash
 docker run -v $(pwd):/app ganler/evalplus:latest --dataset humaneval --samples samples.jsonl --mini
 # ...Or locally ⚠️
-# evalplus.evaluate --dataset humaneval --samples samples.jsonl
+# evalplus.evaluate --dataset humaneval --samples samples.jsonl --mini
 ```
 
 <details><summary>🤔 Want to use local GitHub repo? <i>:: click to expand ::</i></summary>
