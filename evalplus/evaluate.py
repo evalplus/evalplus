@@ -125,12 +125,12 @@ def evaluate_humaneval(flags):
     else:
         problems = get_human_eval_plus()
 
-        problem_hash = get_human_eval_plus_hash()
-        expected_output = get_groundtruth(problems, problem_hash)
+        dataset_hash = get_human_eval_plus_hash()
+        expected_output = get_groundtruth(problems, dataset_hash)
 
         results = {
             "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "hash": problem_hash,
+            "hash": dataset_hash,
             "eval": {},
         }
 
@@ -156,7 +156,7 @@ def evaluate_humaneval(flags):
                     solution,
                     expected_output[task_id],
                     flags.base_only,
-                    not flags.full,  # fast_check
+                    not flags.test_details,  # fast_check
                     sample["_identifier"],
                 )
                 futures.append(executor.submit(check_correctness, *args))
@@ -255,7 +255,7 @@ def main():
     parser.add_argument("--base-only", action="store_true")
     parser.add_argument("--parallel", default=None, type=int)
     parser.add_argument("--i-just-wanna-run", action="store_true")
-    parser.add_argument("--full", action="store_true")
+    parser.add_argument("--test-details", action="store_true")
     args = parser.parse_args()
 
     if args.dataset == "humaneval":
