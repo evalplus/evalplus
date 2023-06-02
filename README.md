@@ -95,7 +95,7 @@ To evaluate the samples:
 You are strongly recommended to use a sandbox such as [docker](https://docs.docker.com/get-docker/):
 
 ```bash
-docker run -v $(pwd):/app ganler/evalplus:v0.1.1 --dataset humaneval --samples samples.jsonl
+docker run -v $(pwd):/app ganler/evalplus:latest --dataset humaneval --samples samples.jsonl
 ```
 
 ...Or if you want to try it locally regardless of the risks ⚠️:
@@ -107,7 +107,7 @@ evalplus.evaluate --dataset humaneval --samples samples.jsonl
 🚀 **Try out `HumanEvalPlus-Mini`!** which selects a *minimal* set of additional tests with the highest quality, achieving almost the same effectiveness of the full version. Just add a **`--mini`** flag, it can run 23+% faster! (even faster if you evaluate all tests regardless of fail-stop).
 
 ```bash
-docker run -v $(pwd):/app ganler/evalplus:v0.1.1 --dataset humaneval --samples samples.jsonl --mini
+docker run -v $(pwd):/app ganler/evalplus:latest --dataset humaneval --samples samples.jsonl --mini
 # ...Or locally ⚠️
 # evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
