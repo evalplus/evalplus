@@ -169,9 +169,9 @@ def untrusted_check(
     atol,
     ref_time: List[float],
     fast_check: bool = False,
+    min_time_limit: float = 0.1,
 ) -> Tuple[str, np.ndarray]:
-    min_limit = 0.05
-    time_limits = [max(min_limit, 2 * t) for t in ref_time]
+    time_limits = [max(min_time_limit, 2 * t) for t in ref_time]
     timeout = sum(time_limits) + 1
     if not fast_check:
         timeout += 1  # extra time for data collection
@@ -227,6 +227,7 @@ def evaluate_files(
     atol: float,
     ref_time: List[float],
     fast_check: bool = False,
+    min_time_limit: float = 0.1,
 ) -> List[Tuple[str, List[bool]]]:
     ret = []
     # sort files by the id in name (i.e., "../n.py")
@@ -241,6 +242,7 @@ def evaluate_files(
             atol=atol,
             ref_time=ref_time,
             fast_check=fast_check,
+            min_time_limit=min_time_limit,
         )
         ret.append((stat, det.tolist()))
     return ret
