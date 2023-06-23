@@ -170,9 +170,9 @@ def untrusted_check(
     ref_time: List[float],
     fast_check: bool = False,
     min_time_limit: float = 0.1,
-    gt_timelimit_multiplier: float = 2.0,
+    gt_time_limit_factor: float = 2.0,
 ) -> Tuple[str, np.ndarray]:
-    time_limits = [max(min_time_limit, gt_timelimit_multiplier * t) for t in ref_time]
+    time_limits = [max(min_time_limit, gt_time_limit_factor * t) for t in ref_time]
     timeout = sum(time_limits) + 1
     if not fast_check:
         timeout += 1  # extra time for data collection
@@ -229,7 +229,7 @@ def evaluate_files(
     ref_time: List[float],
     fast_check: bool = False,
     min_time_limit: float = 0.1,
-    gt_timelimit_multiplier: float = 2.0,
+    gt_time_limit_factor: float = 2.0,
 ) -> List[Tuple[str, List[bool]]]:
     ret = []
     # sort files by the id in name (i.e., "../n.py")
@@ -245,7 +245,7 @@ def evaluate_files(
             ref_time=ref_time,
             fast_check=fast_check,
             min_time_limit=min_time_limit,
-            gt_timelimit_multiplier=gt_timelimit_multiplier,
+            gt_time_limit_factor=gt_time_limit_factor,
         )
         ret.append((stat, det.tolist()))
     return ret
