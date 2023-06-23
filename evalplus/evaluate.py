@@ -75,6 +75,7 @@ def check_correctness(
     fast_check=False,
     identifier=None,
     min_time_limit: float = 0.1,
+    gt_multiplier: float = 2.0,
 ) -> Dict[str, Union[int, Optional[Result]]]:
     ret = {
         "completion_id": completion_id,
@@ -90,6 +91,7 @@ def check_correctness(
         ref_time=expected_output["base_time"],
         fast_check=fast_check,
         min_time_limit=min_time_limit,
+        gt_multiplier=gt_multiplier,
     )
 
     if not base_only:
@@ -102,6 +104,7 @@ def check_correctness(
             ref_time=expected_output["plus_time"],
             fast_check=fast_check,
             min_time_limit=min_time_limit,
+            gt_multiplier=gt_multiplier,
         )
 
     return ret
@@ -162,6 +165,7 @@ def evaluate_humaneval(flags):
                     not flags.test_details,  # fast_check
                     sample["_identifier"],
                     flags.min_time_limit,
+                    flags.gt_multiplier,
                 )
                 futures.append(executor.submit(check_correctness, *args))
                 completion_id[task_id] += 1
@@ -261,6 +265,7 @@ def main():
     parser.add_argument("--i-just-wanna-run", action="store_true")
     parser.add_argument("--test-details", action="store_true")
     parser.add_argument("--min-time-limit", default=0.1, type=float)
+    parser.add_argument("--gt-multiplier", default=2.0, type=float)
     parser.add_argument("--mini", action="store_true")
     args = parser.parse_args()
 
