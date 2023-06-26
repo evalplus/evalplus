@@ -15,7 +15,7 @@ CACHE_DIR = user_cache_dir("evalplus")
 HUMANEVAL_URL = (
     "https://github.com/openai/human-eval/raw/master/data/HumanEval.jsonl.gz"
 )
-HUMANEVAL_PLUS_VERSION = "v0.1.2"
+HUMANEVAL_PLUS_VERSION = "v0.1.3"
 
 
 def get_dataset_metadata(name, version, mini):
