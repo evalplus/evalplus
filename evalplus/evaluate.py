@@ -35,7 +35,7 @@ Result = Tuple[str, List[bool]]
 def get_groundtruth(problems, hashcode):
     cache_file = os.path.join(CACHE_DIR, f"{hashcode}.pkl")
     if os.path.exists(cache_file):
-        print(f"Load from {cache_file}")
+        print(f"Load from ground-truth from {cache_file}")
         with open(cache_file, "rb") as f:
             return pickle.load(f)
 
@@ -123,7 +123,7 @@ def evaluate_humaneval(flags):
         result_path = flags.samples.replace(".jsonl", "_eval_results.json")
 
     if os.path.isfile(result_path) and not flags.i_just_wanna_run:
-        print(f"Load from {result_path}")
+        print(f"Load from previous results from {result_path}")
         with open(result_path, "r") as f:
             results = json.load(f)
 
@@ -264,8 +264,8 @@ def main():
     parser.add_argument("--parallel", default=None, type=int)
     parser.add_argument("--i-just-wanna-run", action="store_true")
     parser.add_argument("--test-details", action="store_true")
-    parser.add_argument("--min-time-limit", default=0.1, type=float)
-    parser.add_argument("--gt-time-limit-factor", default=2.0, type=float)
+    parser.add_argument("--min-time-limit", default=0.2, type=float)
+    parser.add_argument("--gt-time-limit-factor", default=4.0, type=float)
     parser.add_argument("--mini", action="store_true")
     args = parser.parse_args()
 
