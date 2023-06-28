@@ -3,6 +3,8 @@ Write a function to find squares of individual elements in a list.
 """
 
 def square_nums(nums):
+ assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
+ assert all(isinstance(i, (int, float)) for i in nums), "invalid inputs" # $_CONTRACT_$
  square_nums = list(map(lambda x: x ** 2, nums))
  return square_nums
 
