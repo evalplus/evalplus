@@ -186,7 +186,7 @@ def get_human_eval() -> Dict[str, Dict]:
     if not os.path.exists(human_eval_path):
         # Install HumanEval dataset and parse as jsonl
         # https://github.com/openai/human-eval/blob/master/data/HumanEval.jsonl.gz
-        print("Downloading HumanEval dataset...")
+        print("Downloading original HumanEval dataset...")
         with tempdir.TempDir() as tmpdir:
             human_eval_gz_path = os.path.join(tmpdir, "HumanEval.jsonl.gz")
             wget.download(HUMANEVAL_URL, human_eval_gz_path)
@@ -212,3 +212,27 @@ def get_human_eval() -> Dict[str, Dict]:
     )
 
     return {task["task_id"]: task for task in human_eval}
+
+
+MBPP_URL = "https://github.com/google-research/google-research/raw/master/mbpp/sanitized-mbpp.json"
+MBPP_PLUS_VERSION = "v0.0.0"  # TODO(@ganler)
+
+
+def get_mbpp() -> Dict[str, Dict]:
+    """Get MBPP from Google's Github repo."""
+    mbpp_path = os.path.join(CACHE_DIR, "sanitized-mbpp.json")
+    mbpp = None
+
+    if not os.path.exists(mbpp_path):
+        # create CACHE_DIR if not exists
+        if not os.path.exists(CACHE_DIR):
+            os.makedirs(CACHE_DIR)
+
+        # Install MBPP-sanitized from scratch
+        print("Downloading original MBPP dataset...")
+        wget.download(MBPP_URL, mbpp_path)
+
+    with open(mbpp_path, "r") as f:
+        mbpp = json.load(f)
+
+    return {str(task["task_id"]): task for task in mbpp}
