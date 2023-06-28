@@ -7,7 +7,7 @@ def heap_queue_largest(nums: list,n: int) -> list:
   assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
   assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
   assert n > 0, "invalid inputs" # $_CONTRACT_$
-  assert all(isinstance(i, (int, float)) for i in nums), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(i, int) for i in nums), "invalid inputs" # $_CONTRACT_$
   largest_nums = hq.nlargest(n, nums)
   return largest_nums
 
