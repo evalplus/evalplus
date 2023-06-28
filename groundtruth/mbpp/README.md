@@ -2,7 +2,7 @@
 
 - Add some assertions for the arguments (types, values, etc.)
 - Use `"invalid inputs"` as the assertion message.
-- Mark the line with `# $_CONTRACT_$` in the end of the line.
+- Mark the line with `# $_CONTRACT_$` in the end of the line (don't break the line!)
 
 ```python
 def square_int(x: int) -> int:
