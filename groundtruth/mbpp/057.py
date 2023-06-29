@@ -3,6 +3,8 @@ Write a python function to find the largest number that can be formed with the g
 """
 
 def find_Max_Num(arr) : 
+    assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(item, (int, float)) for item in arr), "invalid inputs" # $_CONTRACT_$
     n = len(arr)
     arr.sort(reverse = True) 
     num = arr[0] 

@@ -9,6 +9,8 @@ def rev(num):
         num = num // 10  
     return rev_num  
 def check(n):    
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
     return (2 * rev(n) == n + 1)  
 
 
