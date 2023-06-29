@@ -15,6 +15,11 @@ def square_int(x: int) -> int:
 
 The implementation can be buggy so fix it if you find any bugs.
 
+### Quirky implemetations
+some implementations are quirky and maybe buggy.
+- [100](100.py#L9): unused variable
+- [101](101.py#L8-L12): a weird and useless sort
+
 ## Commit message
 
 ```shell
