@@ -3,6 +3,10 @@ Write a python function to find the number of numbers with an odd value when rot
 """
 
 def odd_Equivalent(s,n): 
+    assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert all([c in '01' for c in s]), "invalid inputs" # $_CONTRACT_$
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
     count=0
     for i in range(0,n): 
         if (s[i] == '1'): 
