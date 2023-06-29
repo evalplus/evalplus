@@ -4,6 +4,9 @@ Write a function to sort a list of tuples using the second value of each tuple.
 
 def subject_marks(subjectmarks):
 #subject_marks = [('English', 88), ('Science', 90), ('Maths', 97), ('Social sciences', 82)])
+ assert isinstance(subjectmarks, list), "invalid inputs" # $_CONTRACT_$
+ assert all(isinstance(item, tuple) for item in subjectmarks), "invalid inputs" # $_CONTRACT_$
+ assert all(isinstance(item[1], (int, float)) for item in subjectmarks), "invalid inputs" # $_CONTRACT_$
  subjectmarks.sort(key = lambda x: x[1])
  return subjectmarks
 

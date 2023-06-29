@@ -2,9 +2,11 @@
 Write a python function to count the number of positive numbers in a list.
 """
 
-def pos_count(list):
+def pos_count(l):
+  assert isinstance(l, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(item, (int, float)) for item in l), "invalid inputs" # $_CONTRACT_$
   pos_count= 0
-  for num in list: 
+  for num in l: 
     if num >= 0: 
       pos_count += 1
   return pos_count 
