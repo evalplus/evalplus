@@ -4,6 +4,9 @@ Write a function to get the angle of a complex number.
 
 import cmath
 def angle_complex(a,b):
+  assert isinstance(a, (int, float)) or isinstance(a, float), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(b, complex) or isinstance(b, float), "invalid inputs" # $_CONTRACT_$
+  assert b.real == 0, "invalid inputs" # $_CONTRACT_$
   cn=complex(a,b)
   angle=cmath.phase(a+b)
   return angle
