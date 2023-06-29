@@ -4,6 +4,9 @@ Write a function to merge three dictionaries into a single dictionary.
 
 import collections as ct
 def merge_dictionaries_three(dict1,dict2, dict3):
+    assert isinstance(dict1, dict), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(dict2, dict), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(dict3, dict), "invalid inputs" # $_CONTRACT_$
     merged_dict = dict(ct.ChainMap({},dict1,dict2,dict3))
     return merged_dict
 
