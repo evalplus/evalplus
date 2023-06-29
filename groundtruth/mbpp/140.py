@@ -3,6 +3,8 @@ Write a function to flatten the list of lists into a single set of numbers.
 """
 
 def extract_singly(test_list):
+  assert isinstance(test_list, (list, tuple)), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, (list, tuple)) for x in test_list), "invalid inputs" # $_CONTRACT_$
   res = []
   temp = set()
   for inner in test_list:

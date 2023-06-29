@@ -3,6 +3,8 @@ Write a function to find the circumference of a circle.
 """
 
 def circle_circumference(r):
+  assert isinstance(r, int), "invalid inputs" # $_CONTRACT_$
+  assert r >= 0, "invalid inputs" # $_CONTRACT_$
   perimeter=2*3.1415*r
   return perimeter
 
