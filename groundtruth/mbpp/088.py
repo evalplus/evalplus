@@ -4,6 +4,7 @@ Write a function to get the frequency of all the elements in a list, returned as
 
 import collections
 def freq_count(list1):
+  assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
   freq_count= collections.Counter(list1)
   return freq_count
 
