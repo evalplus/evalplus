@@ -3,6 +3,8 @@ Write a function to sort a list of elements.
 """
 
 def comb_sort(nums):
+    assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(item, (int, float)) for item in nums), "invalid inputs" # $_CONTRACT_$
     shrink_fact = 1.3
     gaps = len(nums)
     swapped = True

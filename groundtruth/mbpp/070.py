@@ -11,6 +11,8 @@ def find_equal_tuple(Input):
       break
   return flag
 def get_equal(Input):
+  assert isinstance(Input, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(item, tuple) for item in Input), "invalid inputs" # $_CONTRACT_$
   return find_equal_tuple(Input) == 1
 
 

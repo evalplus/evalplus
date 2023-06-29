@@ -3,6 +3,8 @@ Write a function to check whether a list contains the given sublist or not.
 """
 
 def is_sublist(l, s):
+	assert isinstance(l, list), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(s, list), "invalid inputs" # $_CONTRACT_$
 	sub_set = False
 	if s == []:
 		sub_set = True
