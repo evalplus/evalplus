@@ -16,6 +16,10 @@ def get_char_count_array(string):
 		count[ord(i)] += 1
 	return count 
 def remove_dirty_chars(string, second_string): 
+	assert isinstance(string, str), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(second_string, str), "invalid inputs" # $_CONTRACT_$
+	assert len(string) > 0, "invalid inputs" # $_CONTRACT_$
+	assert len(second_string) > 0, "invalid inputs" # $_CONTRACT_$
 	count = get_char_count_array(second_string) 
 	ip_ind = 0
 	res_ind = 0

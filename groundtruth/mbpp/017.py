@@ -3,6 +3,7 @@ Write a function that returns the perimeter of a square given its side length as
 """
 
 def square_perimeter(a):
+  assert isinstance(a, (int, float)), "invalid inputs" # $_CONTRACT_$
   perimeter=4*a
   return perimeter
 
