@@ -3,6 +3,12 @@ Write a function to calculate whether the matrix is a magic square.
 """
 
 def magic_square_test(my_matrix):
+    assert isinstance(my_matrix, list), "invalid inputs" # $_CONTRACT_$
+    assert len(my_matrix) > 0, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(row, list) for row in my_matrix), "invalid inputs" # $_CONTRACT_$
+    assert len(my_matrix[0]) > 0, "invalid inputs" # $_CONTRACT_$
+    assert all(len(row) == len(my_matrix[0]) for row in my_matrix), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(item, (int, float)) for row in my_matrix for item in row), "invalid inputs" # $_CONTRACT_$
     iSize = len(my_matrix[0])
     sum_list = []
     sum_list.extend([sum (lines) for lines in my_matrix])   
