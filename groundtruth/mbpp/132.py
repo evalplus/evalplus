@@ -3,6 +3,7 @@ Write a function to convert a tuple to a string.
 """
 
 def tup_string(tup1):
+  assert isinstance(tup1, tuple), "invalid inputs" # $_CONTRACT_$
   str =  ''.join(tup1)
   return str
 
