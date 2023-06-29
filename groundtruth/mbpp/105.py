@@ -3,6 +3,8 @@ Write a python function to count true booleans in the given list.
 """
 
 def count(lst):   
+    assert isinstance(lst, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, bool) for x in lst), "invalid inputs" # $_CONTRACT_$
     return sum(lst) 
 
 
