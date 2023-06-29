@@ -3,6 +3,7 @@ Write a python function to check whether the length of the word is odd or not.
 """
 
 def word_len(s): 
+    assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
     s = s.split(' ')   
     for word in s:    
         if len(word)%2!=0: 
