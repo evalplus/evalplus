@@ -3,6 +3,8 @@ Write a function to check whether it follows the sequence given in the patterns 
 """
 
 def is_samepatterns(colors, patterns):    
+    assert isinstance(colors, list), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(patterns, list), "invalid inputs" # $_CONTRACT_$
     if len(colors) != len(patterns):
         return False    
     sdict = {}

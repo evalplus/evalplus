@@ -3,6 +3,10 @@ Write a function to find tuples which have all elements divisible by k from the 
 """
 
 def find_tuples(test_list, K):
+  assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(item, tuple) for item in test_list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(item, int) for tuple in test_list for item in tuple), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(K, int), "invalid inputs" # $_CONTRACT_$
   res = [sub for sub in test_list if all(ele % K == 0 for ele in sub)]
   return res
 
