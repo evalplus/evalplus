@@ -20,6 +20,7 @@ some implementations/tests are quirky and maybe buggy.
 - [100](100.py#L9): unused variable
 - [101](101.py#L8-L12): a weird and useless sort
 - [115](115.py#L12-L13): the input should be list of dict, but the test case input is dict/list of set
+- [127](127.py): crazy
 
 ## Commit message
 
