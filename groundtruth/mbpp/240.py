@@ -2,10 +2,12 @@
 Write a function that takes in two lists and replaces the last element of the first list with the elements of the second list.
 """
 
-def replace_list(list1,list2):
- list1[-1:] = list2
- replace_list=list1
- return replace_list
+def replace_list(list1, list2):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(list2, list), "invalid inputs" # $_CONTRACT_$
+    list1[-1:] = list2
+    replace_list=list1
+    return replace_list
 
 
 
