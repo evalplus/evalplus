@@ -3,6 +3,7 @@ Write a function to calculate the sum (n - 2*i) from i=0 to n // 2, for instance
 """
 
 def sum_series(n):
+  assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
   if n < 1:
     return 0
   else:
