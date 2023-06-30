@@ -2,9 +2,10 @@
 Write a function that takes in a list and an element and inserts the element before each element in the list, and returns the resulting list.
 """
 
-def insert_element(list,element):
- list = [v for elt in list for v in (element, elt)]
- return list
+def insert_element(list1, element):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    list1 = [v for elt in list1 for v in (element, elt)]
+    return list1
 
 
 
