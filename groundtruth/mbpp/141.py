@@ -3,6 +3,8 @@ Write a function to sort a list of elements.
 """
 
 def pancake_sort(nums):
+    assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, type(nums[0])) for x in nums), "invalid inputs" # $_CONTRACT_$
     arr_len = len(nums)
     while arr_len > 1:
         mi = nums.index(max(nums[0:arr_len]))

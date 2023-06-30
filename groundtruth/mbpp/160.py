@@ -3,6 +3,9 @@ Write a function that returns integers x and y that satisfy ax + by = n as a tup
 """
 
 def find_solution(a, b, n):
+	assert isinstance(a, int), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(b, int), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
 	i = 0
 	while i * a <= n:
 		if (n - (i * a)) % b == 0: 
