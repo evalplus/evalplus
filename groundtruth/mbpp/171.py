@@ -4,6 +4,7 @@ Write a function to find the perimeter of a regular pentagon from the length of 
 
 import math
 def perimeter_pentagon(a):
+  assert isinstance(a, (int, float)), "invalid inputs" # $_CONTRACT_$
   perimeter=(5*a)
   return perimeter
 
