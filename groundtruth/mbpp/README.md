@@ -21,6 +21,7 @@ some implementations/tests are quirky and maybe buggy.
 - [101](101.py#L8-L12): a weird and useless sort
 - [115](115.py#L12-L13): the input should be list of dict, but the test case input is dict/list of set
 - [127](127.py): crazy
+- [143](143.py): wrong implementation, according to the prompt, the input should be a tuple
 
 ## Commit message
 
