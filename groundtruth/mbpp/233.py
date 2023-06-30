@@ -2,7 +2,9 @@
 Write a function to find the lateral surface area of a cylinder.
 """
 
-def lateralsuface_cylinder(r,h):
+def lateralsuface_cylinder(r, h):
+  assert isinstance(r, (int, float)), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(h, (int, float)), "invalid inputs" # $_CONTRACT_$
   lateralsurface= 2*3.1415*r*h
   return lateralsurface
 
