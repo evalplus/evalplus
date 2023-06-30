@@ -3,6 +3,7 @@ Write a function for computing square roots using the babylonian method.
 """
 
 def babylonian_squareroot(number):
+    assert isinstance(number, (int, float)), "invalid inputs" # $_CONTRACT_$
     if(number == 0):
         return 0;
     g = number/2.0;
