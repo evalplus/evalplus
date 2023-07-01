@@ -3,6 +3,8 @@ Write a python function to find the length of the longest sublists.
 """
 
 def Find_Max_Length(lst):  
+    assert isinstance(lst, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, list) for x in lst), "invalid inputs" # $_CONTRACT_$
     maxLength = max(len(x) for x in lst )
     return maxLength 
 
