@@ -10,6 +10,8 @@ def binomial_Coeff(n,k):
             C[j] = C[j] + C[j - 1]; 
     return C[k]; 
 def sum_Of_product(n): 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
     return binomial_Coeff(2 * n,n - 1); 
 
 
