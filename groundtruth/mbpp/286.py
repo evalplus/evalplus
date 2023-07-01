@@ -3,6 +3,9 @@ Write a function to find the largest sum of a contiguous array in the modified a
 """
 
 def max_sub_array_sum_repeated(a, n, k): 
+	assert isinstance(a, list), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(n, int) and n > 0, "invalid inputs" # $_CONTRACT_$
+	assert isinstance(k, int) and k >= 0, "invalid inputs" # $_CONTRACT_$
 	max_so_far = -2147483648
 	max_ending_here = 0
 	for i in range(n*k): 

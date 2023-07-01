@@ -2,8 +2,9 @@
 Write a function that takes in a list and element and checks whether all items in the list are equal to the given element.
 """
 
-def check_element(list,element):
-  check_element=all(v== element for v in list)
+def check_element(list1, element):
+  assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+  check_element=all(v== element for v in list1)
   return check_element
 
 
