@@ -3,6 +3,8 @@ Write a function to subtract two lists element-wise.
 """
 
 def sub_list(nums1,nums2):
+  assert isinstance(nums1, list), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(nums2, list), "invalid inputs" # $_CONTRACT_$
   result = map(lambda x, y: x - y, nums1, nums2)
   return list(result)
 

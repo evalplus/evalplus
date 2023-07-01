@@ -3,6 +3,7 @@ Write a function that takes in an array and element and returns a tuple containi
 """
 
 def sequential_search(dlist, item):
+    assert isinstance(dlist, list), "invalid inputs" # $_CONTRACT_$
     pos = 0
     found = False
     while pos < len(dlist) and not found:
