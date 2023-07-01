@@ -4,8 +4,7 @@ Write a function to find the common elements in given nested lists.
 
 def common_in_nested_lists(nestedlist):
     assert isinstance(nestedlist, list), "invalid inputs" # $_CONTRACT_$
-    assert all(isinstance(x, list) for x in nestedlist), "invalid inputs" # $_CONTRACT_$
-    assert all(all(isinstance(y, int) for y in x) for x in nestedlist), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(item, list) for item in nestedlist), "invalid inputs" # $_CONTRACT_$
     result = list(set.intersection(*map(set, nestedlist)))
     return result
 
