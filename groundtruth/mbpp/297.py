@@ -3,6 +3,7 @@ Write a function to flatten a given nested list structure.
 """
 
 def flatten_list(list1):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
     result_list = []
     if not list1: return result_list
     stack = [list(list1)]
