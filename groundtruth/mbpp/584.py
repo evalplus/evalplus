@@ -4,6 +4,7 @@ Write a function to find the first adverb ending with ly and its positions in a 
 
 import re
 def find_adverbs(text):
+  assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
   for m in re.finditer(r"\w+ly", text):
     return ('%d-%d: %s' % (m.start(), m.end(), m.group(0)))
 

@@ -3,6 +3,8 @@ Write a function which returns nth catalan number.
 """
 
 def catalan_number(num):
+    assert isinstance(num, int), "invalid inputs" # $_CONTRACT_$
+    assert num >= 0, "invalid inputs" # $_CONTRACT_$
     if num <=1:
          return 1   
     res_num = 0
