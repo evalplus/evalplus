@@ -4,6 +4,8 @@ Write a function to convert polar coordinates to rectangular coordinates.
 
 import cmath
 def polar_rect(x,y):
+ assert isinstance(x, (int, float)), "invalid inputs" # $_CONTRACT_$
+ assert isinstance(y, (int, float)), "invalid inputs" # $_CONTRACT_$
  cn = complex(x,y)
  cn=cmath.polar(cn)
  cn1 = cmath.rect(2, cmath.pi)

@@ -3,6 +3,8 @@ Write a python function to find the difference between largest and smallest valu
 """
 
 def big_diff(nums):
+     assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
+     assert all(isinstance(x, (int, float)) for x in nums), "invalid inputs" # $_CONTRACT_$
      diff= max(nums)-min(nums)
      return diff
 
