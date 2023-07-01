@@ -3,6 +3,8 @@ Write a python function to check whether a list is sublist of another or not.
 """
 
 def is_Sub_Array(A,B): 
+    assert isinstance(A, list), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(B, list), "invalid inputs" # $_CONTRACT_$
     n = len(A)
     m = len(B)
     i = 0; j = 0; 
