@@ -3,6 +3,8 @@ Write a function that takes in a list of tuples and returns a list containing th
 """
 
 def rear_extract(test_list):
+  assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, tuple) for x in test_list), "invalid inputs" # $_CONTRACT_$
   res = [lis[-1] for lis in test_list]
   return (res) 
 

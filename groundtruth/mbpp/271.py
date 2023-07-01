@@ -3,6 +3,7 @@ Write a python function that takes in an integer n and finds the sum of the firs
 """
 
 def even_Power_Sum(n): 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     sum = 0; 
     for i in range(1,n+1): 
         j = 2*i; 
