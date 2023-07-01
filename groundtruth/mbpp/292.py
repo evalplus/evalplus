@@ -3,6 +3,8 @@ Write a python function to find quotient of two numbers (rounded down to the nea
 """
 
 def find(n,m):  
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(m, int), "invalid inputs" # $_CONTRACT_$
     q = n//m 
     return (q)
 

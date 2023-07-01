@@ -3,6 +3,8 @@ Write a function to find out the number of ways of painting the fence such that 
 """
 
 def count_no_of_ways(n, k): 
+	assert isinstance(n, int) and n > 0, "invalid inputs" # $_CONTRACT_$
+	assert isinstance(k, int) and k > 0, "invalid inputs" # $_CONTRACT_$
 	dp = [0] * (n + 1) 
 	total = k 
 	mod = 1000000007
