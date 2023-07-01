@@ -3,6 +3,10 @@ Write a python function to find the surface area of a square pyramid with a give
 """
 
 def surface_Area(b,s): 
+    assert isinstance(b, (int, float)), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(s, (int, float)), "invalid inputs" # $_CONTRACT_$
+    assert b >= 0, "invalid inputs" # $_CONTRACT_$
+    assert s >= 0, "invalid inputs" # $_CONTRACT_$
     return 2 * b * s + pow(b,2) 
 
 
