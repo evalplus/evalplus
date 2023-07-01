@@ -2,9 +2,10 @@
 Write a python function which takes a list of integers and only returns the odd ones.
 """
 
-def Split(list): 
+def Split(l): 
+    assert isinstance(l, list), "invalid inputs" # $_CONTRACT_$
     od_li = [] 
-    for i in list: 
+    for i in l: 
         if (i % 2 != 0): 
             od_li.append(i)  
     return od_li
