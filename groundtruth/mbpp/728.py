@@ -3,6 +3,9 @@ Write a function takes as input two lists [a_1,...,a_n], [b_1,...,b_n] and retur
 """
 
 def sum_list(lst1,lst2):
+  assert isinstance(lst1, list), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(lst2, list), "invalid inputs" # $_CONTRACT_$
+  assert len(lst1) == len(lst2), "invalid inputs" # $_CONTRACT_$
   res_list = [lst1[i] + lst2[i] for i in range(len(lst1))] 
   return res_list
 
