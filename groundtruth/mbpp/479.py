@@ -3,6 +3,7 @@ Write a python function to find the first digit of a given number.
 """
 
 def first_Digit(n) :  
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     while n >= 10:  
         n = n / 10 
     return int(n) 
