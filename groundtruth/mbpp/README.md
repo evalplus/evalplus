@@ -22,8 +22,9 @@ some implementations/tests are quirky and maybe buggy.
 - [115](115.py#L12-L13): wrong test case and implementation ([fixed](https://github.com/evalplus/evalplus/commit/56013c437ce689cfca6c7e98e4185577edc6b450))
 - [127](127.py): unnecessarily complicated ([fixed](https://github.com/evalplus/evalplus/commit/410a932afedb2a0568aa5ef68b2df83aa35e7c1e))
 - [143](143.py): wrong test case and implementation ([fixed](https://github.com/evalplus/evalplus/commit/9c189569ea363ed4b7fc960c0dc617c85fea143f))
-- [582](582.py): wrong test case and unnecessarily complicated implementation ([fixed](https://github.com/evalplus/evalplus/commit/0b34c263f36fde2997b87951f953585fb01c5267))
 - [307](307.py): unclear problem description and implementation
+- [582](582.py): wrong test case and unnecessarily complicated implementation ([fixed](https://github.com/evalplus/evalplus/commit/0b34c263f36fde2997b87951f953585fb01c5267))
+- [612](612.py): testcase does not align with the problem description 
 
 ## Commit message
 
