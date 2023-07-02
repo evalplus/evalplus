@@ -3,6 +3,9 @@ Write a python function to find the sum of xor of all pairs of numbers in the gi
 """
 
 def pair_xor_Sum(arr,n) : 
+    assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
+    assert n <= len(arr), "invalid inputs" # $_CONTRACT_$
     ans = 0 
     for i in range(0,n) :    
         for j in range(i + 1,n) :   

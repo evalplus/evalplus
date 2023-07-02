@@ -4,6 +4,8 @@ Write a function to sort the given list.
 
 import heapq as hq
 def heap_sort(iterable):
+    assert isinstance(iterable, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in iterable), "invalid inputs" # $_CONTRACT_$
     h = []
     for value in iterable:
         hq.heappush(h, value)

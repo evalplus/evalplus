@@ -3,6 +3,7 @@ Write a function to replace whitespaces with an underscore and vice versa in a g
 """
 
 def replace_spaces(text):
+  assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
   return "".join(" " if c == "_" else ("_" if c == " " else c) for c in text)
 
 
