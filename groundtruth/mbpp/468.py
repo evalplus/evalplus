@@ -3,6 +3,8 @@ Write a function to find the maximum product formed by multiplying numbers of an
 """
 
 def max_product(arr):   
+  assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
   n = len(arr)
   mpis = arr[:]
   for i in range(n): 
