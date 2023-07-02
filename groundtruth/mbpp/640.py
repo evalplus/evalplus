@@ -4,6 +4,8 @@ Write a function to remove the parenthesis and what is inbetween them from a str
 
 import re
 def remove_parenthesis(items):
+ assert isinstance(items, list), "invalid inputs" # $_CONTRACT_$
+ assert all(isinstance(x, str) for x in items), "invalid inputs" # $_CONTRACT_$
  for item in items:
     return (re.sub(r" ?\([^)]+\)", "", item))
 
