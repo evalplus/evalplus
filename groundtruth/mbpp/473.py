@@ -3,6 +3,10 @@ Write a function to find the tuple intersection of elements in the given tuple l
 """
 
 def tuple_intersection(test_list1, test_list2):
+  assert isinstance(test_list1, list), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(test_list2, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(ele, tuple) for ele in test_list1), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(ele, tuple) for ele in test_list2), "invalid inputs" # $_CONTRACT_$
   res = set([tuple(sorted(ele)) for ele in test_list1]) & set([tuple(sorted(ele)) for ele in test_list2])
   return (res)
 
