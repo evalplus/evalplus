@@ -3,6 +3,8 @@ Write a python function to find the element of a list having maximum length.
 """
 
 def Find_Max(lst): 
+    assert isinstance(lst, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(i, list) for i in lst), "invalid inputs" # $_CONTRACT_$
     maxList = max((x) for x in lst) 
     return maxList
 

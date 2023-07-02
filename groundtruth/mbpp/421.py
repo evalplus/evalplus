@@ -3,6 +3,7 @@ Write a function to concatenate each element of tuple by the delimiter.
 """
 
 def concatenate_tuple(test_tup):
+    assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
     delim = "-"
     res = ''.join([str(ele) + delim for ele in test_tup])
     res = res[ : len(res) - len(delim)]

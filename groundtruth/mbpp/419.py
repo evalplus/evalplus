@@ -3,6 +3,8 @@ Write a function to round every number of a given list of numbers and print the 
 """
 
 def round_and_sum(list1):
+  assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(i, (int, float)) for i in list1), "invalid inputs" # $_CONTRACT_$
   lenght=len(list1)
   round_and_sum=sum(list(map(round,list1))* lenght)
   return round_and_sum
