@@ -3,6 +3,8 @@ Write a function to trim each tuple by k in the given tuple list.
 """
 
 def trim_tuple(test_list, K):
+  assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(ele, tuple) for ele in test_list), "invalid inputs" # $_CONTRACT_$
   res = []
   for ele in test_list:
     N = len(ele)
