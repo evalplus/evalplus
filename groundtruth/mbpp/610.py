@@ -3,6 +3,9 @@ Write a python function which takes a list and returns a list with the same elem
 """
 
 def remove_kth_element(list1, L):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(L, int), "invalid inputs" # $_CONTRACT_$
+    assert 0 < L <= len(list1), "invalid inputs" # $_CONTRACT_$
     return  list1[:L-1] + list1[L:]
 
 
