@@ -3,6 +3,8 @@ Write a python function to find the minimum of two numbers.
 """
 
 def minimum(a,b):   
+    assert isinstance(a, (int, float)), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(b, (int, float)), "invalid inputs" # $_CONTRACT_$ 
     if a <= b: 
         return a 
     else: 
