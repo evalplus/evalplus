@@ -3,6 +3,11 @@ Write a function to find the maximum sum of increasing subsequence from prefix u
 """
 
 def max_sum_increasing_subseq(a, n, index, k):
+	assert isinstance(a, list), "invalid inputs" # $_CONTRACT_$
+	assert all(isinstance(x, (int, float)) for x in a), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(n, int) and n > 0, "invalid inputs" # $_CONTRACT_$
+	assert isinstance(index, int) and index >= 0, "invalid inputs" # $_CONTRACT_$
+	assert isinstance(k, int) and k >= 0, "invalid inputs" # $_CONTRACT_$
 	dp = [[0 for i in range(n)] 
 			for i in range(n)]
 	for i in range(n):
