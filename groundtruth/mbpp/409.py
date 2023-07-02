@@ -3,6 +3,9 @@ Write a function to find the minimum product from the pairs of tuples within a g
 """
 
 def min_product_tuple(list1):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(ele, tuple) for ele in list1), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(ele, (int, float)) for sub in list1 for ele in sub), "invalid inputs" # $_CONTRACT_$
     result_min = min([abs(x * y) for x, y in list1] )
     return result_min
 
