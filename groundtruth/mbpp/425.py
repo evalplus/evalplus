@@ -3,6 +3,8 @@ Write a function to count the number of sublists containing a particular element
 """
 
 def count_element_in_list(list1, x): 
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(i, list) for i in list1), "invalid inputs" # $_CONTRACT_$
     ctr = 0
     for i in range(len(list1)): 
         if x in list1[i]: 
