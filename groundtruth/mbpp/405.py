@@ -3,6 +3,7 @@ Write a function to check whether an element exists within a tuple.
 """
 
 def check_tuplex(tuplex,tuple1): 
+  assert isinstance(tuplex, tuple), "invalid inputs" # $_CONTRACT_$
   if tuple1 in tuplex:
     return True
   else:

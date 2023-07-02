@@ -4,19 +4,24 @@ Write a function to find k number of smallest pairs which consist of one element
 
 import heapq
 def k_smallest_pairs(nums1, nums2, k):
-   queue = []
-   def push(i, j):
-       if i < len(nums1) and j < len(nums2):
-           heapq.heappush(queue, [nums1[i] + nums2[j], i, j])
-   push(0, 0)
-   pairs = []
-   while queue and len(pairs) < k:
-       _, i, j = heapq.heappop(queue)
-       pairs.append([nums1[i], nums2[j]])
-       push(i, j + 1)
-       if j == 0:
-           push(i + 1, 0)
-   return pairs
+    assert isinstance(nums1, list), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(nums2, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(el, (int, float)) for el in nums1), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(el, (int, float)) for el in nums2), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(k, int), "invalid inputs" # $_CONTRACT_$
+    queue = []
+    def push(i, j):
+        if i < len(nums1) and j < len(nums2):
+            heapq.heappush(queue, [nums1[i] + nums2[j], i, j])
+    push(0, 0)
+    pairs = []
+    while queue and len(pairs) < k:
+        _, i, j = heapq.heappop(queue)
+        pairs.append([nums1[i], nums2[j]])
+        push(i, j + 1)
+        if j == 0:
+            push(i + 1, 0)
+    return pairs
 
 
 
