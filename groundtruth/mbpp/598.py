@@ -3,6 +3,8 @@ Write a function to check whether the given number is armstrong or not.
 """
 
 def armstrong_number(number):
+ assert isinstance(number, int), "invalid inputs" # $_CONTRACT_$
+ assert number > 0, "invalid inputs" # $_CONTRACT_$
  sum = 0
  times = 0
  temp = number

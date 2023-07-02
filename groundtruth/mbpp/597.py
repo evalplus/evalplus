@@ -3,6 +3,11 @@ Write a function to find kth element from the given two sorted arrays.
 """
 
 def find_kth(arr1, arr2, k):
+	assert isinstance(arr1, list), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(arr2, list), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(k, int), "invalid inputs" # $_CONTRACT_$
+	assert k > 0, "invalid inputs" # $_CONTRACT_$
+	assert k <= len(arr1) + len(arr2), "invalid inputs" # $_CONTRACT_$j
 	m = len(arr1)
 	n = len(arr2)
 	sorted1 = [0] * (m + n)

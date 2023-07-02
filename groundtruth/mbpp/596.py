@@ -4,6 +4,7 @@ Write a function to find the size in bytes of the given tuple.
 
 import sys 
 def tuple_size(tuple_list):
+  assert isinstance(tuple_list, tuple), "invalid inputs" # $_CONTRACT_$
   return (sys.getsizeof(tuple_list)) 
 
 
