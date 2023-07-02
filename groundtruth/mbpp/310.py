@@ -3,6 +3,7 @@ Write a function to convert a given string to a tuple of characters.
 """
 
 def string_to_tuple(str1):
+    assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
     result = tuple(x for x in str1 if not x.isspace()) 
     return result
 

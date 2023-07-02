@@ -3,6 +3,7 @@ Write a python function to set the left most unset bit.
 """
 
 def set_left_most_unset_bit(n): 
+    assert isinstance(n, int) and n >= 0, "invalid inputs" # $_CONTRACT_$
     if not (n & (n + 1)): 
         return n 
     pos, temp, count = 0, n, 0 
