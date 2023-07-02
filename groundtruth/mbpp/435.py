@@ -3,6 +3,7 @@ Write a python function to find the last digit of a given number.
 """
 
 def last_Digit(n) :
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     return (n % 10) 
 
 
