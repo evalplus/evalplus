@@ -10,6 +10,7 @@ def set_middle_bits(n):
     n |= n >> 16;  
     return (n >> 1) ^ 1
 def toggle_middle_bits(n): 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     if (n == 1): 
         return 1
     return n ^ set_middle_bits(n) 

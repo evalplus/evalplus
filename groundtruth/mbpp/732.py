@@ -4,6 +4,7 @@ Write a function to replace all occurrences of spaces, commas, or dots with a co
 
 import re
 def replace_specialchar(text):
+ assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
  return (re.sub("[ ,.]", ":", text))
 
 
