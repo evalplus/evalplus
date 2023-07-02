@@ -3,6 +3,11 @@ Given a square matrix of size N*N given as a list of lists, where each cell is a
 """
 
 def maxAverageOfPath(cost):
+  assert isinstance(cost, list), "invalid inputs" # $_CONTRACT_$
+  assert len(cost) > 0, "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, list) for x in cost), "invalid inputs" # $_CONTRACT_$
+  assert all(len(x) == len(cost) == len(cost[0]) for x in cost), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, (int, float)) for x in sum(cost, [])), "invalid inputs" # $_CONTRACT_$
   N = len(cost)
   dp = [[0 for i in range(N + 1)] for j in range(N + 1)]
   dp[0][0] = cost[0][0]

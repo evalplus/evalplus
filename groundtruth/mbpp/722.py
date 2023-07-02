@@ -3,6 +3,13 @@ The input is given as - a dictionary with a student name as a key and a tuple of
 """
 
 def filter_data(students,h,w):
+    assert isinstance(students, dict), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, str) for x in students.keys()), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, tuple) for x in students.values()), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(h, (int, float)), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(w, (int, float)), "invalid inputs" # $_CONTRACT_$
+    assert h >= 0, "invalid inputs" # $_CONTRACT_$
+    assert w >= 0, "invalid inputs" # $_CONTRACT_$
     result = {k: s for k, s in students.items() if s[0] >=h and s[1] >=w}
     return result    
 
