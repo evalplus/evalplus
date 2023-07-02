@@ -3,6 +3,8 @@ Write a python function to get the first element of each sublist.
 """
 
 def Extract(lst): 
+    assert isinstance(lst, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, list) for x in lst), "invalid inputs" # $_CONTRACT_$
     return [item[0] for item in lst] 
 
 
