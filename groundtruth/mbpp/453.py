@@ -4,6 +4,7 @@ Write a python function to find the sum of even factors of a number.
 
 import math 
 def sumofFactors(n) : 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     if (n % 2 != 0) : 
         return 0
     res = 1
