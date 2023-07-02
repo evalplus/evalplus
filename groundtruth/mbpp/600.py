@@ -3,6 +3,8 @@ Write a python function to check whether the given number is even or not.
 """
 
 def is_Even(n) : 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert n > 0, "invalid inputs" # $_CONTRACT_$
     if (n^1 == n+1) :
         return True; 
     else :
