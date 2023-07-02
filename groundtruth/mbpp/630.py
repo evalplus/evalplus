@@ -9,6 +9,8 @@ def adjac(ele, sub = []):
      yield from [idx for j in range(ele[0] - 1, ele[0] + 2) 
                 for idx in adjac(ele[1:], sub + [j])] 
 def get_coordinates(test_tup):
+  assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, int) for x in test_tup), "invalid inputs" # $_CONTRACT_$
   return list(adjac(test_tup))
 
 

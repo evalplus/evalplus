@@ -2,8 +2,10 @@
 Write a python function to find even numbers from a list of numbers.
 """
 
-def Split(list): 
-    return [num for num in list if num % 2 == 0]
+def Split(l): 
+    assert isinstance(l, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, int) for x in l), "invalid inputs" # $_CONTRACT_$
+    return [num for num in l if num % 2 == 0]
 
 
 
