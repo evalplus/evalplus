@@ -3,6 +3,7 @@ Write a function to calculate the sum of perrin numbers.
 """
 
 def cal_sum(n): 
+	assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
 	a = 3
 	b = 0
 	c = 2
