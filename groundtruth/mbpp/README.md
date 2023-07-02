@@ -25,6 +25,7 @@ some implementations/tests are quirky and maybe buggy.
 - [307](307.py): unclear problem description and implementation
 - [406](406.py): wrong implementation: cannot meet the problem
 - [429](429.py): wrong implementation: cannot meet the problem
+- [444](444.py): wrong implementation: trim each tuple by k, not 2*k; str() is unnecessary
 - [582](582.py): wrong test case and unnecessarily complicated implementation ([fixed](https://github.com/evalplus/evalplus/commit/0b34c263f36fde2997b87951f953585fb01c5267))
 - [612](612.py): testcase does not align with the problem description 
 
