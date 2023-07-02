@@ -3,6 +3,10 @@ Write a function to check for the number of jumps required of given length to re
 """
 
 def min_Jumps(steps, d): 
+    assert isinstance(steps, tuple), "invalid inputs" # $_CONTRACT_$
+    assert len(steps) == 2, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, int) for x in steps), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(d, int), "invalid inputs" # $_CONTRACT_$
     (a, b) = steps
     temp = a 
     a = min(a, b) 

@@ -3,6 +3,9 @@ Write a function to find the cumulative sum of all the values that are present i
 """
 
 def cummulative_sum(test_list):
+  assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(el, tuple) for el in test_list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(el, (int, float)) for el in sum(test_list, ())), "invalid inputs" # $_CONTRACT_$
   res = sum(map(sum, test_list))
   return (res)
 

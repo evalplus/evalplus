@@ -3,6 +3,9 @@ Write a function which takes a tuple of tuples and returns the average value for
 """
 
 def average_tuple(nums):
+    assert isinstance(nums, tuple), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, tuple) for x in nums), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in sum(nums, ())), "invalid inputs" # $_CONTRACT_$
     result = [sum(x) / len(x) for x in zip(*nums)]
     return result
 
