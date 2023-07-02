@@ -4,8 +4,9 @@ Write a function to find the first adverb and their positions in a given sentenc
 
 import re
 def find_adverb_position(text):
- for m in re.finditer(r"\w+ly", text):
-    return (m.start(), m.end(), m.group(0))
+    assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
+    for m in re.finditer(r"\w+ly", text):
+        return (m.start(), m.end(), m.group(0))
 
 
 

@@ -3,6 +3,8 @@ Write a function to join a list of multiple integers into a single integer.
 """
 
 def multiple_to_single(L):
+  assert isinstance(L, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(i, int) for i in L), "invalid inputs" # $_CONTRACT_$
   x = int("".join(map(str, L)))
   return x
 
