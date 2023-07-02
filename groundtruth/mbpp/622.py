@@ -3,6 +3,12 @@ Write a function to find the median of two sorted lists of same size.
 """
 
 def get_median(arr1, arr2, n):
+  assert isinstance(arr1, list), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(arr2, list), "invalid inputs" # $_CONTRACT_$
+  assert 0 <= n <= min(len(arr1), len(arr2)), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(el, (int, float)) for el in arr1 + arr2), "invalid inputs" # $_CONTRACT_$
+  assert all(x <= y for x, y in zip(arr1[0:n], arr1[1:n])), "invalid inputs" # $_CONTRACT_$
+  assert all(x <= y for x, y in zip(arr2[0:n], arr2[1:n])), "invalid inputs" # $_CONTRACT_$
   i = 0
   j = 0
   m1 = -1

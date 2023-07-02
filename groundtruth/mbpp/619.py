@@ -3,6 +3,7 @@ Write a function to move all the numbers to the end of the given string.
 """
 
 def move_num(test_str):
+  assert isinstance(test_str, str), "invalid inputs" # $_CONTRACT_$
   res = ''
   dig = ''
   for ele in test_str:

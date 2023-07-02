@@ -3,6 +3,8 @@ Write a function to find the size of the largest subset of a list of numbers so 
 """
 
 def largest_subset(a):
+	assert isinstance(a, list), "invalid inputs" # $_CONTRACT_$
+	assert all(isinstance(el, (int, float)) for el in a), "invalid inputs" # $_CONTRACT_$
 	n = len(a)
 	dp = [0 for i in range(n)]
 	dp[n - 1] = 1; 
