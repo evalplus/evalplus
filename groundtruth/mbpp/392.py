@@ -3,6 +3,7 @@ Write a function to find the maximum sum possible by using the given equation f(
 """
 
 def get_max_sum (n):
+	assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
 	res = list()
 	res.append(0)
 	res.append(1)
