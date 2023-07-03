@@ -4,6 +4,7 @@ Write a function that matches a string that has an 'a' followed by one or more '
 
 import re
 def text_match_zero_one(text):
+        assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
         patterns = 'ab+?'
         if re.search(patterns,  text):
                 return True
