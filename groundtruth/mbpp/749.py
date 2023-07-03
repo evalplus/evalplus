@@ -3,6 +3,9 @@ Write a function to sort a given list of strings of numbers numerically. https:/
 """
 
 def sort_numeric_strings(nums_str):
+    assert isinstance(nums_str, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, str) for x in nums_str), "invalid inputs" # $_CONTRACT_$
+    assert all(num.lstrip('-').rstrip(' ').isdigit for num in nums_str), "invalid inputs" # $_CONTRACT_$
     result = [int(x) for x in nums_str]
     result.sort()
     return result
