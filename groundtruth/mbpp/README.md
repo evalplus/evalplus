@@ -30,7 +30,7 @@ some implementations/tests are quirky and maybe buggy.
 - [582](582.py): wrong test case and unnecessarily complicated implementation ([fixed](https://github.com/evalplus/evalplus/commit/0b34c263f36fde2997b87951f953585fb01c5267))
 - [612](612.py): testcase does not align with the problem description 
 - [723](723.py#L14): wrong testcase: two list are not same length
-- [733](733.py#L27): wrong testcase: the array is not sorted
+- [733](733.py#L27): wrong testcase: the array is not sorted([fixed](https://github.com/evalplus/evalplus/commit/47336f5404a282208e4673a5ffb7548b8dd65c04))
 
 ## Commit message
 
