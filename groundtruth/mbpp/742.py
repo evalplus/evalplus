@@ -4,6 +4,8 @@ Write a function to caluclate the area of a tetrahedron.
 
 import math
 def area_tetrahedron(side):
+  assert isinstance(side, (int, float)), "invalid inputs" # $_CONTRACT_$
+  assert side > 0, "invalid inputs" # $_CONTRACT_$
   area = math.sqrt(3)*(side*side)
   return area
 
