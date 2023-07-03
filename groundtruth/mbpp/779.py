@@ -3,6 +3,8 @@ Write a function to count the number of lists within a list. The function should
 """
 
 def unique_sublists(list1):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, list) for x in list1), "invalid inputs" # $_CONTRACT_$
     result ={}
     for l in list1: 
         result.setdefault(tuple(l), list()).append(1) 
