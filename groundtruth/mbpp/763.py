@@ -3,6 +3,10 @@ Write a python function to find the minimum difference between any two elements 
 """
 
 def find_min_diff(arr,n): 
+    assert isinstance(arr, tuple), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert n == len(arr), "invalid inputs" # $_CONTRACT_$ 
     arr = sorted(arr) 
     diff = 10**20 
     for i in range(n-1): 

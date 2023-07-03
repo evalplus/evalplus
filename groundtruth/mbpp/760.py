@@ -3,6 +3,7 @@ Write a python function to check whether a list of numbers contains only one dis
 """
 
 def unique_Element(arr):
+    assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
     s = set(arr)
     return len(s) == 1
 

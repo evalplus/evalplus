@@ -2,10 +2,11 @@
 Write a python function to count number of digits in a given string.
 """
 
-def number_ctr(str):
+def number_ctr(s):
+      assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
       number_ctr= 0
-      for i in range(len(str)):
-          if str[i] >= '0' and str[i] <= '9': number_ctr += 1     
+      for i in range(len(s)):
+          if s[i] >= '0' and s[i] <= '9': number_ctr += 1     
       return  number_ctr
 
 
