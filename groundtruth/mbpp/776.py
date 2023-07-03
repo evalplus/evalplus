@@ -3,6 +3,7 @@ Write a function to count those characters which have vowels as their neighbors 
 """
 
 def count_vowels(test_str):
+  assert isinstance(test_str, str), "invalid inputs" # $_CONTRACT_$
   res = 0
   vow_list = ['a', 'e', 'i', 'o', 'u']
   for idx in range(1, len(test_str) - 1):
