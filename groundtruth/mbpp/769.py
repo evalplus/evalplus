@@ -3,6 +3,8 @@ Write a python function to get the difference between two lists.
 """
 
 def Diff(li1,li2):
+    assert isinstance(li1, list), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(li2, list), "invalid inputs" # $_CONTRACT_$
     return list(set(li1)-set(li2)) + list(set(li2)-set(li1))
  
 
