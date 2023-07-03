@@ -3,6 +3,9 @@ Write a function to that rotate left bits by d bits a given number. We assume th
 """
 
 def left_rotate(n,d):   
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(d, int), "invalid inputs" # $_CONTRACT_$
+    assert 0 <= n <= 0xffffffff, "invalid inputs" # $_CONTRACT_$
     INT_BITS = 32
     return (n << d)|(n >> (INT_BITS - d))  
 
