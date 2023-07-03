@@ -3,6 +3,9 @@ Write a function to find minimum k records from tuple list. https://www.geeksfor
 """
 
 def min_k(test_list, K):
+  assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, tuple) for x in test_list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x[1], (int, float)) for x in test_list), "invalid inputs" # $_CONTRACT_$
   res = sorted(test_list, key = lambda x: x[1])[:K]
   return (res) 
 

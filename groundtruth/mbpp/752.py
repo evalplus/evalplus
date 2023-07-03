@@ -3,6 +3,8 @@ Write a function to find the nth jacobsthal number. https://www.geeksforgeeks.or
 """
 
 def jacobsthal_num(n): 
+	assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+	assert n >= 0, "invalid inputs" # $_CONTRACT_$
 	dp = [0] * (n + 1) 
 	dp[0] = 0
 	dp[1] = 1
