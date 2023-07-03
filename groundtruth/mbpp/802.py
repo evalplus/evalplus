@@ -3,6 +3,8 @@ Write a python function to count the number of rotations required to generate a 
 """
 
 def count_rotation(arr):   
+    assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
     for i in range (1,len(arr)): 
         if (arr[i] < arr[i - 1]): 
             return i  

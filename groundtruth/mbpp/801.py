@@ -3,6 +3,9 @@ Write a python function to count the number of equal numbers from three given in
 """
 
 def test_three_equal(x,y,z):
+  assert isinstance(x, int), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(y, int), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(z, int), "invalid inputs" # $_CONTRACT_$
   result = set([x,y,z])
   if len(result)==3:
     return 0
