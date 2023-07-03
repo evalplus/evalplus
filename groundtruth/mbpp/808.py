@@ -3,6 +3,7 @@ Write a function to check if the given tuples contain the k or not.
 """
 
 def check_K(test_tup, K):
+  assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
   res = False
   for ele in test_tup:
     if ele == K:

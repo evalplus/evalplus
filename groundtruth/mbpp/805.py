@@ -3,6 +3,9 @@ Write a function that returns the list in a list of lists whose sum of elements 
 """
 
 def max_sum_list(lists):
+ assert isinstance(lists, list), "invalid inputs" # $_CONTRACT_$
+ assert all(isinstance(x, list) for x in lists), "invalid inputs" # $_CONTRACT_$
+ assert all(all(isinstance(y, (int, float)) for y in x) for x in lists), "invalid inputs" # $_CONTRACT_$
  return max(lists, key=sum)
 
 
