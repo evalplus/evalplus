@@ -3,6 +3,7 @@ Write a function to remove tuples from the given tuple.
 """
 
 def remove_nested(test_tup):
+  assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
   res = tuple()
   for count, ele in enumerate(test_tup):
     if not isinstance(ele, tuple):

@@ -4,6 +4,7 @@ Write a function that matches a string that has an a followed by three 'b'.
 
 import re
 def text_match_three(text):
+        assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
         patterns = 'ab{3}?'
         return re.search(patterns,  text)
 
