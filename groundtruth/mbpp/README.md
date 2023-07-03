@@ -29,7 +29,7 @@ some implementations/tests are quirky and maybe buggy.
 - [455](455.py): wrong implementation(?): No month number check
 - [582](582.py): wrong test case and unnecessarily complicated implementation ([fixed](https://github.com/evalplus/evalplus/commit/0b34c263f36fde2997b87951f953585fb01c5267))
 - [612](612.py): testcase does not align with the problem description 
-- [723](723.py): wrong testcase: two list are not same length
+- [723](723.py): wrong testcase: two list are not same length ([fixed](https://github.com/evalplus/evalplus/commit/90330578fb5913a13d224a7df92dc2d2dc70c77a))
 - [733](733.py): wrong testcase: the array is not sorted([fixed](https://github.com/evalplus/evalplus/commit/47336f5404a282208e4673a5ffb7548b8dd65c04))
 - [793](793.py): wrong testcase: the array is not sorted([fixed](https://github.com/evalplus/evalplus/commit/f0470f6ee59e7ac918ebc2c93177635f1a3451b6))
 
