@@ -3,6 +3,7 @@ Write a python function to count the number of lists in a given number of lists.
 """
 
 def count_list(input_list): 
+    assert isinstance(input_list, list), "invalid inputs" # $_CONTRACT_$
     return len(input_list)
 
 

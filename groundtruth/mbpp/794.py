@@ -4,6 +4,7 @@ Write a function that matches a string that has an 'a' followed by anything, end
 
 import re
 def text_starta_endb(text):
+        assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
         patterns = 'a.*?b$'
         return re.search(patterns,  text)
 
