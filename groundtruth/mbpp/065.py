@@ -3,8 +3,13 @@ Write a function to flatten a list and sum all of its elements.
 """
 
 def recursive_list_sum(data_list):
+	def list_check(l): # $_CONTRACT_$
+		if not isinstance(l, list): # $_CONTRACT_$
+			return isinstance(l, (int, float)) # $_CONTRACT_$
+		else: # $_CONTRACT_$
+			return all(list_check(item) for item in l) # $_CONTRACT_$
 	assert isinstance(data_list, list), "invalid inputs" # $_CONTRACT_$
-	assert all(isinstance(item, (list, int, float)) for item in data_list), "invalid inputs" # $_CONTRACT_$
+	assert list_check(data_list), "invalid inputs" # $_CONTRACT_$
 	total = 0
 	for element in data_list:
 		if type(element) == type([]):
