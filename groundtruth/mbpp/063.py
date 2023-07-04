@@ -4,8 +4,8 @@ Write a function to find the maximum difference between available pairs in the g
 
 def max_difference(test_list):
   assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
-  assert all(isinstance(item, tuple) for item in test_list), "invalid inputs" # $_CONTRACT_$
-  assert all(isinstance(a, (int, float)) for a, b in test_list for b in test_list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(item, tuple) and len(item) == 2 for item in test_list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(a, (int, float)) and isinstance(b, (int, float)) for a, b in test_list), "invalid inputs" # $_CONTRACT_$
   temp = [abs(b - a) for a, b in test_list]
   res = max(temp)
   return (res) 
