@@ -5,7 +5,7 @@ Write a python function to count the number of substrings with the sum of digits
 from collections import defaultdict
 def count_Substrings(s):
     assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
-    assert len(s) > 0, "invalid inputs" # $_CONTRACT_$
+    assert s.isdigit(), "invalid inputs" # $_CONTRACT_$
     n = len(s)
     count,sum = 0,0
     mp = defaultdict(lambda : 0)
