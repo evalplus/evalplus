@@ -3,8 +3,11 @@ Write a function to check if the given number is woodball or not.
 """
 
 def is_woodall(x): 
-	assert isinstance(x, int), "invalid inputs" # $_CONTRACT_$
-	assert x > 0, "invalid inputs" # $_CONTRACT_$
+	assert isinstance(x, (int, float)), "invalid inputs" # $_CONTRACT_$
+	if not isinstance(x, int):
+		return False
+	if x <= 0:
+		return False
 	if (x % 2 == 0): 
 		return False
 	if (x == 1): 
