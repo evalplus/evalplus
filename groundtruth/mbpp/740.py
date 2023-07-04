@@ -3,6 +3,8 @@ Write a function to convert the given tuple to a key-value dictionary using adja
 """
 
 def tuple_to_dict(test_tup):
+  assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
+  assert len(test_tup) % 2 == 0, "invalid inputs" # $_CONTRACT_$
   res = dict(test_tup[idx : idx + 2] for idx in range(0, len(test_tup), 2))
   return (res) 
 

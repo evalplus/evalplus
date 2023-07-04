@@ -4,6 +4,8 @@ Write a python function to check whether the count of divisors is even. https://
 
 import math 
 def count_divisors(n) : 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert n > 0, "invalid inputs" # $_CONTRACT_$
     count = 0
     for i in range(1, (int)(math.sqrt(n)) + 2) : 
         if (n % i == 0) : 

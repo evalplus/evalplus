@@ -3,6 +3,8 @@ Write a python function to find the sublist having minimum length.
 """
 
 def Find_Min(lst): 
+    assert isinstance(lst, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, list) for x in lst), "invalid inputs" # $_CONTRACT_$
     return min(lst, key=len) 
 
 

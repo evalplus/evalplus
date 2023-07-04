@@ -4,6 +4,7 @@ Write a function to put spaces between words starting with capital letters in a 
 
 import re
 def capital_words_spaces(str1):
+  assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
   return re.sub(r"(\w)([A-Z])", r"\1 \2", str1)
 
 

@@ -3,6 +3,8 @@ Write a function that takes as input a tuple of numbers (t_1,...,t_{N+1}) and re
 """
 
 def multiply_elements(test_tup):
+  assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, (int, float)) for x in test_tup), "invalid inputs" # $_CONTRACT_$
   res = tuple(i * j for i, j in zip(test_tup, test_tup[1:]))
   return (res) 
 

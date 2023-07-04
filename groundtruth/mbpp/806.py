@@ -3,6 +3,8 @@ Write a function to find maximum run of uppercase characters in the given string
 """
 
 def max_run_uppercase(test_str):
+  assert isinstance(test_str, str), "invalid inputs" # $_CONTRACT_$
+  assert len(test_str) > 0, "invalid inputs" # $_CONTRACT_$
   cnt = 0
   res = 0
   for idx in range(0, len(test_str)):

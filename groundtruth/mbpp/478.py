@@ -4,7 +4,8 @@ Write a function to remove lowercase substrings from a given string.
 
 import re
 def remove_lowercase(str1):
- return re.sub('[a-z]', '', str1)
+    assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
+    return re.sub('[a-z]', '', str1)
 
 
 

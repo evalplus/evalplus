@@ -3,6 +3,7 @@ Write a python function to find the first non-repeated character in a given stri
 """
 
 def first_non_repeating_character(str1):
+  assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
   char_order = []
   ctr = {}
   for c in str1:

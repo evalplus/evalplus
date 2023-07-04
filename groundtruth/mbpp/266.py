@@ -3,6 +3,7 @@ Write a function to find the lateral surface area of a cube given its side lengt
 """
 
 def lateralsurface_cube(l):
+  assert isinstance(l, (int, float)), "invalid inputs" # $_CONTRACT_$
   LSA = 4 * (l * l)
   return LSA
 

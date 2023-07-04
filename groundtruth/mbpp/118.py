@@ -3,6 +3,7 @@ Write a function to convert a string to a list of strings split on the space cha
 """
 
 def string_to_list(string): 
+    assert isinstance(string, str), "invalid inputs" # $_CONTRACT_$
     lst = list(string.split(" ")) 
     return lst
 

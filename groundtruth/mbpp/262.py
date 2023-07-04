@@ -3,6 +3,8 @@ Write a function that takes in a list and an integer L and splits the given list
 """
 
 def split_two_parts(list1, L):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(L, int), "invalid inputs" # $_CONTRACT_$
     return list1[:L], list1[L:]
 
 

@@ -3,6 +3,7 @@ Write a function to reverse words seperated by spaces in a given string.
 """
 
 def reverse_words(s):
+        assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
         return ' '.join(reversed(s.split()))
 
 

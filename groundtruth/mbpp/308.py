@@ -3,6 +3,11 @@ Write a function to find the specified number of largest products from two given
 """
 
 def large_product(nums1, nums2, N):
+    assert isinstance(nums1, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in nums1), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(nums2, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in nums2), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(N, int), "invalid inputs" # $_CONTRACT_$
     result = sorted([x*y for x in nums1 for y in nums2], reverse=True)[:N]
     return result
 

@@ -3,6 +3,9 @@ Write a function to check whether the entered number is greater than the element
 """
 
 def check_greater(arr, number):
+  assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(el, (int, float)) for el in arr), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(number, (int, float)), "invalid inputs" # $_CONTRACT_$
   arr.sort()
   return number > arr[-1]
 

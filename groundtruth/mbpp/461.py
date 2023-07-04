@@ -2,10 +2,11 @@
 Write a python function to count the upper case characters in a given string.
 """
 
-def upper_ctr(str):
+def upper_ctr(str1):
+    assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
     upper_ctr = 0
-    for i in range(len(str)):
-          if str[i] >= 'A' and str[i] <= 'Z': upper_ctr += 1
+    for i in range(len(str1)):
+          if str1[i] >= 'A' and str1[i] <= 'Z': upper_ctr += 1
           return upper_ctr
 
 

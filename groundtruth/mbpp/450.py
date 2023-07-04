@@ -2,8 +2,11 @@
 Write a function to extract specified size of strings from a given list of string values.
 """
 
-def extract_string(str, l):
-    result = [e for e in str if len(e) == l] 
+def extract_string(str1, l):
+    assert isinstance(str1, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(ele, str) for ele in str1), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(l, int), "invalid inputs" # $_CONTRACT_$
+    result = [e for e in str1 if len(e) == l] 
     return result
 
 

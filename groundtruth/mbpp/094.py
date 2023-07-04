@@ -4,6 +4,9 @@ Given a list of tuples, write a function that returns the first value of the tup
 
 from operator import itemgetter 
 def index_minimum(test_list):
+  assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(item, tuple) for item in test_list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(item[1], (int, float)) for item in test_list), "invalid inputs" # $_CONTRACT_$
   res = min(test_list, key = itemgetter(1))[0]
   return (res) 
 

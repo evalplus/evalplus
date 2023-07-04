@@ -3,6 +3,8 @@ Write a function to sort the given array by using shell sort.
 """
 
 def shell_sort(my_list):
+    assert isinstance(my_list, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(ele, (int, float)) for ele in my_list), "invalid inputs" # $_CONTRACT_$
     gap = len(my_list) // 2
     while gap > 0:
         for i in range(gap, len(my_list)):

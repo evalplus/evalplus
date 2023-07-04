@@ -3,6 +3,8 @@ Write a function to check if a string represents an integer or not.
 """
 
 def check_integer(text):
+ assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
+ assert len(text) > 0, "invalid inputs" # $_CONTRACT_$
  text = text.strip()
  if len(text) < 1:
     return None

@@ -4,6 +4,7 @@ Write a function to remove all whitespaces from the given string.
 
 import re
 def remove_whitespaces(text1):
+  assert isinstance(text1, str), "invalid inputs" # $_CONTRACT_$
   return (re.sub(r'\s+', '',text1))
 
 

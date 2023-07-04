@@ -3,6 +3,8 @@ Write a function to check whether the given month number contains 30 days or not
 """
 
 def check_monthnumber_number(monthnum3):
+  assert isinstance(monthnum3, int), "invalid inputs" # $_CONTRACT_$
+  assert 1 <= monthnum3 <= 12, "invalid inputs" # $_CONTRACT_$
   return monthnum3==4 or monthnum3==6 or monthnum3==9 or monthnum3==11
 
 

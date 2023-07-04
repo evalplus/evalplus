@@ -3,6 +3,7 @@ Write a python function to reverse only the vowels of a given string (where y is
 """
 
 def reverse_vowels(str1):
+	assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
 	vowels = ""
 	for char in str1:
 		if char in "aeiouAEIOU":

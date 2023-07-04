@@ -3,6 +3,7 @@ Write a python function takes in an integer and check whether the frequency of e
 """
 
 def validate(n): 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     for i in range(10): 
         temp = n;  
         count = 0; 

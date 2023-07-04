@@ -3,6 +3,9 @@ Write a function to find frequency of each element in a flattened list of lists,
 """
 
 def frequency_lists(list1):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert len(list1) > 0, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(item, list) for item in list1), "invalid inputs" # $_CONTRACT_$
     list1 = [item for sublist in list1 for item in sublist]
     dic_data = {}
     for num in list1:

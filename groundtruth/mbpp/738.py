@@ -3,6 +3,7 @@ Write a function to calculate the geometric sum of n-1. https://www.w3resource.c
 """
 
 def geometric_sum(n):
+  assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
   if n < 0:
     return 0
   else:

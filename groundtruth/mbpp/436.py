@@ -3,6 +3,8 @@ Write a python function to return the negative numbers in a list.
 """
 
 def neg_nos(list1):
+  assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(i, (int, float)) for i in list1), "invalid inputs" # $_CONTRACT_$
   out = []
   for num in list1: 
     if num < 0: 

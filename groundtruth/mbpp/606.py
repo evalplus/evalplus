@@ -4,6 +4,7 @@ Write a function to convert degrees to radians.
 
 import math
 def radian_degree(degree):
+ assert isinstance(degree, int), "invalid inputs" # $_CONTRACT_$
  radian = degree*(math.pi/180)
  return radian
 

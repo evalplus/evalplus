@@ -3,6 +3,7 @@ Write a function that takes in an integer n and calculates the harmonic sum of n
 """
 
 def harmonic_sum(n):
+  assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
   if n < 2:
     return 1
   else:

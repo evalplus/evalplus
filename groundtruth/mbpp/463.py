@@ -3,6 +3,8 @@ Write a function to find the maximum product subarray of the given array.
 """
 
 def max_subarray_product(arr):
+	assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+	assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
 	n = len(arr)
 	max_ending_here = 1
 	min_ending_here = 1

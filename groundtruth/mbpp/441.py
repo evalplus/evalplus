@@ -3,6 +3,7 @@ Write a function to find the surface area of a cube of a given size.
 """
 
 def surfacearea_cube(l):
+  assert isinstance(l, (int, float)), "invalid inputs" # $_CONTRACT_$
   surfacearea= 6*l*l
   return surfacearea
 

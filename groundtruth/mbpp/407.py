@@ -3,6 +3,7 @@ Write a function to create the next bigger number by rearranging the digits of a
 """
 
 def rearrange_bigger(n):
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     nums = list(str(n))
     for i in range(len(nums)-2,-1,-1):
         if nums[i] < nums[i+1]:

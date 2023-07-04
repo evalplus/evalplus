@@ -3,6 +3,8 @@ Write a python function to find nth bell number.
 """
 
 def bell_Number(n): 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
     bell = [[0 for i in range(n+1)] for j in range(n+1)] 
     bell[0][0] = 1
     for i in range(1, n+1):

@@ -3,21 +3,25 @@ Write a function to find the median of three numbers.
 """
 
 def median_numbers(a,b,c):
- if a > b:
-    if a < c:
-        median = a
-    elif b > c:
-        median = b
+    assert isinstance(a, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(b, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(c, int), "invalid inputs" # $_CONTRACT_$
+    if a > b:
+        if a < c:
+            median = a
+        elif b > c:
+            median = b
+        else:
+            median = c
     else:
-        median = c
- else:
-    if a > c:
-        median = a
-    elif b < c:
-        median = b
-    else:
-        median = c
- return median
+        if a > c:
+            median = a
+        elif b < c:
+            median = b
+        else:
+            median = c
+    return median
+
 
 
 

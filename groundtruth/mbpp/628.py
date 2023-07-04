@@ -3,6 +3,7 @@ Write a function to replace all spaces in the given string with '%20'.
 """
 
 def replace_spaces(string):
+  assert isinstance(string, str), "invalid inputs" # $_CONTRACT_$
   return string.replace(" ", "%20")
 
 

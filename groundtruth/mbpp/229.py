@@ -3,6 +3,9 @@ Write a function that takes in an array and an integer n, and re-arranges the fi
 """
 
 def re_arrange_array(arr, n):
+  assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, int) for x in arr), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
   j=0
   for i in range(0, n):
     if (arr[i] < 0):

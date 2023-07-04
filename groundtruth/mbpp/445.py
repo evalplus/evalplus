@@ -3,6 +3,12 @@ Write a function to perform index wise multiplication of tuple elements in the g
 """
 
 def index_multiplication(test_tup1, test_tup2):
+  assert isinstance(test_tup1, tuple), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(test_tup2, tuple), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(ele, tuple) for ele in test_tup1), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(ele, tuple) for ele in test_tup2), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(ele, (int, float)) for tup in test_tup1 for ele in tup), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(ele, (int, float)) for tup in test_tup2 for ele in tup), "invalid inputs" # $_CONTRACT_$
   res = tuple(tuple(a * b for a, b in zip(tup1, tup2))
    for tup1, tup2 in zip(test_tup1, test_tup2))
   return (res) 

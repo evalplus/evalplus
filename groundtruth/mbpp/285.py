@@ -4,11 +4,12 @@ Write a function that checks whether a string contains the 'a' character followe
 
 import re
 def text_match_two_three(text):
-        patterns = 'ab{2,3}'
-        if re.search(patterns,  text):
-                return True
-        else:
-                return False
+    assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
+    patterns = 'ab{2,3}'
+    if re.search(patterns,  text):
+            return True
+    else:
+            return False
 
 
 

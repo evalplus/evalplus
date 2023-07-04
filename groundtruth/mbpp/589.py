@@ -3,6 +3,8 @@ Write a function to find perfect squares between two given numbers.
 """
 
 def perfect_squares(a, b):
+    assert isinstance(a, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(b, int), "invalid inputs" # $_CONTRACT_$
     lists=[]
     for i in range (a,b+1):
         j = 1;

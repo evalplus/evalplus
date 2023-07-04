@@ -5,6 +5,8 @@ Write a function to search a string for a regex pattern. The function should ret
 import re
 
 def find_literals(text, pattern):
+  assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(pattern, str), "invalid inputs" # $_CONTRACT_$
   match = re.search(pattern, text)
   s = match.start()
   e = match.end()

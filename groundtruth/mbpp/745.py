@@ -3,6 +3,9 @@ Write a function to find numbers within a given range from startnum ti endnum wh
 """
 
 def divisible_by_digits(startnum, endnum):
+    assert isinstance(startnum, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(endnum, int), "invalid inputs" # $_CONTRACT_$
+    assert startnum <= endnum, "invalid inputs" # $_CONTRACT_$
     return [n for n in range(startnum, endnum+1) \
                 if not any(map(lambda x: int(x) == 0 or n%int(x) != 0, str(n)))]
 

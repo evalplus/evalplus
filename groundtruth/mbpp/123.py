@@ -3,6 +3,8 @@ Write a function to sum all amicable numbers from 1 to a specified number.
 """
 
 def amicable_numbers_sum(limit):
+    assert isinstance(limit, int), "invalid inputs" # $_CONTRACT_$
+    assert limit >= 1, "invalid inputs" # $_CONTRACT_$
     if not isinstance(limit, int):
         return "Input is not an integer!"
     if limit < 1:

@@ -4,6 +4,8 @@ Write a function to find the surface area of a sphere.
 
 import math
 def surfacearea_sphere(r):
+  assert isinstance(r, (int, float)), "invalid inputs" # $_CONTRACT_$
+  assert r >= 0, "invalid inputs" # $_CONTRACT_$
   surfacearea=4*math.pi*r*r
   return surfacearea
 

@@ -3,6 +3,8 @@ Write a python function to find sum of products of all possible sublists of a gi
 """
 
 def sum_Of_Subarray_Prod(arr):
+    assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
     ans = 0
     res = 0
     i = len(arr) - 1

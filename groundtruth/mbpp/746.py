@@ -4,6 +4,10 @@ Write a function to find area of a sector. The function takes the radius and ang
 
 import math
 def sector_area(r,a):
+    assert isinstance(r, (int, float)), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(a, (int, float)), "invalid inputs" # $_CONTRACT_$
+    assert r >= 0, "invalid inputs" # $_CONTRACT_$
+    assert a >= 0, "invalid inputs" # $_CONTRACT_$
     if a > 360:
         return None
     return (math.pi*r**2) * (a/360)

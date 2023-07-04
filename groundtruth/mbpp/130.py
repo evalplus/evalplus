@@ -4,6 +4,8 @@ Write a function to find the item with maximum frequency in a given list.
 
 from collections import defaultdict
 def max_occurrences(nums):
+    assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
+    assert len(nums) > 0, "invalid inputs" # $_CONTRACT_$
     dict = defaultdict(int)
     for i in nums:
         dict[i] += 1

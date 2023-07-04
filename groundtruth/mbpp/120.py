@@ -3,6 +3,11 @@ Write a function to find the maximum absolute product between numbers in pairs o
 """
 
 def max_product_tuple(list1):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, tuple) for x in list1), "invalid inputs" # $_CONTRACT_$
+    assert all(len(x) == 2 for x in list1), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x[0], (int, float)) for x in list1), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x[1], (int, float)) for x in list1), "invalid inputs" # $_CONTRACT_$
     result_max = max([abs(x * y) for x, y in list1] )
     return result_max
 

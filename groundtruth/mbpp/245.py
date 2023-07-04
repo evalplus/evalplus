@@ -3,6 +3,9 @@ Write a function that takes an array and finds the maximum sum of a bitonic subs
 """
 
 def max_sum(arr): 
+	assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+	assert len(arr) > 0, "invalid inputs" # $_CONTRACT_$
+	assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
 	MSIBS = arr[:] 
 	for i in range(len(arr)): 
 		for j in range(0, i): 

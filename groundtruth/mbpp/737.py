@@ -5,6 +5,7 @@ Write a function to check whether the given string is starting with a vowel or n
 import re 
 regex = '^[aeiouAEIOU][A-Za-z0-9_]*'
 def check_str(string): 
+	assert isinstance(string, str), "invalid inputs" # $_CONTRACT_$
 	return re.search(regex, string)
 
 

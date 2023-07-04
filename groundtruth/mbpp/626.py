@@ -3,6 +3,7 @@ Write a python function to find the area of the largest triangle that can be ins
 """
 
 def triangle_area(r) :  
+    assert isinstance(r, (int, float)), "invalid inputs" # $_CONTRACT_$
     if r < 0 : 
         return None
     return r * r 

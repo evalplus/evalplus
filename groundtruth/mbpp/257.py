@@ -3,10 +3,11 @@ Write a function that takes in two numbers and returns a tuple with the second n
 """
 
 def swap_numbers(a,b):
- temp = a
- a = b
- b = temp
- return (a,b)
+    assert isinstance(a, int) and isinstance(b, int), "invalid inputs" # $_CONTRACT_$
+    temp = a
+    a = b
+    b = temp
+    return (a,b)
 
 
 

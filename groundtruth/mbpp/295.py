@@ -3,6 +3,7 @@ Write a function to return the sum of all divisors of a number.
 """
 
 def sum_div(number):
+    assert isinstance(number, int) and number > 0, "invalid inputs" # $_CONTRACT_$
     divisors = [1]
     for i in range(2, number):
         if (number % i)==0:

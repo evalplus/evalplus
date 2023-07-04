@@ -3,6 +3,8 @@ Write a function to find common first element in given list of tuple.
 """
 
 def group_tuples(Input): 
+	assert isinstance(Input, list), "invalid inputs" # $_CONTRACT_$
+	assert all(isinstance(x, tuple) for x in Input), "invalid inputs" # $_CONTRACT_$
 	out = {} 
 	for elem in Input: 
 		try: 

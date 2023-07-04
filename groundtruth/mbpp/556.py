@@ -3,6 +3,9 @@ Write a python function to count the number of pairs whose xor value is odd.
 """
 
 def find_Odd_Pair(A,N) : 
+    assert isinstance(A, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, int) for x in A), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(N, int), "invalid inputs" # $_CONTRACT_$
     oddPair = 0
     for i in range(0,N) :  
         for j in range(i+1,N) :  

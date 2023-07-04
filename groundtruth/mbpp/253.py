@@ -3,6 +3,7 @@ Write a python function that returns the number of integer elements in a given l
 """
 
 def count_integer(list1):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
     ctr = 0
     for i in list1:
         if isinstance(i, int):

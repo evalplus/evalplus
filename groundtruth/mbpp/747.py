@@ -3,6 +3,9 @@ Write a function to find the longest common subsequence for the given three stri
 """
 
 def lcs_of_three(X, Y, Z): 
+  assert isinstance(X, str), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(Y, str), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(Z, str), "invalid inputs" # $_CONTRACT_$
   m = len(X)
   n = len(Y)
   o = len(Z)

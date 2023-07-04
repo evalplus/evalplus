@@ -3,6 +3,8 @@ Write a python function to find the maximum difference between any two elements 
 """
 
 def max_Abs_Diff(arr): 
+    assert isinstance(arr, (tuple, list)), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
     n = len(arr)
     minEle = arr[0] 
     maxEle = arr[0] 

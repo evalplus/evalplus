@@ -3,6 +3,7 @@ Write a function to find the count of all binary sequences of length 2n such tha
 """
 
 def count_binary_seq(n): 
+	assert isinstance(n, int) and n > 0, "invalid inputs" # $_CONTRACT_$
 	nCr = 1
 	res = 1
 	for r in range(1, n + 1): 

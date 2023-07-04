@@ -4,6 +4,11 @@ Write a function to find the combinations of sums with tuples in the given tuple
 
 from itertools import combinations 
 def find_combinations(test_list):
+  assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, tuple) for x in test_list), "invalid inputs" # $_CONTRACT_$
+  assert all(len(x) == 2 for x in test_list), "invalid inputs" # $_CONTRACT_$))
+  assert all(isinstance(x[0], (int, float)) for x in test_list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x[1], (int, float)) for x in test_list), "invalid inputs" # $_CONTRACT_$
   res = [(b1 + a1, b2 + a2) for (a1, a2), (b1, b2) in combinations(test_list, 2)]
   return (res) 
 

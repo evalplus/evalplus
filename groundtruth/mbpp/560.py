@@ -3,6 +3,8 @@ Write a function to find the union of the elements of two given tuples and outpu
 """
 
 def union_elements(test_tup1, test_tup2):
+  assert isinstance(test_tup1, tuple), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(test_tup2, tuple), "invalid inputs" # $_CONTRACT_$
   res = tuple(set(test_tup1 + test_tup2))
   return (res) 
 

@@ -4,6 +4,7 @@ Write a python function to convert complex numbers to polar coordinates.
 
 import cmath  
 def convert(numbers):    
+  assert isinstance(numbers, (int, float, complex)), "invalid inputs" # $_CONTRACT_$ 
   num = cmath.polar(numbers)  
   return (num) 
 

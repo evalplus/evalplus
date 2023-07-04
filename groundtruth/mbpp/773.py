@@ -4,6 +4,8 @@ Write a function to find the occurrence and position of the substrings within a 
 
 import re
 def occurance_substring(text,pattern):
+ assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
+ assert isinstance(pattern, str), "invalid inputs" # $_CONTRACT_$
  for match in re.finditer(pattern, text):
     s = match.start()
     e = match.end()

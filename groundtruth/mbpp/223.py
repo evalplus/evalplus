@@ -3,6 +3,10 @@ Write a function that takes in a sorted array, its length (n), and an element an
 """
 
 def is_majority(arr, n, x):
+	assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+	assert all(isinstance(item, (int, float)) for item in arr), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(x, (int, float)), "invalid inputs" # $_CONTRACT_$
 	i = binary_search(arr, 0, n-1, x)
 	if i == -1:
 		return False

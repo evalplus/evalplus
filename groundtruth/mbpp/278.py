@@ -3,6 +3,7 @@ Write a function to find the number of elements that occurs before the tuple ele
 """
 
 def count_first_elements(test_tup):
+  assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
   for count, ele in enumerate(test_tup):
     if isinstance(ele, tuple):
       break

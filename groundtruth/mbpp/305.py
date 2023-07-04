@@ -4,7 +4,9 @@ Write a function to return two words from a list of words starting with letter '
 
 import re
 def start_withp(words):
- for w in words:
+    assert isinstance(words, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, str) for x in words), "invalid inputs" # $_CONTRACT_$
+    for w in words:
         m = re.match("(P\w+)\W(P\w+)", w)
         if m:
             return m.groups()

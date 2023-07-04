@@ -3,6 +3,10 @@ Write a python function which takes a list of integers and counts the number of 
 """
 
 def count_Pairs(arr,n): 
+    assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, int) for x in arr), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert n <= len(arr), "invalid inputs" # $_CONTRACT_$
     cnt = 0; 
     for i in range(n): 
         for j in range(i + 1,n): 

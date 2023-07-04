@@ -11,6 +11,8 @@ def even_ele(test_tuple, even_fnc):
 			res += (ele, ) 
 	return res 
 def extract_even(test_tuple):
+  assert isinstance(test_tuple, tuple), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, int) for x in (lambda f: (lambda x: f(lambda y: x(x)(y)))(lambda x: f(lambda y: x(x)(y))))(lambda f: lambda t: sum(map(f, t), ()) if isinstance(t, tuple) else (t,))(test_tuple)), "invalid inputs" # $_CONTRACT_$
   res = even_ele(test_tuple, lambda x: x % 2 == 0)
   return (res) 
 

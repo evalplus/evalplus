@@ -3,6 +3,7 @@ Write a function to return a list of all pairs of consecutive items in a given l
 """
 
 def pair_wise(l1):
+    assert isinstance(l1, list), "invalid inputs" # $_CONTRACT_$
     temp = []
     for i in range(len(l1) - 1):
         current_element, next_element = l1[i], l1[i + 1]

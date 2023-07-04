@@ -11,6 +11,8 @@ def check_min_heap_helper(arr, i):
     return left_child and right_child
 
 def check_min_heap(arr):
+  assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, int) for x in arr), "invalid inputs" # $_CONTRACT_$
   return check_min_heap_helper(arr, 0)
 
 

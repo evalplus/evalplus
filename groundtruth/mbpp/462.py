@@ -3,6 +3,7 @@ Write a function to find all possible combinations of the elements of a given li
 """
 
 def combinations_list(list1):
+    assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
     if len(list1) == 0:
         return [[]]
     result = []

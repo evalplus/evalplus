@@ -3,6 +3,8 @@ Write a function to convert all possible convertible elements in a list of lists
 """
 
 def list_to_float(test_list):
+  assert isinstance(test_list, (list, tuple)), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, (list, tuple)) for x in test_list), "invalid inputs" # $_CONTRACT_$
   res = []
   for tup in test_list:
     temp = []

@@ -3,6 +3,10 @@ Write a function that takes in two tuples and subtracts the elements of the firs
 """
 
 def substract_elements(test_tup1, test_tup2):
+  assert isinstance(test_tup1, tuple), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(test_tup2, tuple), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, (int, float)) for x in test_tup1), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, (int, float)) for x in test_tup2), "invalid inputs" # $_CONTRACT_$
   res = tuple(map(lambda i, j: i - j, test_tup1, test_tup2))
   return (res) 
 

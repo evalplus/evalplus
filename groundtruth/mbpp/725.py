@@ -4,6 +4,7 @@ Write a function to extract values between quotation marks " " of the given stri
 
 import re
 def extract_quotation(text1):
+  assert isinstance(text1, str), "invalid inputs" # $_CONTRACT_$
   return (re.findall(r'"(.*?)"', text1))
 
 

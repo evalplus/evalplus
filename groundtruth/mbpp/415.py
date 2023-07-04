@@ -3,6 +3,8 @@ Write a python function to find a pair with highest product from a given array o
 """
 
 def max_Product(arr): 
+    assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(i, int) for i in arr), "invalid inputs" # $_CONTRACT_$
     arr_len = len(arr) 
     if (arr_len < 2): 
         return ("No pairs exists")           

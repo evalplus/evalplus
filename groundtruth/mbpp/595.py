@@ -3,6 +3,9 @@ Write a python function to count minimum number of swaps required to convert one
 """
 
 def min_Swaps(str1,str2) : 
+    assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(str2, str), "invalid inputs" # $_CONTRACT_$
+    assert len(str1) == len(str2), "invalid inputs" # $_CONTRACT_$
     count = 0
     for i in range(len(str1)) :  
         if str1[i] != str2[i] : 

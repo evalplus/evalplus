@@ -4,6 +4,8 @@ Write a function that takes in a list and length n, and generates all combinatio
 
 from itertools import combinations_with_replacement 
 def combinations_colors(l, n):
+    assert isinstance(l, list), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     return list(combinations_with_replacement(l,n))
 
 

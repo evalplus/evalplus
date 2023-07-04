@@ -4,6 +4,7 @@ Write a python function to count the occurence of all elements of list in a tupl
 
 from collections import Counter 
 def count_Occurrence(tup, lst): 
+    assert isinstance(tup, tuple), "invalid inputs" # $_CONTRACT_$
     count = 0
     for item in tup: 
         if item in lst: 

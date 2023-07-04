@@ -3,6 +3,12 @@ Write a function to convert rgb color to hsv color. https://www.geeksforgeeks.or
 """
 
 def rgb_to_hsv(r, g, b):
+    assert isinstance(r, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(g, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(b, int), "invalid inputs" # $_CONTRACT_$
+    assert 0 <= r <= 255, "invalid inputs" # $_CONTRACT_$
+    assert 0 <= g <= 255, "invalid inputs" # $_CONTRACT_$
+    assert 0 <= b <= 255, "invalid inputs" # $_CONTRACT_$
     r, g, b = r/255.0, g/255.0, b/255.0
     mx = max(r, g, b)
     mn = min(r, g, b)

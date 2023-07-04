@@ -3,6 +3,8 @@ Write a python function to interchange the first and last element in a given lis
 """
 
 def swap_List(newList): 
+    assert isinstance(newList, list), "invalid inputs" # $_CONTRACT_$
+    assert len(newList) > 0, "invalid inputs" # $_CONTRACT_$
     size = len(newList) 
     temp = newList[0] 
     newList[0] = newList[size - 1] 

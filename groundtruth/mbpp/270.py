@@ -3,6 +3,8 @@ Write a python function to find the sum of even numbers at even positions of a l
 """
 
 def sum_even_and_even_index(arr):  
+    assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, int) for x in arr), "invalid inputs" # $_CONTRACT_$
     i = 0
     sum = 0
     for i in range(0, len(arr),2): 

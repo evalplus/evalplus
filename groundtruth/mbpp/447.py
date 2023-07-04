@@ -3,8 +3,10 @@ Write a function to find cubes of individual elements in a list.
 """
 
 def cube_nums(nums):
- cube_nums = list(map(lambda x: x ** 3, nums))
- return cube_nums
+    assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(i, (int, float)) for i in nums), "invalid inputs" # $_CONTRACT_$
+    cube_nums = list(map(lambda x: x ** 3, nums))
+    return cube_nums
 
 
 

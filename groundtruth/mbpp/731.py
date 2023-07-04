@@ -4,6 +4,10 @@ Write a function to find the lateral surface area of a cone given radius r and t
 
 import math
 def lateralsurface_cone(r,h):
+  assert isinstance(r, (int, float)), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(h, (int, float)), "invalid inputs" # $_CONTRACT_$
+  assert r >= 0, "invalid inputs" # $_CONTRACT_$
+  assert h >= 0, "invalid inputs" # $_CONTRACT_$
   l = math.sqrt(r * r + h * h)
   LSA = math.pi * r  * l
   return LSA

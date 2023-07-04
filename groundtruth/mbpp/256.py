@@ -3,6 +3,7 @@ Write a python function that takes in a non-negative number and returns the numb
 """
 
 def count_Primes_nums(n):
+    assert isinstance(n, int) and n >= 0, "invalid inputs" # $_CONTRACT_$  
     ctr = 0
     for num in range(n):
         if num <= 1:

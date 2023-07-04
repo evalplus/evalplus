@@ -3,6 +3,8 @@ Write a function that takes base and power as arguments and calculate the sum of
 """
 
 def power_base_sum(base, power):
+    assert isinstance(base, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(power, int), "invalid inputs" # $_CONTRACT_$
     return sum([int(i) for i in str(pow(base, power))])
 
 

@@ -7,6 +7,9 @@ def sum_odd(n):
     sum1 = terms * terms 
     return sum1  
 def sum_in_range(l,r): 
+    assert isinstance(l, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(r, int), "invalid inputs" # $_CONTRACT_$
+    assert 0 <= l <= r, "invalid inputs" # $_CONTRACT_$
     return sum_odd(r) - sum_odd(l - 1)
 
 

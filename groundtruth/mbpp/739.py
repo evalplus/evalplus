@@ -4,6 +4,7 @@ Write a python function to find the index of smallest triangular number with n d
 
 import math 
 def find_Index(n): 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     x = math.sqrt(2 * math.pow(10,(n - 1)))
     return round(x)
 

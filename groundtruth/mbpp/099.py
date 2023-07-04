@@ -3,6 +3,7 @@ Write a function to convert the given decimal number to its binary equivalent, r
 """
 
 def decimal_to_binary(n): 
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     return bin(n).replace("0b","") 
 
 

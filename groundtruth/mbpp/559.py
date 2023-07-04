@@ -3,6 +3,9 @@ Write a function to find the sum of the largest contiguous sublist in the given 
 """
 
 def max_sub_array_sum(a, size):
+  assert isinstance(a, list), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(size, int), "invalid inputs" # $_CONTRACT_$
+  assert size <= len(a), "invalid inputs" # $_CONTRACT_$
   max_so_far = 0
   max_ending_here = 0
   for i in range(0, size):

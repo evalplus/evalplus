@@ -4,6 +4,8 @@ Write a function to find the ration of positive numbers in an array of integers.
 
 from array import array
 def positive_count(nums):
+    assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(ele, int) for ele in nums), "invalid inputs" # $_CONTRACT_$
     n = len(nums)
     n1 = 0
     for x in nums:

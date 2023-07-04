@@ -4,6 +4,9 @@ Write a function to calculate the maximum aggregate from the list of tuples.
 
 from collections import defaultdict
 def max_aggregate(stdata):
+    assert isinstance(stdata, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, tuple) for x in stdata), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x[1], (int, float)) for x in stdata), "invalid inputs" # $_CONTRACT_$
     temp = defaultdict(int)
     for name, marks in stdata:
         temp[name] += marks

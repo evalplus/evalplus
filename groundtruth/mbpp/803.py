@@ -3,6 +3,7 @@ Write a function to check whether the given number is a perfect square or not. h
 """
 
 def is_perfect_square(n) :
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     i = 1
     while (i * i<= n):
         if ((n % i == 0) and (n / i == i)):

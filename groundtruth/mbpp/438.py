@@ -3,6 +3,9 @@ Write a function to count bidirectional tuple pairs.
 """
 
 def count_bidirectional(test_list):
+  assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(ele, tuple) for ele in test_list), "invalid inputs" # $_CONTRACT_$
+  assert all(len(ele) == 2 for ele in test_list), "invalid inputs" # $_CONTRACT_$
   res = 0
   for idx in range(0, len(test_list)):
     for iidx in range(idx + 1, len(test_list)):
