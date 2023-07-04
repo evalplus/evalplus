@@ -5,7 +5,7 @@ Write a function to find the volume of a sphere.
 import math
 def volume_sphere(r):
   assert isinstance(r, (int, float)), "invalid inputs" # $_CONTRACT_$
-  assert r >= 0, "invalid inputs" # $_CONTRACT_$
+  assert r > 0, "invalid inputs" # $_CONTRACT_$
   volume=(4/3)*math.pi*r*r*r
   return volume
 
