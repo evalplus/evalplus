@@ -19,7 +19,7 @@ The implementation can be buggy so fix it if you find any bugs.
 
 Some implementations/tests are quirky and maybe buggy.
 
-- [020](020.py): wrong implementation (negative/float)
+- [020](020.py): wrong implementation not considering float/negative ([fixed](https://github.com/evalplus/evalplus/commit/8a06cc1f7ba0c37672e34aa75c01ff0f031d48a4))
 - [058](058.py): broken problem description (zero)
 - [083](083.py): broken problem description (inconsistencies between descriptions and testcases)
 - [084](084.py): performance issue
