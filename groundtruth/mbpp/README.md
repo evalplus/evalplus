@@ -30,10 +30,8 @@ Some implementations/tests are quirky and maybe buggy.
 - [127](127.py): unnecessarily complicated ([fixed](https://github.com/evalplus/evalplus/commit/410a932afedb2a0568aa5ef68b2df83aa35e7c1e))
 - [143](143.py): wrong test case and implementation ([fixed](https://github.com/evalplus/evalplus/commit/9c189569ea363ed4b7fc960c0dc617c85fea143f))
 - [307](307.py): broken problem description and implementation (this problem is broken which is also found by [ohters](https://www.youtube.com/watch?v=AQTgq-pDjy8))
-- [406](406.py): wrong implementation;
-- [429](429.py): wrong implementation: cannot meet the problem
-- [444](444.py): wrong implementation: trim each tuple by k, not 2*k; str() is unnecessary
-- [455](455.py): wrong implementation(?): No month number check
+- [406](406.py): wrong and unnecessarily complex implementation ([fixed](https://github.com/evalplus/evalplus/commit/9d350b6bcb291512379fe07ccdf7c58ed5d72ad4))
+- [444](444.py): vague description of "trim" and unnecessarily complex output format ([fixed](https://github.com/evalplus/evalplus/commit/9d350b6bcb291512379fe07ccdf7c58ed5d72ad4))
 - [582](582.py): wrong test case and unnecessarily complicated implementation ([fixed](https://github.com/evalplus/evalplus/commit/0b34c263f36fde2997b87951f953585fb01c5267))
 - [612](612.py): testcase does not align with the problem description 
 - [723](723.py): wrong testcase: two list are not same length ([fixed](https://github.com/evalplus/evalplus/commit/90330578fb5913a13d224a7df92dc2d2dc70c77a))
