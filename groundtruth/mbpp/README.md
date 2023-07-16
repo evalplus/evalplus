@@ -20,10 +20,9 @@ The implementation can be buggy so fix it if you find any bugs.
 Some implementations/tests are quirky and maybe buggy.
 
 - [020](020.py): wrong implementation not considering float/negative ([fixed](https://github.com/evalplus/evalplus/commit/8a06cc1f7ba0c37672e34aa75c01ff0f031d48a4))
-- [058](058.py): broken problem description (zero)
-- [083](083.py): broken problem description (inconsistencies between descriptions and testcases)
-- [084](084.py): performance issue
-- [089](089.py): broken problem description (number <=> integer?)
+- [083](083.py): wrong implementation (fixed)
+- [084](084.py): performance issue (fixed with non-recursive implementation)
+- [089](089.py): broken problem description (fixed by `number` => `integer`)
 - [100](100.py): unused variable ([fixed](https://github.com/evalplus/evalplus/commit/9ff4fd361dc4a340d30d37f5d0649b4b43d33462))
 - [101](101.py): wrong implementation; sorting is unnecessary ([fixed](https://github.com/evalplus/evalplus/commit/67c744d4b124090000d80217a7f7a1dee0d82b55))
 - [115](115.py): wrong test case and implementation ([fixed](https://github.com/evalplus/evalplus/commit/56013c437ce689cfca6c7e98e4185577edc6b450))

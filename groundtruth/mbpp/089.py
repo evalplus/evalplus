@@ -1,5 +1,5 @@
 """
-Write a function to find the closest smaller number than n.
+Write a function to find the closest smaller integer than n.
 """
 
 def closest_num(N):
