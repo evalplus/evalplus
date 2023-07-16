@@ -8,12 +8,12 @@
 
 
 <p align="center">
-    <a href="#-Quick-Start">🔥Quick Start</a> •
-    <a href="#-LLM-generated-code">💻LLM code</a> •
-    <a href="#-Papers">📜Papers</a> •
-    <a href="#-Useful-tools">🔨Tools</a> •
-    <a href="#-Development">👷Development</a> •
-    <a href="#-Acknowledgement">🙏Acknowledgement</a>
+    <a href="#-quick-start">🔥Quick Start</a> •
+    <a href="#-llm-generated-code">💻LLM code</a> •
+    <a href="#-papers">📜Papers</a> •
+    <a href="#-useful-tools">🔨Tools</a> •
+    <a href="#-development">👷Development</a> •
+    <a href="#-acknowledgement">🙏Acknowledgement</a>
 </p>
 
 > **Warning**
