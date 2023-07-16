@@ -10,7 +10,7 @@
       display: flex;
       font-family: Arial, sans-serif;
       margin: 0px;
-      padding: 50px 20px;
+      padding: 50px 30px;
       background-color: #FFFFFF;
       color: #000000;
     }
@@ -47,13 +47,19 @@
     }
 
     .container {
-      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 700px;
       margin: auto;
     }
 
     .select-line {
       display: flex;
+      align-content: center;
       justify-content: space-between;
+      margin-left: 0;
+      margin-right: 0;
       margin-bottom: 20px;
       font-size: 20px;
     }
@@ -79,6 +85,14 @@
       width: 200px;
       height: 40px;
       margin-left: 5px;
+    }
+
+    .table {
+      max-width: 700px; 
+      align-items: center;
+      text-align: center;
+      table-layout: fixed;
+      font-size: 1em;
     }
 
   </style>
@@ -112,12 +126,12 @@
         </select>
       </div>
     </div>
-    <div id="leaderboard"></div>
+    <div id="leaderboard" class="table table-striped"></div>
   </div>
 
 
   <script>
-    const leaderboard = document.getElementById('leaderboard');
+    const table = document.getElementById('leaderboard');
     const benchmarkSelect = document.getElementById('benchmark');
     const sortbySelect = document.getElementById('sortby');
   
@@ -137,9 +151,7 @@
     updateTable(currentUrl);
 
     function clearTable() {
-      while (leaderboard.rows && leaderboard.rows.length > 1) {
-        leaderboard.deleteRow(1);
-      }
+      table.innerHTML = '';
     }
 
 
@@ -162,34 +174,27 @@
     }
 
     function displayTable(data) {
-      var tableHTML = '<table class="table table-striped">';
-      tableHTML += '<thead>';
-      tableHTML += '<tr>';
-      for (var header in data[0]) {
-        tableHTML += '<th scope="col">' + header + '</th>';
-      }
-      tableHTML += '</tr>';
-      tableHTML += '</thead>';
-      tableHTML += '<tbody>';
-      for (var i = 0; i < data.length; i++) {
-        tableHTML += '<tr>';
-        for (var key in data[i]) {
-          if (key == 'model' && i == 0) {
-            tableHTML += '<td> 🥇' + data[i][key] + '</td>';
-          } else if (key == 'model' && i == 1) {
-            tableHTML += '<td> 🥈' + data[i][key] + '</td>';
-          } else if (key == 'model' && i == 2) {
-            tableHTML += '<td> 🥉' + data[i][key] + '</td>';
-          } else {
-            tableHTML += '<td>' + data[i][key] + '</td>';
-          }
-        }
-        tableHTML += '</tr>';
-      }
-      tableHTML += '</tbody>';
-      tableHTML += '</table>';
+      var thead = document.createElement('thead');
+      var headerRow = document.createElement('tr');
+      Object.keys(data[0]).forEach(function(key) {
+        var th = document.createElement('th');
+        th.textContent = key;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      leaderboard.appendChild(thead);
 
-      leaderboard.innerHTML = tableHTML;
+      var tbody = document.createElement('tbody');
+      data.forEach(function(row) {
+        var dataRow = document.createElement('tr');
+        Object.values(row).forEach(function(value) {
+          var td = document.createElement('td');
+          td.textContent = value;
+          dataRow.appendChild(td);
+        });
+        tbody.appendChild(dataRow);
+      });
+      table.appendChild(tbody);
     }
 
 
