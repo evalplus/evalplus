@@ -1,4 +1,4 @@
-model,size,pass@1*(greedy encoding),pass@1,pass@10,pass@100,T1,T10,T100
+model,size,pass@1*,pass@1,pass@10,pass@100,T1,T10,T100
 GPT-4,N/A,76.2,,,,,,
 ChatGPT,N/A,63.4,61.7,81.2,89.8,,,
 StarCoder,15B,29.3,27.8,50.3,75.4,,,

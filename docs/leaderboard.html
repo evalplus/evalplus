@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>EvalPlus Leaderboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      display: flex;
+      font-family: Arial, sans-serif;
+      margin: 0px;
+      padding: 50px 20px;
+      background-color: #FFFFFF;
+      color: #000000;
+    }
+
+    #heading {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    #heading h1 {
+      margin: 10px;
+      font-size: 2em;
+    }
+
+    h2 {
+      margin: 10px;
+      font-size: 1.6em;
+    }
+
+    th {
+      text-align: center;
+      padding-bottom: 15px;
+    }
+
+    td {
+      text-align: center;
+      padding-bottom: 10px;
+    }
+
+    #warning {
+      margin: 0;
+      font-size: 1.2em;
+      color: #777;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .select-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .benchmark {
+      text-align: left;
+    }
+
+    .sort {
+      text-align: right;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+    }
+
+    .toggle label {
+      text-align: right;
+    }
+  
+    .toggle select {
+      width: 200px;
+      height: 40px;
+      margin-left: 5px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="heading">
+      <h1>EvalPlus(📖) => 📚</h1>
+      <h2>Leaderboard</h2>
+      <small id="warning">🚨 Evaluating LLM-generated code over datasets with "3 test-cases" is NOT enough! 🚨</small>
+      <br>
+      <a href="https://github.com/evalplus/evalplus">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub logo" style="height: 1.5em;">
+      </a>
+    </div>
+    <div class="select-line">
+      <div class="toggle benchmark">
+        <label for="benchmark">Benchmark:</label>
+        <select id="benchmark" class="form-select" aria-label="benchmark select">
+          <option value="HumanEval+" selected>HumanEval+</option>
+          <option value="MBPP+">MBPP+</option>
+        </select>
+      </div>
+      <div class="toggle sort">
+        <label for="sortby">Sort By:</label>
+        <select id="sortby" class="form-select" aria-label="sort by select">
+          <option value="pass@1*" selected>pass@1*</option>
+          <option value="pass@1">pass@1</option>
+          <option value="pass@10">pass@10</option>
+          <option value="pass@100">pass@100</option>
+        </select>
+      </div>
+    </div>
+    <div id="leaderboard"></div>
+  </div>
+
+
+  <script>
+    const leaderboard = document.getElementById('leaderboard');
+    const benchmarkSelect = document.getElementById('benchmark');
+    const sortbySelect = document.getElementById('sortby');
+  
+    const urls = {
+      'humaneval+': 'https://raw.githubusercontent.com/evalplus/evalplus/mbpp/docs/humanevalplus.csv'
+    }
+    const columns = [
+      'pass@1*',
+      'pass@1',
+      'pass@10',
+      'pass@100'
+    ]
+    var currentUrl = urls['humaneval+'];
+    var sortColumn = 'pass@1*';
+    var data = [];
+
+    updateTable(currentUrl);
+
+    function clearTable() {
+      while (leaderboard.rows && leaderboard.rows.length > 1) {
+        leaderboard.deleteRow(1);
+      }
+    }
+
+
+    function updateTable(url) {
+      clearTable();
+      Papa.parse(url, {
+          download: true,
+          header: true,
+          skipEmptyLines: true,
+          complete: function (results) {
+            var data = results.data.filter(function(row){
+              return row[sortColumn] != '';
+            });
+            data.sort(function(a, b) {
+              return parseFloat(b[sortColumn]) - parseFloat(a[sortColumn]);
+            });
+            displayTable(data);
+          }
+      });
+    }
+
+    function displayTable(data) {
+      var tableHTML = '<table class="table table-striped">';
+      tableHTML += '<thead>';
+      tableHTML += '<tr>';
+      for (var header in data[0]) {
+        tableHTML += '<th scope="col">' + header + '</th>';
+      }
+      tableHTML += '</tr>';
+      tableHTML += '</thead>';
+      tableHTML += '<tbody>';
+      for (var i = 0; i < data.length; i++) {
+        tableHTML += '<tr>';
+        for (var key in data[i]) {
+          if (key == 'model' && i == 0) {
+            tableHTML += '<td> 🥇' + data[i][key] + '</td>';
+          } else if (key == 'model' && i == 1) {
+            tableHTML += '<td> 🥈' + data[i][key] + '</td>';
+          } else if (key == 'model' && i == 2) {
+            tableHTML += '<td> 🥉' + data[i][key] + '</td>';
+          } else {
+            tableHTML += '<td>' + data[i][key] + '</td>';
+          }
+        }
+        tableHTML += '</tr>';
+      }
+      tableHTML += '</tbody>';
+      tableHTML += '</table>';
+
+      leaderboard.innerHTML = tableHTML;
+    }
+
+
+    benchmarkSelect.addEventListener('change', function() {
+      currentUrl = urls[benchmarkSelect.value.toLowerCase()];
+      updateTable(currentUrl);
+    });
+
+    sortbySelect.addEventListener('change', function() {
+      sortColumn = sortbySelect.value.toLowerCase();
+      updateTable(currentUrl);
+    });
+
+  </script>
+</body>
+</html>
+
