@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400&display=swap" rel="stylesheet">
+
 <head>
   <meta charset="UTF-8">
   <title>EvalPlus Leaderboard</title>
@@ -8,7 +13,7 @@
   <style>
     body {
       display: flex;
-      font-family: Arial, sans-serif;
+      font-family: JetBrains Mono, monospace;
       margin: 0px;
       padding: 50px 30px;
       background-color: #FFFFFF;
@@ -80,7 +85,7 @@
     .toggle label {
       text-align: right;
     }
-  
+
     .toggle select {
       width: 200px;
       height: 40px;
@@ -88,7 +93,8 @@
     }
 
     .table {
-      max-width: 700px; 
+      border: 2px solid black;
+      max-width: 700px;
       align-items: center;
       text-align: center;
       table-layout: fixed;
@@ -98,19 +104,19 @@
     #leaderboard {
       margin: 0 auto;
     }
-
   </style>
 </head>
+
 <body>
-  <div class="container">
+  <div class="container" align="center">
     <div id="heading">
-      <h1>EvalPlus(📖) => 📚</h1>
-      <h2>Leaderboard</h2>
-      <small id="warning">🚨 Evaluating LLM-generated code over datasets with "3 test-cases" is NOT enough! 🚨</small>
+      <h1>🏆 EvalPlus Leaderboard 🏆</h1>
+      <small id="warning">EvalPlus evaluates AI Coders with strict tests.</small>
       <br>
-      <a href="https://github.com/evalplus/evalplus">
-        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub logo" style="height: 1.5em;">
-      </a>
+      <a href="https://github.com/evalplus/evalplus"><img
+          src="https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white"></a>
+      <a href="https://arxiv.org/abs/2207.13066"><img
+          src="https://img.shields.io/badge/arXiv-2207.13066-b31b1b.svg?style=for-the-badge"></a>
     </div>
     <div class="select-line">
       <div class="toggle benchmark">
@@ -120,6 +126,7 @@
           <option value="MBPP+">MBPP+</option>
         </select>
       </div>
+
       <div class="toggle sort">
         <label for="sortby">Sort By:</label>
         <select id="sortby" class="form-select" aria-label="sort by select">
@@ -138,9 +145,9 @@
     const table = document.getElementById('leaderboard');
     const benchmarkSelect = document.getElementById('benchmark');
     const sortbySelect = document.getElementById('sortby');
-  
+
     const urls = {
-      'humaneval+': 'https://raw.githubusercontent.com/evalplus/evalplus/mbpp/docs/humanevalplus.csv'
+      'humaneval+': './humanevalplus.csv'
     }
     const columns = [
       'pass@1*',
@@ -162,25 +169,25 @@
     function updateTable(url) {
       clearTable();
       Papa.parse(url, {
-          download: true,
-          header: true,
-          skipEmptyLines: true,
-          complete: function (results) {
-            var data = results.data.filter(function(row){
-              return row[sortColumn] != '';
-            });
-            data.sort(function(a, b) {
-              return parseFloat(b[sortColumn]) - parseFloat(a[sortColumn]);
-            });
-            displayTable(data);
-          }
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function (results) {
+          var data = results.data.filter(function (row) {
+            return row[sortColumn] != '';
+          });
+          data.sort(function (a, b) {
+            return parseFloat(b[sortColumn]) - parseFloat(a[sortColumn]);
+          });
+          displayTable(data);
+        }
       });
     }
 
     function displayTable(data) {
       var thead = document.createElement('thead');
       var headerRow = document.createElement('tr');
-      Object.keys(data[0]).forEach(function(key) {
+      Object.keys(data[0]).forEach(function (key) {
         var th = document.createElement('th');
         th.textContent = key;
         headerRow.appendChild(th);
@@ -189,9 +196,9 @@
       leaderboard.appendChild(thead);
 
       var tbody = document.createElement('tbody');
-      data.forEach(function(row) {
+      data.forEach(function (row) {
         var dataRow = document.createElement('tr');
-        Object.values(row).forEach(function(value) {
+        Object.values(row).forEach(function (value) {
           var td = document.createElement('td');
           td.textContent = value;
           dataRow.appendChild(td);
@@ -202,17 +209,17 @@
     }
 
 
-    benchmarkSelect.addEventListener('change', function() {
+    benchmarkSelect.addEventListener('change', function () {
       currentUrl = urls[benchmarkSelect.value.toLowerCase()];
       updateTable(currentUrl);
     });
 
-    sortbySelect.addEventListener('change', function() {
+    sortbySelect.addEventListener('change', function () {
       sortColumn = sortbySelect.value.toLowerCase();
       updateTable(currentUrl);
     });
 
   </script>
 </body>
-</html>
 
+</html>
