@@ -1,6 +1,8 @@
 # `EvalPlus(📖) => 📚`
 
 <p align="center">
+    <a href="https://evalplus.github.io/leaderboard.html"><img src="https://img.shields.io/badge/%F0%9F%8F%86-leaderboard-8A2BE2"></a>
+    <a href="https://arxiv.org/abs/2305.01210"><img src="https://img.shields.io/badge/arXiv-2305.01210-b31b1b.svg"></a>
     <a href="https://pypi.org/project/evalplus/"><img src="https://img.shields.io/pypi/v/evalplus?color=g"></a>
     <a href="https://github.com/evalplus/evalplus/blob/master/LICENSE"><img src="https://img.shields.io/pypi/l/evalplus"></a>
     <a href="https://hub.docker.com/r/ganler/evalplus" title="Docker"><img src="https://img.shields.io/docker/image-size/ganler/evalplus"></a>
@@ -12,7 +14,6 @@
     <a href="#-llm-generated-code">💻LLM code</a> •
     <a href="#-papers">📜Papers</a> •
     <a href="#-useful-tools">🔨Tools</a> •
-    <a href="#-development">👷Development</a> •
     <a href="#-acknowledgement">🙏Acknowledgement</a>
 </p>
 
@@ -251,16 +252,6 @@ python tools/render.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
 
 ### Perform test input generation from scratch (TBD)
 
-
-## 👷 Development
-
-Before you start:
-
-```bash
-pip install pre-commit
-pre-commit install
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-```
 
 ### Name convention
 
