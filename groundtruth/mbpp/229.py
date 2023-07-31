@@ -6,6 +6,8 @@ def re_arrange_array(arr, n):
   assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
   assert all(isinstance(x, int) for x in arr), "invalid inputs" # $_CONTRACT_$
   assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+  assert len(arr) > 0, "invalid inputs" # $_CONTRACT_$
+  assert len(arr) >= n, "invalid inputs" # $_CONTRACT_$
   j=0
   for i in range(0, n):
     if (arr[i] < 0):
