@@ -4,8 +4,10 @@ Write a function to calculate the area of a regular polygon given the length and
 
 from math import tan, pi
 def area_polygon(s, l):
-  assert isinstance(s, (int, type)), "invalid inputs" # $_CONTRACT_$
-  assert isinstance(l, (int, type)), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(s, int), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(l, int), "invalid inputs" # $_CONTRACT_$
+  assert s > 0, "invalid inputs" # $_CONTRACT_$
+  assert l > 0, "invalid inputs" # $_CONTRACT_$
   area = s * (l ** 2) / (4 * tan(pi / s))
   return area
 

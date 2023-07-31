@@ -4,6 +4,7 @@ Write a function to find the sum of numbers in a list within a range specified b
 
 def sum_range_list(list1, m, n):                                                                                                                                                                                                
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(item, (int, float)) for item in list1), "invalid inputs" # $_CONTRACT_$
     assert isinstance(m, int), "invalid inputs" # $_CONTRACT_$
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     assert m >= 0, "invalid inputs" # $_CONTRACT_$
