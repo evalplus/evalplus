@@ -7,7 +7,7 @@ def is_majority(arr, n, x):
 	assert all(isinstance(item, (int, float)) for item in arr), "invalid inputs" # $_CONTRACT_$
 	assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
 	assert isinstance(x, (int, float)), "invalid inputs" # $_CONTRACT_$
-	# assert len(arr) >= n, "invalid inputs" # $_CONTRACT_$
+	assert len(arr) >= n, "invalid inputs" # $_CONTRACT_$
 	i = binary_search(arr, 0, n-1, x)
 	if i == -1:
 		return False
@@ -31,4 +31,3 @@ def binary_search(arr, low, high, x):
 assert is_majority([1, 2, 3, 3, 3, 3, 10], 7, 3) == True
 assert is_majority([1, 1, 2, 4, 4, 4, 6, 6], 8, 4) == False
 assert is_majority([1, 1, 1, 2, 2], 5, 1) == True
-assert is_majority([1, 1, 2, 2], 5, 1) == False
