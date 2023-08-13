@@ -140,6 +140,9 @@ class mbppCheck:
 
 
 if __name__ == '__main__':
+    script_path = os.path.abspath(__file__)
+    os.chdir(os.path.dirname(script_path))
+
     if len(sys.argv) > 1:
         start_id = int(sys.argv[1])
     checker = mbppCheck(start_id)
