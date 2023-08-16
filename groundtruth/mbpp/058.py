@@ -5,7 +5,7 @@ Write a python function to check whether the given two integers have opposite si
 def opposite_Signs(x,y): 
     assert isinstance(x, int), "invalid inputs" # $_CONTRACT_$
     assert isinstance(y, int), "invalid inputs" # $_CONTRACT_$
-    return x > 0 or y > 0
+    return ((x ^ y) < 0) 
 
 
 

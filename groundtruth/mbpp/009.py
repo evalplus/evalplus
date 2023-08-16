@@ -5,13 +5,12 @@ Write a python function to find the minimum number of rotations (greater than 0)
 def find_Rotations(s): 
     assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
     assert len(s) > 0, "invalid inputs" # $_CONTRACT_$
-    tmp = s + s
-    n = len(s) 
-    for i in range(1,n + 1): 
-        substring = tmp[i: i+n] 
-        if (s == substring): 
-            return i 
-    return n 
+    n = len(s)
+    s += s
+    for i in range(1, n + 1):
+        if s[i: i + n] == s[0: n]:
+            return i
+    return n
 
 
 

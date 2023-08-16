@@ -5,8 +5,7 @@ Write a function to find whether a given array of integers contains any duplicat
 def test_duplicate(arraynums):
     assert isinstance(arraynums, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(item, int) for item in arraynums), "invalid inputs" # $_CONTRACT_$
-    nums_set = set(arraynums)    
-    return len(arraynums) != len(nums_set)     
+    return len(arraynums) != len(set(arraynums))
 
 
 

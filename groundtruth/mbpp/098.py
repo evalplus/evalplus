@@ -2,14 +2,14 @@
 Write a function to multiply all the numbers in a list and divide with the length of the list.
 """
 
+
+
 def multiply_num(numbers):  
     assert isinstance(numbers, (tuple, list)), "invalid inputs" # $_CONTRACT_$
     assert len(numbers) > 0, "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(item, (int, float)) for item in numbers), "invalid inputs" # $_CONTRACT_$
-    total = 1
-    for x in numbers:
-        total *= x  
-    return total/len(numbers) 
+    from functools import reduce
+    return reduce(lambda x, y: x * y, numbers) / len(numbers)
 
 import math
 

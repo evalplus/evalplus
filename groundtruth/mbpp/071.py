@@ -5,19 +5,19 @@ Write a function to sort a list of elements.
 def comb_sort(nums):
     assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(item, (int, float)) for item in nums), "invalid inputs" # $_CONTRACT_$
-    shrink_fact = 1.3
-    gaps = len(nums)
+    n = len(nums)
+    gap = n
+    shrink = 1.3
     swapped = True
-    i = 0
-    while gaps > 1 or swapped:
-        gaps = int(float(gaps) / shrink_fact)
+    while gap > 1 or swapped:
+        gap = int(gap / shrink)
+        if gap < 1:
+            gap = 1
         swapped = False
-        i = 0
-        while gaps + i < len(nums):
-            if nums[i] > nums[i+gaps]:
-                nums[i], nums[i+gaps] = nums[i+gaps], nums[i]
+        for i in range(n - gap):
+            if nums[i] > nums[i + gap]:
+                nums[i], nums[i + gap] = nums[i + gap], nums[i]
                 swapped = True
-            i += 1
     return nums
 
 

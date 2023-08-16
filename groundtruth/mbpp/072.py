@@ -5,9 +5,8 @@ Write a python function to check whether the given number can be represented as 
 def dif_Square(n): 
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     assert n > 0, "invalid inputs" # $_CONTRACT_$
-    if (n % 4 != 2): 
-        return True
-    return False
+    # see https://www.quora.com/Which-numbers-can-be-expressed-as-the-difference-of-two-squares
+    return n % 4 != 2
 
 
 

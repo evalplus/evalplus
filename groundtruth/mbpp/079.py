@@ -4,12 +4,8 @@ Write a python function to check whether the length of the word is odd or not.
 
 def word_len(s): 
     assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
-    s = s.split(' ')   
-    for word in s:    
-        if len(word)%2!=0: 
-            return True  
-        else:
-          return False
+    assert s.isalpha(), "invalid inputs" # $_CONTRACT_$
+    return len(s) % 2 == 1
 
 
 

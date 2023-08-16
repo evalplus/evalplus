@@ -4,7 +4,7 @@ Write a python function to find whether a number is divisible by 11.
 
 def is_Diff(n): 
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-    return (n % 11 == 0) 
+    return n % 11 == 0 
 
 
 

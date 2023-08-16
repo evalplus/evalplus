@@ -3,19 +3,18 @@ Write a function to find frequency of each element in a flattened list of lists,
 """
 
 def frequency_lists(list1):
+    def is_hashable(obj): # $_CONTRACT_$
+        try: # $_CONTRACT_$
+            hash(obj) # $_CONTRACT_$
+            return True # $_CONTRACT_$
+        except TypeError: # $_CONTRACT_$
+            return False # $_CONTRACT_$
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
     assert len(list1) > 0, "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(item, list) for item in list1), "invalid inputs" # $_CONTRACT_$
+    assert all(is_hashable(item) for sublist in list1 for item in sublist), "invalid inputs" # $_CONTRACT_$
     list1 = [item for sublist in list1 for item in sublist]
-    dic_data = {}
-    for num in list1:
-        if num in dic_data.keys():
-            dic_data[num] += 1
-        else:
-            key = num
-            value = 1
-            dic_data[key] = value
-    return dic_data
+    return {x: list1.count(x) for x in list1}
 
 
 

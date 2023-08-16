@@ -1,7 +1,7 @@
 """Quickly checks the correctness of
 """
 
-import multiprocessing as mp
+import multiprocess as mp
 import pathlib
 
 from rich.progress import track

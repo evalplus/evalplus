@@ -7,14 +7,8 @@ def remove_Occ(s,ch):
     assert isinstance(ch, str), "invalid inputs" # $_CONTRACT_$
     assert len(s) > 0, "invalid inputs" # $_CONTRACT_$
     assert len(ch) == 1, "invalid inputs" # $_CONTRACT_$
-    for i in range(len(s)): 
-        if (s[i] == ch): 
-            s = s[0 : i] + s[i + 1:] 
-            break
-    for i in range(len(s) - 1,-1,-1):  
-        if (s[i] == ch): 
-            s = s[0 : i] + s[i + 1:] 
-            break
+    s = s.replace(ch, '', 1)
+    s = s[::-1].replace(ch, '', 1)[::-1]
     return s 
 
 

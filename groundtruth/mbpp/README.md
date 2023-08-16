@@ -15,6 +15,9 @@ def square_int(x: int) -> int:
 
 The implementation can be buggy so fix it if you find any bugs.
 
+### Ambiguous problem description
+- [083](083.py): problem description is not align with the test cases
+
 ### Quirky implemetations and tests
 
 Some implementations/tests are quirky and maybe buggy.

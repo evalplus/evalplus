@@ -6,14 +6,13 @@ from collections import defaultdict
 def count_Substrings(s):
     assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
     assert s.isdigit(), "invalid inputs" # $_CONTRACT_$
-    n = len(s)
-    count,sum = 0,0
+    n, count, sum = len(s), 0, 0
     mp = defaultdict(lambda : 0)
     mp[0] += 1
     for i in range(n):
         sum += ord(s[i]) - ord('0')
-        count += mp[sum - (i + 1)]
-        mp[sum - (i + 1)] += 1
+        count += mp[sum - i - 1]
+        mp[sum - i - 1] += 1
     return count
 
 
