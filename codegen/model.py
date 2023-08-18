@@ -36,6 +36,7 @@ from transformers import (
     AutoTokenizer,
     StoppingCriteria,
     StoppingCriteriaList,
+    AutoModelForSeq2SeqLM,
 )
 
 from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine
@@ -546,6 +547,90 @@ class StarCoder(HFTorchDecoder):
         return outputs
 
 
+class CodeT5P(DecoderBase):
+    def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
+        super().__init__(name=name, batch_size=batch_size, temperature=temperature)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        assert name in {
+            "Salesforce/codet5p-2b",
+            "Salesforce/codet5p-6b",
+            "Salesforce/codet5p-16b",
+            "Salesforce/instructcodet5p-16b",
+        }
+        self.tokenizer = AutoTokenizer.from_pretrained(name)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(
+            name,
+            trust_remote_code=True,  # False for 220m and 770m models
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+        )
+        self.model.eval()
+        self.model.to(self.device)
+
+        self.skip_special_tokens = True
+
+    @torch.inference_mode()
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = prompt.replace("    ", "\t")
+        input_tokens = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+        scores = StoppingCriteriaList(
+            [
+                EndOfFunctionCriteria(
+                    start_length=len(input_tokens[0]),
+                    eos=self.eos,
+                    tokenizer=self.tokenizer,
+                )
+            ]
+        )
+        max_new_tokens = self.max_new_tokens
+
+        while max_new_tokens > 0:
+            try:
+                raw_outputs = self.model.generate(
+                    **input_tokens,
+                    decoder_input_ids=input_tokens["input_ids"],
+                    max_new_tokens=max_new_tokens,
+                    stopping_criteria=scores,
+                    do_sample=do_sample,
+                    top_p=0.95,
+                    top_k=None,
+                    temperature=self.temperature,
+                    output_scores=True,
+                    return_dict_in_generate=True,
+                    num_return_sequences=min(self.batch_size, num_samples),
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    decoder_start_token_id=self.tokenizer.pad_token_id,
+                )  # remove warning
+            except RuntimeError as e:  # catch torch OOM
+                if "CUDA out of memory" in str(e):
+                    old_max_new_tokens = max_new_tokens
+                    max_new_tokens = int(max_new_tokens * 0.8)
+                    print(
+                        f"OOM, reducing max_new_tokens from {old_max_new_tokens} to {max_new_tokens}"
+                    )
+                    continue
+                else:
+                    raise e
+
+            break
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
+        outputs = []
+        # removes eos tokens.
+        for output in gen_strs:
+            min_index = 10000
+            for eos in self.eos:
+                if eos in output:
+                    # could be multiple eos in outputs, better pick minimum one
+                    min_index = min(min_index, output.index(eos))
+            outputs.append(output[:min_index].replace("\t", "    "))
+        return outputs
+
+
 def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     if name == "codegen-2b":
         return HFTorchDecoder(
@@ -653,4 +738,23 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return StarCoder(
             batch_size=batch_size, name="bigcode/starcoder", temperature=temperature
         )
+    elif name == "codet5p-2b":
+        return CodeT5P(
+            batch_size=batch_size,
+            name="Salesforce/codet5p-2b",
+            temperature=temperature,
+        )
+    elif name == "codet5p-6b":
+        return CodeT5P(
+            batch_size=batch_size,
+            name="Salesforce/codet5p-6b",
+            temperature=temperature,
+        )
+    elif name == "codet5p-16b":
+        return CodeT5P(
+            batch_size=batch_size,
+            name="Salesforce/codet5p-16b",
+            temperature=temperature,
+        )
+
     raise ValueError(f"Invalid model name: {name}")
