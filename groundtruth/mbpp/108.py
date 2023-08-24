@@ -7,14 +7,10 @@ def merge_sorted_list(num1,num2,num3):
   assert isinstance(num1, list), "invalid inputs" # $_CONTRACT_$
   assert isinstance(num2, list), "invalid inputs" # $_CONTRACT_$
   assert isinstance(num3, list), "invalid inputs" # $_CONTRACT_$
-  assert all(isinstance(x, int) for x in num1), "invalid inputs" # $_CONTRACT_$
-  assert all(isinstance(x, int) for x in num2), "invalid inputs" # $_CONTRACT_$
-  assert all(isinstance(x, int) for x in num3), "invalid inputs" # $_CONTRACT_$
-  num1=sorted(num1)
-  num2=sorted(num2)
-  num3=sorted(num3)
-  result = heapq.merge(num1,num2,num3)
-  return list(result)
+  assert all(isinstance(x, (int, float)) for x in num1), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, (int, float)) for x in num2), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, (int, float)) for x in num3), "invalid inputs" # $_CONTRACT_$
+  return sorted(num1 + num2 + num3)
 
 
 

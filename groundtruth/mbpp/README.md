@@ -39,6 +39,9 @@ Some implementations/tests are quirky and maybe buggy.
 - [723](723.py): wrong testcase: two list are not same length ([fixed](https://github.com/evalplus/evalplus/commit/90330578fb5913a13d224a7df92dc2d2dc70c77a))
 - [733](733.py): wrong testcase: the array is not sorted([fixed](https://github.com/evalplus/evalplus/commit/47336f5404a282208e4673a5ffb7548b8dd65c04))
 - [793](793.py): wrong testcase: the array is not sorted([fixed](https://github.com/evalplus/evalplus/commit/f0470f6ee59e7ac918ebc2c93177635f1a3451b6))
+- [100](100.py): performance issue
+- [117](117.py): bad logic + wrong testcase: input is not list of lists as described in the problem description
+- [119](119.py): imprecise problem description: does not specify how the function should handle exceptions when there are no unique element or there are multiple unique elements in input list
 
 ## Commit message
 

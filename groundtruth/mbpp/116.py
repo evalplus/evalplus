@@ -4,11 +4,10 @@ Write a function to convert a given tuple of positive integers into a single int
 
 def tuple_to_int(nums):
     assert isinstance(nums, tuple), "invalid inputs" # $_CONTRACT_$
-    assert all(isinstance(x, int) for x in nums), "invalid inputs" # $_CONTRACT_$
     assert len(nums) > 0, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, int) for x in nums), "invalid inputs" # $_CONTRACT_$
     assert all(x > 0 for x in nums), "invalid inputs" # $_CONTRACT_$
-    result = int(''.join(map(str,nums)))
-    return result
+    return int(''.join(map(str,nums)))
 
 
 

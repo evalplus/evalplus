@@ -11,7 +11,7 @@ def eulerian_num(n, m):
 		return 0 
 	if (m == 0): 
 		return 1 
-	return ((n - m) * eulerian_num(n - 1, m - 1) +(m + 1) * eulerian_num(n - 1, m))
+	return (n - m) * eulerian_num(n - 1, m - 1) + (m + 1) * eulerian_num(n - 1, m)
 
 
 
