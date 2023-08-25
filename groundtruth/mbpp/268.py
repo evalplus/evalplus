@@ -4,7 +4,8 @@ Write a function to find the n'th star number.
 
 def find_star_num(n): 
 	assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-	return (6 * n * (n - 1) + 1) 
+	assert n > 0, "invalid inputs" # $_CONTRACT_$
+	return 6 * n * (n - 1) + 1 
 
 
 

@@ -3,14 +3,13 @@ Write a function to calculate a dog's age in dog's years.
 """
 
 def dog_age(h_age):
- assert isinstance(h_age, int), "invalid inputs" # $_CONTRACT_$
- if h_age < 0:
- 	exit()
- elif h_age <= 2:
-	 d_age = h_age * 10.5
- else:
-	 d_age = 21 + (h_age - 2)*4
- return d_age
+	assert isinstance(h_age, int), "invalid inputs" # $_CONTRACT_$
+	assert h_age >= 0, "invalid inputs" # $_CONTRACT_$
+	if h_age <= 2:
+		d_age = h_age * 10.5
+	else:
+		d_age = 21 + (h_age - 2) * 4
+	return d_age
 
 
 

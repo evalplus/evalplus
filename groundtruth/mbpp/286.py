@@ -4,17 +4,17 @@ Write a function to find the largest sum of a contiguous array in the modified a
 
 def max_sub_array_sum_repeated(a, n, k): 
 	assert isinstance(a, list), "invalid inputs" # $_CONTRACT_$
-	assert isinstance(n, int) and n > 0, "invalid inputs" # $_CONTRACT_$
+	assert len(a) > 0, "invalid inputs" # $_CONTRACT_$
+	assert all(isinstance(item, (int, float)) for item in a), "invalid inputs" # $_CONTRACT_$
+	assert isinstance(n, int) and n == len(a), "invalid inputs" # $_CONTRACT_$
 	assert isinstance(k, int) and k >= 0, "invalid inputs" # $_CONTRACT_$
-	max_so_far = -2147483648
-	max_ending_here = 0
-	for i in range(n*k): 
-		max_ending_here = max_ending_here + a[i%n] 
-		if (max_so_far < max_ending_here): 
-			max_so_far = max_ending_here 
-		if (max_ending_here < 0): 
-			max_ending_here = 0
-	return max_so_far
+	modifed = a * k
+	pre = 0	# dp[i-1]
+	res = modifed[0]
+	for n in modifed:
+		pre = max(pre + n, n)
+		res = max(pre, res)
+	return res
 
 
 

@@ -4,16 +4,7 @@ Write a python function that takes in a non-negative number and returns the numb
 
 def count_Primes_nums(n):
     assert isinstance(n, int) and n >= 0, "invalid inputs" # $_CONTRACT_$  
-    ctr = 0
-    for num in range(n):
-        if num <= 1:
-            continue
-        for i in range(2,num):
-            if (num % i) == 0:
-                break
-        else:
-            ctr += 1
-    return ctr
+    return sum(all(i % j != 0 for j in range(2, i)) for i in range(2, n))
 
 
 

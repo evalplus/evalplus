@@ -6,7 +6,7 @@ import math
 def even_binomial_Coeff_Sum( n): 
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     assert n > 0, "invalid inputs" # $_CONTRACT_$
-    return (1 << (n - 1)) 
+    return 1 << (n - 1)
 
 
 

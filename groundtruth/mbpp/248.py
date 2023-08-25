@@ -4,10 +4,8 @@ Write a function that takes in an integer n and calculates the harmonic sum of n
 
 def harmonic_sum(n):
   assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-  if n < 2:
-    return 1
-  else:
-    return 1 / n + (harmonic_sum(n - 1)) 
+  assert n >= 1, "invalid inputs" # $_CONTRACT_$
+  return sum(1/(i + 1) for i in range(n))
 
 import math
 

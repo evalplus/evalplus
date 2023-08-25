@@ -6,8 +6,7 @@ def dict_filter(dict1, n):
     assert isinstance(dict1, dict), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, int) for x in dict1.values()), "invalid inputs" # $_CONTRACT_$
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-    result = {key:value for (key, value) in dict1.items() if value >=n}
-    return result
+    return {key : value for (key, value) in dict1.items() if value >=n}
 
 
 

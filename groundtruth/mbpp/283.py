@@ -4,16 +4,9 @@ Write a python function takes in an integer and check whether the frequency of e
 
 def validate(n): 
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-    for i in range(10): 
-        temp = n;  
-        count = 0; 
-        while (temp): 
-            if (temp % 10 == i): 
-                count+=1;  
-            if (count > i): 
-                return False
-            temp //= 10; 
-    return True
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
+    digits = [int(digit) for digit in str(n)]
+    return all(digit >= digits.count(digit) for digit in digits)
 
 
 

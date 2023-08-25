@@ -2,13 +2,13 @@
 Write a function that takes in the radius and height of a cylinder and returns the the volume.
 """
 
+import math
 def volume_cylinder(r,h):
   assert isinstance(r, (int, float)), "invalid inputs" # $_CONTRACT_$
   assert isinstance(h, (int, float)), "invalid inputs" # $_CONTRACT_$
   assert r > 0, "invalid inputs" # $_CONTRACT_$
   assert h > 0, "invalid inputs" # $_CONTRACT_$
-  volume=3.1415*r*r*h
-  return volume
+  return math.pi * r * r * h
 
 import math
 

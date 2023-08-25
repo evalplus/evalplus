@@ -6,10 +6,7 @@ import re
 def text_match_two_three(text):
     assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
     patterns = 'ab{2,3}'
-    if re.search(patterns,  text):
-            return True
-    else:
-            return False
+    return re.search(patterns, text) is not None
 
 
 

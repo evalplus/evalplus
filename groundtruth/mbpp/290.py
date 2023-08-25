@@ -5,9 +5,7 @@ Write a function to find the list of maximum length in a list of lists.
 def max_length(list1):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, list) for x in list1), "invalid inputs" # $_CONTRACT_$
-    max_length = max(len(x) for x in  list1 )  
-    max_list = max((x) for x in   list1)
-    return(max_length, max_list)
+    return max([(len(x), x) for x in list1], key=lambda x: x[0])
 
 
 

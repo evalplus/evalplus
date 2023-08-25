@@ -4,9 +4,7 @@ Write a python function to check if the elements of a given list are unique or n
 
 def all_unique(test_list):
     assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
-    if len(test_list) > len(set(test_list)):
-        return False
-    return True
+    return len(test_list) == len(set(test_list))
 
 
 

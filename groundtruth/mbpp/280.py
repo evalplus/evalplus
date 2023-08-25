@@ -4,14 +4,7 @@ Write a function that takes in an array and element and returns a tuple containi
 
 def sequential_search(dlist, item):
     assert isinstance(dlist, list), "invalid inputs" # $_CONTRACT_$
-    pos = 0
-    found = False
-    while pos < len(dlist) and not found:
-        if dlist[pos] == item:
-            found = True
-        else:
-            pos = pos + 1
-    return found, pos
+    return item in dlist, (dlist.index(item) if item in dlist else -1)
 
 
 

@@ -4,8 +4,8 @@ Write a function that takes in a list and element and checks whether all items i
 
 def check_element(list1, element):
   assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
-  check_element=all(v== element for v in list1)
-  return check_element
+  assert all(isinstance(x, type(element)) for x in list1), "invalid inputs" # $_CONTRACT_$
+  return all(v == element for v in list1)
 
 
 

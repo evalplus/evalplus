@@ -5,6 +5,7 @@ Write a function that takes in a list and an integer n and splits a list for eve
 def list_split(S, step):
     assert isinstance(S, list), "invalid inputs" # $_CONTRACT_$
     assert isinstance(step, int), "invalid inputs" # $_CONTRACT_$
+    assert step > 0, "invalid inputs" # $_CONTRACT_$
     return [S[i::step] for i in range(step)]
 
 

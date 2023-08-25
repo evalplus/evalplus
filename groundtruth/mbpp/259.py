@@ -5,9 +5,16 @@ Write a function to maximize the given two tuples.
 def maximize_elements(test_tup1, test_tup2):
   assert isinstance(test_tup1, tuple), "invalid inputs" # $_CONTRACT_$
   assert isinstance(test_tup2, tuple), "invalid inputs" # $_CONTRACT_$
-  res = tuple(tuple(max(a, b) for a, b in zip(tup1, tup2))
-   for tup1, tup2 in zip(test_tup1, test_tup2))
-  return (res) 
+  assert len(test_tup1) == len(test_tup2), "invalid inputs" # $_CONTRACT_$
+  assert len(test_tup1) > 0, "invalid inputs" # $_CONTRACT_$
+  assert len(test_tup2) > 0, "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, tuple) for x in test_tup1), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(x, tuple) for x in test_tup2), "invalid inputs" # $_CONTRACT_$
+  assert all(len(x) == 2 for x in test_tup1), "invalid inputs" # $_CONTRACT_$
+  assert all(len(x) == 2 for x in test_tup2), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(a, (int, float)) and isinstance(b, (int, float)) for a, b in test_tup1), "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(a, (int, float)) and isinstance(b, (int, float)) for a, b in test_tup2), "invalid inputs" # $_CONTRACT_$
+  return tuple((max(a, c), max(b, d)) for (a, b), (c, d) in zip(test_tup1, test_tup2))
 
 
 
