@@ -5,10 +5,7 @@ Write a python function to check whether the given number can be represented as 
 def is_Sum_Of_Powers_Of_Two(n): 
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     assert n >= 0, "invalid inputs" # $_CONTRACT_$
-    if (n % 2 == 1): 
-        return False
-    else: 
-        return True
+    return n != 0 and n % 2 == 0
 
 
 

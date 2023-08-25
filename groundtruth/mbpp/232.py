@@ -5,10 +5,10 @@ Write a function that takes in a list and an integer n and returns a list contai
 import heapq
 def larg_nnum(list1, n):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
-    assert all(isinstance(x, int) for x in list1), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, (int, float)) for x in list1), "invalid inputs" # $_CONTRACT_$
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-    largest=heapq.nlargest(n,list1)
-    return largest
+    assert 0 <= n <= len(list1), "invalid inputs" # $_CONTRACT_$
+    return heapq.nlargest(n,list1)
 
 
 

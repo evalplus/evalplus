@@ -6,12 +6,7 @@ def long_words(n, s):
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     assert isinstance(s, str), "invalid inputs" # $_CONTRACT_$
     assert n >= 0, "invalid inputs" # $_CONTRACT_$
-    word_len = []
-    txt = s.split(" ")
-    for x in txt:
-        if len(x) > n:
-            word_len.append(x)
-    return word_len	
+    return list(filter(lambda x: len(x) > n, s.split(' ')))
 
 
 

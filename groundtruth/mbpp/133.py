@@ -5,8 +5,7 @@ Write a function to calculate the sum of the negative numbers of a given list of
 def sum_negativenum(nums):
   assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
   assert all(isinstance(x, (int, float)) for x in nums), "invalid inputs" # $_CONTRACT_$
-  sum_negativenum = list(filter(lambda nums:nums<0,nums))
-  return sum(sum_negativenum)
+  return sum(x for x in nums if x < 0)
 
 
 

@@ -4,11 +4,8 @@ Write a python function to count the number of set bits (binary digits with valu
 
 def count_Set_Bits(n): 
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-    count = 0
-    while (n): 
-        count += n & 1
-        n >>= 1
-    return count 
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
+    return bin(n)[2:].count('1')
 
 
 

@@ -7,14 +7,9 @@ def sum_range_list(list1, m, n):
     assert all(isinstance(item, (int, float)) for item in list1), "invalid inputs" # $_CONTRACT_$
     assert isinstance(m, int), "invalid inputs" # $_CONTRACT_$
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-    assert m >= 0, "invalid inputs" # $_CONTRACT_$
-    assert n >= 0, "invalid inputs" # $_CONTRACT_$
-    assert m < len(list1), "invalid inputs" # $_CONTRACT_$
-    assert n < len(list1), "invalid inputs" # $_CONTRACT_$
-    sum_range = 0                                                                                                                                                                                                         
-    for i in range(m, n+1, 1):                                                                                                                                                                                        
-        sum_range += list1[i]                                                                                                                                                                                                  
-    return sum_range   
+    assert 0 <= m < len(list1), "invalid inputs" # $_CONTRACT_$
+    assert 0 <= n < len(list1), "invalid inputs" # $_CONTRACT_$
+    return sum(list1[m : n + 1])
 
 
 

@@ -4,11 +4,7 @@ Write a python function to remove the characters which have odd index values of 
 
 def odd_values_string(str1):
     assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
-    result = "" 
-    for i in range(len(str1)):
-        if i % 2 == 0:
-            result = result + str1[i]
-    return result
+    return ''.join(str1[i] for i in range(0, len(str1), 2))
 
 
 

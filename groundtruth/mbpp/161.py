@@ -5,8 +5,7 @@ Write a function to remove all elements from a given list present in another lis
 def remove_elements(list1, list2):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
     assert isinstance(list2, list), "invalid inputs" # $_CONTRACT_$
-    result = [x for x in list1 if x not in list2]
-    return result
+    return [x for x in list1 if x not in list2]
 
 
 

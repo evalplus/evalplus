@@ -2,31 +2,19 @@
 Write a function that takes in a sorted array, its length (n), and an element and returns whether the element is the majority element in the given sorted array. (The majority element is the element that occurs more than n/2 times.)
 """
 
+from bisect import bisect_left, bisect_right
 def is_majority(arr, n, x):
 	assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
 	assert all(isinstance(item, (int, float)) for item in arr), "invalid inputs" # $_CONTRACT_$
+	assert all(a <= b for a, b in zip(arr[:n], arr[1:n])), "invalid inputs" # $_CONTRACT_$
 	assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
 	assert isinstance(x, (int, float)), "invalid inputs" # $_CONTRACT_$
-	assert len(arr) >= n, "invalid inputs" # $_CONTRACT_$
-	i = binary_search(arr, 0, n-1, x)
-	if i == -1:
+	assert len(arr) <= n, "invalid inputs" # $_CONTRACT_$
+	if x not in arr:
 		return False
-	if ((i + n//2) <= (n -1)) and arr[i + n//2] == x:
-		return True
-	else:
-		return False
-def binary_search(arr, low, high, x):
-	if high >= low:
-		mid = (low + high)//2 
-		if (mid == 0 or x > arr[mid-1]) and (arr[mid] == x):
-			return mid
-		elif x > arr[mid]:
-			return binary_search(arr, (mid + 1), high, x)
-		else:
-			return binary_search(arr, low, (mid -1), x)
-	return -1
-
-
+	l = bisect_left(arr, x)
+	r = bisect_right(arr, x)
+	return r - l > n / 2
 
 assert is_majority([1, 2, 3, 3, 3, 3, 10], 7, 3) == True
 assert is_majority([1, 1, 2, 4, 4, 4, 6, 6], 8, 4) == False

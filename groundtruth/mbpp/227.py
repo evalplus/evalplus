@@ -6,13 +6,7 @@ def min_of_three(a,b,c):
   assert isinstance(a, (int, float)), "invalid inputs" # $_CONTRACT_$
   assert isinstance(b, (int, float)), "invalid inputs" # $_CONTRACT_$
   assert isinstance(c, (int, float)), "invalid inputs" # $_CONTRACT_$
-  if (a <= b) and (a <= c): 
-    smallest = a 
-  elif (b <= a) and (b <= c): 
-    smallest = b 
-  else: 
-    smallest = c 
-  return smallest 
+  return min(a, b, c)
 
 
 

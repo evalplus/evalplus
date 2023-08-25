@@ -4,10 +4,9 @@ Write a function that takes in two lists and replaces the last element of the fi
 
 def replace_list(list1, list2):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert len(list1) > 0, "invalid inputs" # $_CONTRACT_$
     assert isinstance(list2, list), "invalid inputs" # $_CONTRACT_$
-    list1[-1:] = list2
-    replace_list=list1
-    return replace_list
+    return list1[:-1] + list2
 
 
 

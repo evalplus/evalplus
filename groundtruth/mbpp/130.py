@@ -6,11 +6,11 @@ from collections import defaultdict
 def max_occurrences(nums):
     assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
     assert len(nums) > 0, "invalid inputs" # $_CONTRACT_$
-    dict = defaultdict(int)
-    for i in nums:
-        dict[i] += 1
-    result = max(dict.items(), key=lambda x: x[1]) 
-    return result[0]
+    d = defaultdict(int)
+    for n in nums:
+        d[n] += 1
+    return max(d, key=d.get)
+
 
 
 

@@ -9,20 +9,18 @@ def magic_square_test(my_matrix):
     assert len(my_matrix[0]) > 0, "invalid inputs" # $_CONTRACT_$
     assert all(len(row) == len(my_matrix[0]) for row in my_matrix), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(item, (int, float)) for row in my_matrix for item in row), "invalid inputs" # $_CONTRACT_$
-    iSize = len(my_matrix[0])
-    sum_list = []
-    sum_list.extend([sum (lines) for lines in my_matrix])   
-    for col in range(iSize):
-        sum_list.append(sum(row[col] for row in my_matrix))
-    result1 = 0
-    for i in range(0,iSize):
-        result1 +=my_matrix[i][i]
-    sum_list.append(result1)      
-    result2 = 0
-    for i in range(iSize-1,-1,-1):
-        result2 +=my_matrix[i][i]
-    sum_list.append(result2)
-    if len(set(sum_list))>1:
+    s = sum(my_matrix[0])
+    # row
+    if any(sum(row) != s for row in my_matrix):
+        return False
+    # column
+    if any(sum(row[i] for row in my_matrix) != s for i in range(len(my_matrix[0]))):
+        return False
+    # diagonal
+    if sum(my_matrix[i][i] for i in range(len(my_matrix))) != s:
+        return False
+    # anti-diagonal
+    if sum(my_matrix[i][len(my_matrix) - i - 1] for i in range(len(my_matrix))) != s:
         return False
     return True
 

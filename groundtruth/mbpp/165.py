@@ -5,12 +5,7 @@ Write a function to count the number of characters in a string that occur at the
 def count_char_position(str1): 
     assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
     assert all(x.isalpha() for x in str1), "invalid inputs" # $_CONTRACT_$
-    count_chars = 0
-    for i in range(len(str1)):
-        if ((i == ord(str1[i]) - ord('A')) or 
-            (i == ord(str1[i]) - ord('a'))): 
-            count_chars += 1
-    return count_chars 
+    return sum(ord(ch.lower()) - ord('a') == i for i, ch in enumerate(str1))
 
 
 

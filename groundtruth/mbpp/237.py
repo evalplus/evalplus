@@ -6,8 +6,7 @@ from collections import Counter
 def check_occurences(test_list):
   assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
   assert all(isinstance(x, tuple) for x in test_list), "invalid inputs" # $_CONTRACT_$
-  res = dict(Counter(tuple(ele) for ele in map(sorted, test_list)))
-  return  (res) 
+  return dict(Counter(tuple(sorted(t)) for t in test_list))
 
 
 

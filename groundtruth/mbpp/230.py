@@ -6,8 +6,7 @@ def replace_blank(str1, char):
     assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
     assert isinstance(char, str), "invalid inputs" # $_CONTRACT_$
     assert len(char) == 1, "invalid inputs" # $_CONTRACT_$
-    str2 = str1.replace(' ', char)
-    return str2
+    return str1.replace(' ', char)
 
 
 

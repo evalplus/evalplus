@@ -2,11 +2,13 @@
 Write a function to find the lateral surface area of a cylinder.
 """
 
+import math
 def lateralsuface_cylinder(r, h):
   assert isinstance(r, (int, float)), "invalid inputs" # $_CONTRACT_$
   assert isinstance(h, (int, float)), "invalid inputs" # $_CONTRACT_$
-  lateralsurface= 2*3.1415*r*h
-  return lateralsurface
+  assert r > 0, "invalid inputs" # $_CONTRACT_$
+  assert h > 0, "invalid inputs" # $_CONTRACT_$
+  return 2 * math.pi * r * h
 
 import math
 

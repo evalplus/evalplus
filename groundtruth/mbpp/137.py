@@ -7,14 +7,9 @@ def zero_count(nums):
     assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in nums), "invalid inputs" # $_CONTRACT_$
     assert len(nums) > 0, "invalid inputs" # $_CONTRACT_$
-    n = len(nums)
-    n1 = 0
-    for x in nums:
-        if x == 0:
-            n1 += 1
-        else:
-          None
-    return n1/(n-n1)
+    if all(x == 0 for x in nums):
+        return float('inf')
+    return sum(x == 0 for x in nums) / sum(x != 0 for x in nums)
 
 import math
 

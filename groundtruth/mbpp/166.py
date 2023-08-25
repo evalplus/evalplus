@@ -5,13 +5,9 @@ Write a function that counts the number of pairs of integers in a list that xor 
 def find_even_pair(A): 
   assert isinstance(A, list), "invalid inputs" # $_CONTRACT_$
   assert all(isinstance(x, int) for x in A), "invalid inputs" # $_CONTRACT_$
-  count = 0
-  for i in range(0, len(A)): 
-    for j in range(i+1, len(A)): 
-        if ((A[i] ^ A[j]) % 2 == 0): 
-          count += 1
-
-  return count
+  if len(A) < 2: 
+    return 0
+  return sum((a ^ b) % 2 == 0 for i, a in enumerate(A) for b in A[i + 1:])
 
 
 

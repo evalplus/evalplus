@@ -4,8 +4,8 @@ Write a python function to count the number of non-empty substrings of a given s
 
 def number_of_substrings(str1): 
 	assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
-	str_len = len(str1); 
-	return int(str_len * (str_len + 1) / 2); 
+	str_len = len(str1) 
+	return str_len * (str_len + 1) // 2
 
 
 

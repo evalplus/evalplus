@@ -5,17 +5,17 @@ Write a function that takes in positive integers m and n and finds the number of
 def get_total_number_of_sequences(m, n):
 	assert isinstance(m, int) and m > 0, "invalid inputs" # $_CONTRACT_$ 
 	assert isinstance(n, int) and n > 0, "invalid inputs" # $_CONTRACT_$
-	T=[[0 for i in range(n+1)] for i in range(m+1)] 
-	for i in range(m+1): 
-		for j in range(n+1): 
+	T=[[0 for _ in range(n + 1)] for _ in range(m + 1)] 
+	for i in range(m + 1): 
+		for j in range(n + 1): 
 			if i==0 or j==0: 
-				T[i][j]=0
+				T[i][j] = 0
 			elif i<j: 
-				T[i][j]=0
+				T[i][j] = 0
 			elif j==1: 
-				T[i][j]=i 
+				T[i][j] = i 
 			else: 
-				T[i][j]=T[i-1][j]+T[i//2][j-1] 
+				T[i][j] = T[i-1][j] + T[i//2][j-1] 
 	return T[m][n]
 
 

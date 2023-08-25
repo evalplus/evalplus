@@ -8,8 +8,7 @@ def area_polygon(s, l):
   assert isinstance(l, int), "invalid inputs" # $_CONTRACT_$
   assert s > 0, "invalid inputs" # $_CONTRACT_$
   assert l > 0, "invalid inputs" # $_CONTRACT_$
-  area = s * (l ** 2) / (4 * tan(pi / s))
-  return area
+  return s * (l ** 2) / (4 * tan(pi / s))
 
 import math
 

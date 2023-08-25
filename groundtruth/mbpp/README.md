@@ -41,7 +41,17 @@ Some implementations/tests are quirky and maybe buggy.
 - [793](793.py): wrong testcase: the array is not sorted([fixed](https://github.com/evalplus/evalplus/commit/f0470f6ee59e7ac918ebc2c93177635f1a3451b6))
 - [100](100.py): performance issue([fixed](https://github.com/evalplus/evalplus/commit/528d85a499419200dea5f07f7255993410ac30a0))
 - [117](117.py): bad logic + wrong testcase: input is not list of lists as described in the problem description([fixed](https://github.com/evalplus/evalplus/commit/528d85a499419200dea5f07f7255993410ac30a0))
-- [119](119.py): imprecise problem description: does not specify how the function should handle exceptions when there are no unique element or there are multiple unique elements in input list
+- [119](119.py): imprecise problem description: doesn't specify the sorting order
+- [128](128.py): wrong testcase: the input is not list of words as described in the problem description
+- [170](170.py): imprecise problem description: doesn't specify the `range` precisely as inclusive/exclusive/half-open, groundtruth implies inclusive range, (maybe LLMs can learn that from contracts?)
+- [223](223.py): imprecise problem description: doesn't specify the sorting order
+- [229](229.py): bad logic + wrong testcase
+
+### multi-solution problems
+problems with multiple correct answers for certain inputs
+
+- [119](119.py): consider `search([1, 2 ,3])`
+- [130](130.py): testcase2: 7/8/9 are all correct answers
 
 ## Commit message
 
