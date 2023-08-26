@@ -631,11 +631,6 @@ class CodeT5P(DecoderBase):
         return outputs
 
 
-try:
-    from llama import Llama
-except ImportError:
-    print("LLAMA not installed, skipping ...")
-
 CODE_LLAMA_ROOT = os.environ.get("CODE_LLAMA_ROOT", "/JawTitan/codellama/")
 
 # S1: Install package from https://github.com/facebookresearch/codellama
@@ -645,6 +640,8 @@ class CodeLlama(DecoderBase):
     def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
         super().__init__(name=name, batch_size=batch_size, temperature=temperature)
         assert CODE_LLAMA_ROOT is not None
+        from llama import Llama  # See https://github.com/facebookresearch/codellama
+
         self.generator = Llama.build(
             ckpt_dir=os.path.join(CODE_LLAMA_ROOT, name),
             tokenizer_path=os.path.join(CODE_LLAMA_ROOT, name, "tokenizer.model"),
