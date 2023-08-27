@@ -633,6 +633,7 @@ class CodeT5P(DecoderBase):
 
 CODE_LLAMA_ROOT = os.environ.get("CODE_LLAMA_ROOT", "/JawTitan/codellama/")
 
+
 # S1: Install package from https://github.com/facebookresearch/codellama
 # S2: Install model to ${CODE_LLAMA_ROOT} (This can be any actual path)
 # S3: CODE_LLAMA_ROOT=?? torchrun --nproc_per_node 1 codegen/generate.py --model code-llama-7b --bs 1 --temperature 0 --n_samples 1 --resume --greedy
@@ -656,13 +657,13 @@ class CodeLlama(DecoderBase):
             assert self.temperature == 0, "Temperature must be 0 for greedy decoding"
 
         batch_size = min(self.batch_size, num_samples)
-
         gen_strs = self.generator.text_completion(
             [prompt] * batch_size,
             max_gen_len=self.max_new_tokens,
             temperature=self.temperature,
             top_p=0.95,
         )
+        gen_strs = [gen_str["generation"] for gen_str in gen_strs]
 
         outputs = []  # removes eos tokens.
         for output in gen_strs:
@@ -671,6 +672,7 @@ class CodeLlama(DecoderBase):
                 if eos in output:
                     # could be multiple eos in outputs, better pick minimum one
                     min_index = min(min_index, output.index(eos))
+            outputs.append(output[:min_index])
         return outputs
 
 

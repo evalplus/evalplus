@@ -84,7 +84,7 @@ if __name__ == "__main__":
                 tmp += line + "\n"
             new_code = tmp
 
-        if "vicuna" in args.folder:
+        if "vicuna" in args.folder or "code-llama" in args.folder:
             tmp = ""
             for line in new_code.splitlines():
                 lspace = len(line) - len(line.lstrip())

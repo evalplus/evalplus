@@ -78,6 +78,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase):
                     do_sample=not args.greedy,
                     num_samples=args.n_samples - sidx,
                 )
+                assert outputs, "No outputs from model!"
                 for impl in outputs:
                     try:
                         with open(
