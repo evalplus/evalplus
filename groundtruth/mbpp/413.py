@@ -4,9 +4,10 @@ Write a function to extract the nth element from a given list of tuples.
 
 def extract_nth_element(list1, n):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
-    assert all(isinstance(x, tuple) for x in list1), "invalid inputs" # $_CONTRACT_$
-    result = [x[n] for x in list1]
-    return result
+    assert all(isinstance(tup, tuple) for tup in list1), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
+    assert all(n < len(tup) for tup in list1), "invalid inputs" # $_CONTRACT_$
+    return [x[n] for x in list1]
 
 
 

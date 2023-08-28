@@ -2,11 +2,15 @@
 Write a function to find the depth of a dictionary.
 """
 
-def dict_depth(d):
+def dict_depth_aux(d):
     if isinstance(d, dict):
-        return 1 + (max(map(dict_depth, d.values())) if d else 0)
+        return 1 + (max(map(dict_depth_aux, d.values())) if d else 0)
     return 0
 
+
+def dict_depth(d):
+    assert isinstance(d, dict), "invalid inputs" # $_CONTRACT_$
+    return dict_depth_aux(d)
 
 
 assert dict_depth({'a':1, 'b': {'c': {'d': {}}}})==4

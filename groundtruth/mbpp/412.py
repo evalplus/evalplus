@@ -5,10 +5,7 @@ Write a python function to remove odd numbers from a given list.
 def remove_odd(l):
     assert isinstance(l, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(i, int) for i in l), "invalid inputs" # $_CONTRACT_$
-    for i in l:
-        if i % 2 != 0:
-            l.remove(i)
-    return l
+    return [i for i in l if i % 2 == 0]
 
 
 

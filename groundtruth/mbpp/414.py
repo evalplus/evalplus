@@ -7,11 +7,7 @@ def overlapping(list1,list2):
     assert isinstance(list2, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(i, (int, float)) for i in list1), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(i, (int, float)) for i in list2), "invalid inputs" # $_CONTRACT_$
-    for i in range(len(list1)): 
-        for j in range(len(list2)): 
-            if(list1[i]==list2[j]): 
-                return True
-    return False
+    return any(v in list2 for v in list1)
 
 
 

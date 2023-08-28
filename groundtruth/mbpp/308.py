@@ -8,6 +8,7 @@ def large_product(nums1, nums2, N):
     assert isinstance(nums2, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in nums2), "invalid inputs" # $_CONTRACT_$
     assert isinstance(N, int), "invalid inputs" # $_CONTRACT_$
+    assert 0 <= N <= len(nums1) * len(nums2), "invalid inputs" # $_CONTRACT_$
     result = sorted([x*y for x in nums1 for y in nums2], reverse=True)[:N]
     return result
 

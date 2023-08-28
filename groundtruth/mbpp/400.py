@@ -5,8 +5,7 @@ Write a function to extract the number of unique tuples in the given list.
 def extract_freq(test_list):
   assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
   assert all(isinstance(ele, tuple) for ele in test_list), "invalid inputs" # $_CONTRACT_$
-  res = len(list(set(tuple(sorted(sub)) for sub in test_list)))
-  return (res)
+  return len(set(tuple(sorted(l)) for l in test_list))
 
 
 

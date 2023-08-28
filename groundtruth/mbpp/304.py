@@ -6,9 +6,11 @@ def find_Element(arr,ranges,rotations,index) :
     assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
     assert isinstance(ranges, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, list) and len(x) == 2 for x in ranges), "invalid inputs" # $_CONTRACT_$
-    assert all(isinstance(xitem, int) for x in ranges for xitem in x), "invalid inputs" # $_CONTRACT_$
-    assert isinstance(rotations, int) and rotations > 0, "invalid inputs" # $_CONTRACT_$
-    assert isinstance(index, int) and index >= 0, "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, int) for ra in ranges for x in ra), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(rotations, int), "invalid inputs" # $_CONTRACT_$
+    assert rotations >= 0, "invalid inputs" # $_CONTRACT_$
+    assert isinstance(index, int), "invalid inputs" # $_CONTRACT_$
+    assert 0 <= index < len(arr), "invalid inputs" # $_CONTRACT_$
     for i in range(rotations - 1,-1,-1 ) : 
         left = ranges[i][0] 
         right = ranges[i][1] 

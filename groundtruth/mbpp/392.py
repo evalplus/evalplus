@@ -4,16 +4,11 @@ Write a function to find the maximum sum possible by using the given equation f(
 
 def get_max_sum (n):
 	assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-	res = list()
-	res.append(0)
-	res.append(1)
-	i = 2
-	while i<n + 1:
-		res.append(max(i, (res[int(i / 2)] 
-						+ res[int(i / 3)] +
-							res[int(i / 4)]
-						+ res[int(i / 5)])))
-		i = i + 1
+	assert n >= 0, "invalid inputs" # $_CONTRACT_$
+	# if n = 0, f(0) = max(5(f(0), 0)), so f(0) = 5f(0) or f(0) = 0, for both cases f(0) = 0
+	res = [0]
+	for i in range(1, n + 1):
+		res.append(max(res[i // 2] + res[i // 3] + res[i // 4] + res[i // 5], i))
 	return res[n]
 
 

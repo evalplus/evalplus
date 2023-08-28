@@ -4,14 +4,7 @@ Write a function to check if given tuple contains no duplicates.
 
 def check_distinct(test_tup):
   assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
-  res = True
-  temp = set()
-  for ele in test_tup:
-    if ele in temp:
-      res = False
-      break
-    temp.add(ele)
-  return res 
+  return len(test_tup) == len(set(test_tup))
 
 
 

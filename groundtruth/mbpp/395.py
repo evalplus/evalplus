@@ -4,17 +4,10 @@ Write a python function to find the first non-repeated character in a given stri
 
 def first_non_repeating_character(str1):
   assert isinstance(str1, str), "invalid inputs" # $_CONTRACT_$
-  char_order = []
-  ctr = {}
-  for c in str1:
-    if c in ctr:
-      ctr[c] += 1
-    else:
-      ctr[c] = 1 
-      char_order.append(c)
-  for c in char_order:
-    if ctr[c] == 1:
-      return c
+  assert len(str1) > 0, "invalid inputs" # $_CONTRACT_$
+  for ch in str1:
+    if str1.count(ch) == 1:
+      return ch
   return None
 
 

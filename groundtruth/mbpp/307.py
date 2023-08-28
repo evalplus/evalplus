@@ -1,11 +1,13 @@
 """
-Write a function to get a colon of a tuple.
+Write a function to get a copy of a tuple, and append n to the list item at the index of m in the copied tuple.
 """
 
 from copy import deepcopy
 def colon_tuplex(tuplex,m,n):
   assert isinstance(tuplex, tuple), "invalid inputs" # $_CONTRACT_$
-  assert isinstance(m, int) and m >= 0, "invalid inputs" # $_CONTRACT_$
+  assert isinstance(m, int), "invalid inputs" # $_CONTRACT_$
+  assert 0 <= m < len(tuplex), "invalid inputs" # $_CONTRACT_$
+  assert isinstance(tuplex[m], list), "invalid inputs" # $_CONTRACT_$
   tuplex_colon = deepcopy(tuplex)
   tuplex_colon[m].append(n)
   return tuplex_colon

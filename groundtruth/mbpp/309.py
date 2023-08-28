@@ -5,10 +5,7 @@ Write a python function to find the maximum of two numbers.
 def maximum(a,b):   
     assert isinstance(a, (int, float)), "invalid inputs" # $_CONTRACT_$
     assert isinstance(b, (int, float)), "invalid inputs" # $_CONTRACT_$
-    if a >= b: 
-        return a 
-    else: 
-        return b 
+    return max(a, b)
 
 
 

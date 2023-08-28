@@ -46,6 +46,11 @@ Some implementations/tests are quirky and maybe buggy.
 - [170](170.py): imprecise problem description: doesn't specify the `range` precisely as inclusive/exclusive/half-open, groundtruth implies inclusive range, (maybe LLMs can learn that from contracts?)
 - [223](223.py): imprecise problem description: doesn't specify the sorting order
 - [229](229.py): bad logic + wrong testcase
+- [307](307.py): confusing problem
+- [310](310.py): imprecise problem description: description itself doesn't require ignore space, but the groundtruth does 
+- [391](391.py): imprecise problem description: doesn't specify list number in inputs and the output dict format
+- [393](393.py): same as [290](290.py)
+- [417](417.py): confusing problem
 
 ### multi-solution problems
 problems with multiple correct answers for certain inputs
