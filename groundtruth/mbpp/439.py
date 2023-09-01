@@ -4,9 +4,11 @@ Write a function to join a list of multiple integers into a single integer.
 
 def multiple_to_single(L):
   assert isinstance(L, list), "invalid inputs" # $_CONTRACT_$
-  assert all(isinstance(i, int) for i in L), "invalid inputs" # $_CONTRACT_$
-  x = int("".join(map(str, L)))
-  return x
+  assert len(L) > 0, "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(item, int) for item in L), "invalid inputs" # $_CONTRACT_$
+  assert all(item > 0 for item in L[1:]), "invalid inputs" # $_CONTRACT_$
+  return int(''.join(map(str,L)))
+
 
 
 

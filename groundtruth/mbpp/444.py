@@ -5,11 +5,11 @@ Write a function to trim each tuple by k in the given tuple list.
 def trim_tuple(test_list, K):
   assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
   assert all(isinstance(ele, tuple) for ele in test_list), "invalid inputs" # $_CONTRACT_$
-  res = []
-  for ele in test_list:
-    N = len(ele)
-    res.append(tuple(list(ele)[K: N - K]))
-  return res 
+  assert isinstance(K, int), "invalid inputs" # $_CONTRACT_$
+  assert K >= 0, "invalid inputs" # $_CONTRACT_$
+  return [tuple(l[K:-K]) for l in test_list]
+
+  
 
 
 

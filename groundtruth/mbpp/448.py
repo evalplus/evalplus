@@ -20,7 +20,7 @@ def cal_sum(n):
 		a = b 
 		b = c 
 		c = d 
-		n = n-1
+		n = n - 1
 	return sum
 
 

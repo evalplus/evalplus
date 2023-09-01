@@ -5,8 +5,7 @@ Write a function to filter odd numbers.
 def filter_oddnumbers(nums):
     assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(n, int) for n in nums), "invalid inputs" # $_CONTRACT_$
-    odd_nums = list(filter(lambda x: x%2 != 0, nums))
-    return odd_nums
+    return [n for n in nums if n % 2 == 1]
 
 
 

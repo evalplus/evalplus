@@ -6,8 +6,7 @@ def parabola_directrix(a, b, c):
   assert isinstance(a, (int, float)), "invalid inputs" # $_CONTRACT_$
   assert isinstance(b, (int, float)), "invalid inputs" # $_CONTRACT_$
   assert isinstance(c, (int, float)), "invalid inputs" # $_CONTRACT_$
-  directrix=((int)(c - ((b * b) + 1) * 4 * a ))
-  return directrix
+  return ((int)(c - ((b * b) + 1) * 4 * a ))
 
 
 

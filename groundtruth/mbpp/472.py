@@ -4,6 +4,7 @@ Write a python function to check whether the given list contains consecutive num
 
 def check_Consecutive(l): 
     assert isinstance(l, list), "invalid inputs" # $_CONTRACT_$
+    assert len(l) > 0, "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, int) for x in l), "invalid inputs" # $_CONTRACT_$
     return sorted(l) == list(range(min(l),max(l)+1)) 
 

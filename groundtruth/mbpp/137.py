@@ -2,10 +2,9 @@
 Write a function to find the ratio of zeroes to non-zeroes in an array of integers.
 """
 
-from array import array
 def zero_count(nums):
     assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
-    assert all(isinstance(x, (int, float)) for x in nums), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(x, int) for x in nums), "invalid inputs" # $_CONTRACT_$
     assert len(nums) > 0, "invalid inputs" # $_CONTRACT_$
     if all(x == 0 for x in nums):
         return float('inf')

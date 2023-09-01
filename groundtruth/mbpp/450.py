@@ -6,8 +6,7 @@ def extract_string(str1, l):
     assert isinstance(str1, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(ele, str) for ele in str1), "invalid inputs" # $_CONTRACT_$
     assert isinstance(l, int), "invalid inputs" # $_CONTRACT_$
-    result = [e for e in str1 if len(e) == l] 
-    return result
+    return [e for e in str1 if len(e) == l] 
 
 
 

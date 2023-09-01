@@ -2,13 +2,10 @@
 Write a function to sort a dictionary by value.
 """
 
-from collections import Counter
 def sort_counter(dict1):
  assert isinstance(dict1, dict), "invalid inputs" # $_CONTRACT_$
  assert all(isinstance(x, (int, float)) for x in dict1.values()), "invalid inputs" # $_CONTRACT_$
- x = Counter(dict1)
- sort_counter=x.most_common()
- return sort_counter
+ return sorted(dict1.items(), key=lambda x: x[1], reverse=True)
 
 
 

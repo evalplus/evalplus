@@ -3,9 +3,11 @@ Write a python function to find the sum of the per-digit difference between two 
 """
 
 def digit_distance_nums(n1, n2):
-         assert isinstance(n1, int), "invalid inputs" # $_CONTRACT_$
-         assert isinstance(n2, int), "invalid inputs" # $_CONTRACT_$
-         return sum(map(int,str(abs(n1-n2))))
+    assert isinstance(n1, int), "invalid inputs" # $_CONTRACT_$
+    assert isinstance(n2, int), "invalid inputs" # $_CONTRACT_$
+    assert n1 >= 0, "invalid inputs" # $_CONTRACT_$
+    assert n2 >= 0, "invalid inputs" # $_CONTRACT_$
+    return sum([abs(int(c1) - int(c2)) for c1, c2 in zip(str(n1), str(n2))])
 
 
 

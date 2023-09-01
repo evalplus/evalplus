@@ -5,8 +5,7 @@ Write a function to find the pairwise addition of the neighboring elements of th
 def add_pairwise(test_tup):
   assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
   assert all(isinstance(x, (int, float)) for x in test_tup), "invalid inputs" # $_CONTRACT_$
-  res = tuple(i + j for i, j in zip(test_tup, test_tup[1:]))
-  return (res) 
+  return tuple(a + b for a, b in zip(test_tup, test_tup[1:]))
 
 
 

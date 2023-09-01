@@ -22,6 +22,8 @@ The implementation can be buggy so fix it if you find any bugs.
 
 Some implementations/tests are quirky and maybe buggy.
 
+issues shown in italics are less important, such as redundant argument, duplicate problem, etc.
+
 - [020](020.py): wrong implementation not considering float/negative ([fixed](https://github.com/evalplus/evalplus/commit/8a06cc1f7ba0c37672e34aa75c01ff0f031d48a4))
 - [083](083.py): wrong implementation (fixed)
 - [084](084.py): performance issue (fixed with non-recursive implementation)
@@ -41,6 +43,7 @@ Some implementations/tests are quirky and maybe buggy.
 - [793](793.py): wrong testcase: the array is not sorted([fixed](https://github.com/evalplus/evalplus/commit/f0470f6ee59e7ac918ebc2c93177635f1a3451b6))
 - [100](100.py): performance issue([fixed](https://github.com/evalplus/evalplus/commit/528d85a499419200dea5f07f7255993410ac30a0))
 - [117](117.py): bad logic + wrong testcase: input is not list of lists as described in the problem description([fixed](https://github.com/evalplus/evalplus/commit/528d85a499419200dea5f07f7255993410ac30a0))
+- *[109](109.py): redundant argument n as list len*
 - [119](119.py): imprecise problem description: doesn't specify the sorting order
 - [128](128.py): wrong testcase: the input is not list of words as described in the problem description
 - [170](170.py): imprecise problem description: doesn't specify the `range` precisely as inclusive/exclusive/half-open, groundtruth implies inclusive range, (maybe LLMs can learn that from contracts?)
@@ -49,14 +52,20 @@ Some implementations/tests are quirky and maybe buggy.
 - [307](307.py): confusing problem
 - [310](310.py): imprecise problem description: description itself doesn't require ignore space, but the groundtruth does 
 - [391](391.py): imprecise problem description: doesn't specify list number in inputs and the output dict format
-- [393](393.py): same as [290](290.py)
+- *[393](393.py): duplicate problem: same as [290](290.py)*
+- *[411](411.py): duplicate problem: same as [102](102.py)*
 - [417](417.py): confusing problem
+- [443](443.py): confusing problem: according to the groundtruth, the 'largerst negative number' is the smallest negative number or 'negative number with largest absolute value'
+- [464](464.py): bad logic: groundtruth implments "all values equals to n', instead of 'all values are same' as the description
+- [465](465.py): confusing problem: 'empty item' is not a well-defined concept
+- *[556](556.py): redundant argument N as list len*
 
 ### multi-solution problems
 problems with multiple correct answers for certain inputs
 
 - [119](119.py): consider `search([1, 2 ,3])`
 - [130](130.py): testcase2: 7/8/9 are all correct answers
+- [462](462.py): the order of each sublist is not important, so using '==' in testcases are not suitable
 
 ## Commit message
 

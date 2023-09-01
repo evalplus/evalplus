@@ -4,7 +4,9 @@ Write a python function to find the last digit of a given number.
 
 def last_Digit(n) :
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-    return (n % 10) 
+    if n < 0: 
+        n = -n
+    return n % 10
 
 
 

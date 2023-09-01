@@ -5,8 +5,9 @@ Write a function to find the area of a rectangle.
 def rectangle_area(l,b):
   assert isinstance(l, (int, float)), "invalid inputs" # $_CONTRACT_$
   assert isinstance(b, (int, float)), "invalid inputs" # $_CONTRACT_$
-  area=l*b
-  return area
+  assert l > 0, "invalid inputs" # $_CONTRACT_$
+  assert b > 0, "invalid inputs" # $_CONTRACT_$
+  return l * b
 
 
 

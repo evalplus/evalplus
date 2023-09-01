@@ -2,14 +2,13 @@
 Write a function that gives loss amount on a sale if the given amount has loss else return 0.
 """
 
-def loss_amount(actual_cost,sale_amount): 
+def loss_amount(actual_cost, sale_amount): 
   assert isinstance(actual_cost, (int, float)), "invalid inputs" # $_CONTRACT_$
   assert isinstance(sale_amount, (int, float)), "invalid inputs" # $_CONTRACT_$
-  if(sale_amount > actual_cost):
-    amount = sale_amount - actual_cost
-    return amount
-  else:
-    return 0
+  assert actual_cost > 0, "invalid inputs" # $_CONTRACT_$
+  assert sale_amount > 0, "invalid inputs" # $_CONTRACT_$
+  return max(0, sale_amount - actual_cost)
+
 
 
 

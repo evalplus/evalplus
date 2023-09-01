@@ -4,8 +4,8 @@ Write a function to find the median length of a trapezium.
 
 def median_trapezium(base1,base2,height):
     assert isinstance(base1, (int, float)), "invalid inputs" # $_CONTRACT_$
-    median = 0.5 * (base1+ base2)
-    return median
+    assert isinstance(base2, (int, float)), "invalid inputs" # $_CONTRACT_$
+    return (base1 + base2) / 2
 
 
 

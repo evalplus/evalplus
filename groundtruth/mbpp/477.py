@@ -4,7 +4,7 @@ Write a python function to convert the given string to lower case.
 
 def is_lower(string):
     assert isinstance(string, str), "invalid inputs" # $_CONTRACT_$
-    return (string.lower())
+    return string.lower()
 
 
 

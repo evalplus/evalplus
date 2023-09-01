@@ -4,12 +4,11 @@ Write a python function to find the product of the array multiplication modulo n
 
 def find_remainder(arr, n): 
     assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+    assert len(arr) > 0, "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
     assert isinstance(n, (int, float)), "invalid inputs" # $_CONTRACT_$
-    mul = 1
-    for i in range(len(arr)):  
-        mul = (mul * (arr[i] % n)) % n 
-    return mul % n 
+    from functools import reduce
+    return reduce(lambda x, y: x * y, arr) % n
 
 
 

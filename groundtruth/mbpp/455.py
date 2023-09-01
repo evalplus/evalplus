@@ -4,11 +4,9 @@ Write a function to check whether the given month number contains 31 days or not
 
 def check_monthnumb_number(monthnum2):
   assert isinstance(monthnum2, int), "invalid inputs" # $_CONTRACT_$
-  assert 0 < monthnum2 <= 12, "invalid inputs" # $_CONTRACT_$
-  if(monthnum2==1 or monthnum2==3 or monthnum2==5 or monthnum2==7 or monthnum2==8 or monthnum2==10 or monthnum2==12):
-    return True
-  else:
-    return False
+  assert 1 <= monthnum2 <= 12, "invalid inputs" # $_CONTRACT_$
+  return monthnum2 in [1, 3, 5, 7, 8, 10, 12]
+
 
 
 

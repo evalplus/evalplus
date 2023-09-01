@@ -13,7 +13,7 @@ def find_length(string):
 		if current_sum < 0: 
 			current_sum = 0
 		max_sum = max(current_sum, max_sum) 
-	return max_sum if max_sum else 0
+	return max_sum
 
 
 
