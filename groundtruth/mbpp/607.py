@@ -8,6 +8,8 @@ def find_literals(text, pattern):
   assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
   assert isinstance(pattern, str), "invalid inputs" # $_CONTRACT_$
   match = re.search(pattern, text)
+  if match is None:
+    return None
   s = match.start()
   e = match.end()
   return (match.re.pattern, s, e)

@@ -4,15 +4,10 @@ Write a function to move all the numbers to the end of the given string.
 
 def move_num(test_str):
   assert isinstance(test_str, str), "invalid inputs" # $_CONTRACT_$
-  res = ''
-  dig = ''
-  for ele in test_str:
-    if ele.isdigit():
-      dig += ele
-    else:
-      res += ele
-  res += dig
-  return (res) 
+  num_str = ''.join(i for i in test_str if i.isdigit())
+  else_str = ''.join(i for i in test_str if not i.isdigit())
+  return else_str + num_str
+
 
 
 

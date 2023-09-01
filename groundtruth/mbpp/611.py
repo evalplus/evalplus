@@ -4,11 +4,13 @@ Write a function which given a matrix represented as a list of lists returns the
 
 def max_of_nth(test_list, N):
   assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
+  assert len(test_list) > 0, "invalid inputs" # $_CONTRACT_$
+  assert all(isinstance(row, list) for row in test_list), "invalid inputs" # $_CONTRACT_$
+  assert len(test_list[0]) > 0, "invalid inputs" # $_CONTRACT_$
   assert all(len(row) == len(test_list[0]) for row in test_list), "invalid inputs" # $_CONTRACT_$
-  assert isinstance(N, int), "invalid inputs" # $_CONTRACT_$
-  assert 0 <= N < len(test_list[0]), "invalid inputs" # $_CONTRACT_$
-  res = max([sub[N] for sub in test_list])
-  return (res) 
+  assert all(isinstance(item, (int, float)) for row in test_list for item in row), "invalid inputs" # $_CONTRACT_$
+  assert N < len(test_list[0]), "invalid inputs" # $_CONTRACT_$
+  return max([sub[N] for sub in test_list])
 
 
 

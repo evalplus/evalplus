@@ -6,10 +6,8 @@ import heapq as hq
 def heap_sort(iterable):
     assert isinstance(iterable, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in iterable), "invalid inputs" # $_CONTRACT_$
-    h = []
-    for value in iterable:
-        hq.heappush(h, value)
-    return [hq.heappop(h) for i in range(len(h))]
+    hq.heapify(iterable)
+    return [hq.heappop(iterable) for _ in range(len(iterable))]
 
 
 

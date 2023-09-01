@@ -5,7 +5,7 @@ Write a python function which takes a list of lists, where each sublist has two 
 def merge(lst):  
     assert isinstance(lst, list), "invalid inputs" # $_CONTRACT_$
     assert len(lst) > 0, "invalid inputs" # $_CONTRACT_$
-    assert all(len(sublist) == len(lst[0]) for sublist in lst), "invalid inputs" # $_CONTRACT_$
+    assert all(len(sublist) == 2 for sublist in lst), "invalid inputs" # $_CONTRACT_$
     return [list(ele) for ele in list(zip(*lst))] 
 
 

@@ -5,9 +5,9 @@ Write a python function to move all zeroes to the end of the given list.
 def move_zero(num_list):
     assert isinstance(num_list, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in num_list), "invalid inputs" # $_CONTRACT_$
-    a = [0 for i in range(num_list.count(0))]
-    x = [i for i in num_list if i != 0]
-    return x + a
+    zeros = [0] * num_list.count(0)
+    front = [i for i in num_list if i != 0]
+    return front + zeros
 
 
 

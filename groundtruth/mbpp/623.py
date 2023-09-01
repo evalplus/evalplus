@@ -2,7 +2,7 @@
 Write a function to compute the n-th power of each number in a list.
 """
 
-def nth_nums(nums,n):
+def nth_nums(nums, n):
  assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
  assert all(isinstance(el, (int, float)) for el in nums), "invalid inputs" # $_CONTRACT_$
  assert isinstance(n, (int, float)), "invalid inputs" # $_CONTRACT_$

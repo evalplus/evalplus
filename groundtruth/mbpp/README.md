@@ -47,30 +47,35 @@ issues shown in italics are less important, such as redundant argument, duplicat
 - [119](119.py): imprecise problem description: doesn't specify the sorting order
 - [128](128.py): wrong testcase: the input is not list of words as described in the problem description
 - [170](170.py): imprecise problem description: doesn't specify the `range` precisely as inclusive/exclusive/half-open, groundtruth implies inclusive range, (maybe LLMs can learn that from contracts?)
-- [223](223.py): imprecise problem description: doesn't specify the sorting order
+- *[223](223.py): imprecise problem description: doesn't specify the sorting order, though can be learned from testcase*
 - [229](229.py): bad logic + wrong testcase
 - [307](307.py): confusing problem
 - [310](310.py): imprecise problem description: description itself doesn't require ignore space, but the groundtruth does 
 - [391](391.py): imprecise problem description: doesn't specify list number in inputs and the output dict format
 - *[393](393.py): duplicate problem: same as [290](290.py)*
 - *[411](411.py): duplicate problem: same as [102](102.py)*
-- [417](417.py): confusing problem
+- [417](417.py): confusing problem: testcases have nothing to do with the problem description
 - [443](443.py): confusing problem: according to the groundtruth, the 'largerst negative number' is the smallest negative number or 'negative number with largest absolute value'
+- [452](452.py): bad logic + wrong testcase: impl and testcases seem to have understood the meaning of 'sales_amount' and 'actual_cost'
 - [464](464.py): bad logic: groundtruth implments "all values equals to n', instead of 'all values are same' as the description
 - [465](465.py): confusing problem: 'empty item' is not a well-defined concept
 - *[556](556.py): redundant argument N as list len*
 - *[559](559.py): redundant argument size as list len*
 - *[559](564.py): redundant argument n as list len*
-- *[584](584.py): duplicate problem: same as [440](440.py), but 584 has a better defined description*
+- *[584](584.py): duplicate problem: same as [440](440.py), but 584 has a better description*
 - [603](603.py): problem description typo: 'lucid' => 'ludic'
-
+- [617](617.py): wrong testcase + bad logic: the jump steps should be a integer
+- *[622](622.py): redundant argument n as list len*
+- *[625](625.py): same as [591](591.py)*
+- [627](627.py): unclear arguments: start and end are ill-defined in the problem description, unclear without reading implementation
+- [633](633.py): redundant argument n as list len*
 ### multi-solution problems
 problems with multiple correct answers for certain inputs
 
 - [119](119.py): consider `search([1, 2 ,3])`
 - [130](130.py): testcase2: 7/8/9 are all correct answers
 - [462](462.py): the order of each sublist is not important, so using '==' in testcases are not suitable
-
+- [630](630.py): order issue same as [462](462.py)
 ## Commit message
 
 ```shell
