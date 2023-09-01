@@ -5,19 +5,16 @@ Write a python function to check whether a list is sublist of another or not.
 def is_Sub_Array(A,B): 
     assert isinstance(A, list), "invalid inputs" # $_CONTRACT_$
     assert isinstance(B, list), "invalid inputs" # $_CONTRACT_$
-    n = len(A)
-    m = len(B)
-    i = 0; j = 0; 
-    while (i < n and j < m):  
-        if (A[i] == B[j]): 
-            i += 1; 
-            j += 1; 
-            if (j == m): 
-                return True;  
-        else: 
-            i = i - j + 1; 
-            j = 0;       
-    return False; 
+    a = 0
+    b = 0
+    while a < len(A) and b < len(B):
+        if A[a] == B[b]:
+            a += 1
+            b += 1
+        else:
+            a += 1
+    return b == len(B)
+
 
 
 

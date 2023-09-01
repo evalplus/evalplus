@@ -2,19 +2,24 @@
 Write a function to remove uneven elements in the nested mixed tuple.
 """
 
-def even_ele(test_tuple, even_fnc): 
+def even_ele(test_tuple, ): 
 	res = tuple() 
 	for ele in test_tuple: 
 		if isinstance(ele, tuple): 
-			res += (even_ele(ele, even_fnc), ) 
-		elif even_fnc(ele): 
+			res += (even_ele(ele), ) 
+		elif ele % 2 == 0: 
 			res += (ele, ) 
 	return res 
+
 def extract_even(test_tuple):
-  assert isinstance(test_tuple, tuple), "invalid inputs" # $_CONTRACT_$
-  assert all(isinstance(x, int) for x in (lambda f: (lambda x: f(lambda y: x(x)(y)))(lambda x: f(lambda y: x(x)(y))))(lambda f: lambda t: sum(map(f, t), ()) if isinstance(t, tuple) else (t,))(test_tuple)), "invalid inputs" # $_CONTRACT_$
-  res = even_ele(test_tuple, lambda x: x % 2 == 0)
-  return (res) 
+	def tuple_check(t): # $_CONTRACT_$
+		if not isinstance(t, tuple): # $_CONTRACT_$
+			return isinstance(t, (int, float)) # $_CONTRACT_$
+		else: # $_CONTRACT_$
+			return all(tuple_check(item) for item in t) # $_CONTRACT_$
+	assert isinstance(test_tuple, tuple) # $_CONTRACT_$
+	assert tuple_check(test_tuple) # $_CONTRACT_$
+	return even_ele(test_tuple)
 
 
 

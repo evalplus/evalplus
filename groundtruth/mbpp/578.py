@@ -2,13 +2,12 @@
 Write a function to interleave 3 lists of the same length into a single flat list.
 """
 
-def interleave_lists(list1,list2,list3):
+def interleave_lists(list1, list2, list3):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
     assert isinstance(list2, list), "invalid inputs" # $_CONTRACT_$
     assert isinstance(list3, list), "invalid inputs" # $_CONTRACT_$
     assert len(list1) == len(list2) == len(list3), "invalid inputs" # $_CONTRACT_$
-    result = [el for pair in zip(list1, list2, list3) for el in pair]
-    return result
+    return [el for pair in zip(list1, list2, list3) for el in pair]
 
 
 

@@ -4,8 +4,7 @@ Write a function to check whether a specified list is sorted or not.
 
 def issort_list(list1):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
-    result = all(list1[i] <= list1[i+1] for i in range(len(list1)-1))
-    return result
+    return all(a <= b for a, b in zip(list1, list1[1:]))
 
 
 

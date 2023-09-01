@@ -59,6 +59,10 @@ issues shown in italics are less important, such as redundant argument, duplicat
 - [464](464.py): bad logic: groundtruth implments "all values equals to n', instead of 'all values are same' as the description
 - [465](465.py): confusing problem: 'empty item' is not a well-defined concept
 - *[556](556.py): redundant argument N as list len*
+- *[559](559.py): redundant argument size as list len*
+- *[559](564.py): redundant argument n as list len*
+- *[584](584.py): duplicate problem: same as [440](440.py), but 584 has a better defined description*
+- [603](603.py): problem description typo: 'lucid' => 'ludic'
 
 ### multi-solution problems
 problems with multiple correct answers for certain inputs

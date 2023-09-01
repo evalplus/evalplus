@@ -5,11 +5,8 @@ Write a python function to calculate the product of the unique numbers in a give
 def unique_product(list_data):
     assert isinstance(list_data, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in list_data), "invalid inputs" # $_CONTRACT_$
-    temp = list(set(list_data))
-    p = 1
-    for i in temp:
-        p *= i
-    return p
+    from functools import reduce
+    return reduce(lambda x, y: x*y, set(list_data))
 
 
 

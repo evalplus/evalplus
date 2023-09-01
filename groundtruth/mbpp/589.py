@@ -2,18 +2,17 @@
 Write a function to find perfect squares between two given numbers.
 """
 
+import math
 def perfect_squares(a, b):
     assert isinstance(a, int), "invalid inputs" # $_CONTRACT_$
     assert isinstance(b, int), "invalid inputs" # $_CONTRACT_$
-    lists=[]
-    for i in range (a,b+1):
-        j = 1;
-        while j*j <= i:
-            if j*j == i:
-                 lists.append(i)  
-            j = j+1
-        i = i+1
-    return lists
+    if a > b:
+        a, b = b, a
+    if b < 0:
+        return []
+    if a < 0:
+        a = 0
+    return list(filter(lambda x: math.sqrt(x).is_integer(), range(a, b+1)))
 
 
 

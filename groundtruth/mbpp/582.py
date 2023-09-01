@@ -4,7 +4,7 @@ Write a function to check if a dictionary is empty
 
 def my_dict(dict1):
    assert isinstance(dict1, dict)
-   return not bool(dict1)
+   return dict1 == {}
 
 
 

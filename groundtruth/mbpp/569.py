@@ -4,10 +4,10 @@ Write a function to sort each sublist of strings in a given list of lists.
 
 def sort_sublists(list1):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert len(list1) > 0, "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, list) for x in list1), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, str) for sublist in list1 for x in sublist), "invalid inputs" # $_CONTRACT_$
-    result = list(map(sorted,list1)) 
-    return result
+    return list(map(sorted,list1)) 
 
 
 

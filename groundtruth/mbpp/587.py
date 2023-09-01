@@ -4,8 +4,7 @@ Write a function to convert a list to a tuple.
 
 def list_tuple(listx):
   assert isinstance(listx, list), "invalid inputs" # $_CONTRACT_$
-  tuplex = tuple(listx)
-  return tuplex
+  return tuple(listx)
 
 
 

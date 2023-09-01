@@ -3,13 +3,11 @@ Write a function to find sum and average of first n natural numbers.
 """
 
 def sum_average(number):
- assert isinstance(number, int), "invalid inputs" # $_CONTRACT_$
- assert number > 0, "invalid inputs" # $_CONTRACT_$
- total = 0
- for value in range(1, number + 1):
-    total = total + value
- average = total / number
- return (total,average)
+   assert isinstance(number, int), "invalid inputs" # $_CONTRACT_$
+   assert number > 0, "invalid inputs" # $_CONTRACT_$
+   sum_ = sum(range(1, number+1))
+   average = sum_/number
+   return sum_, average
 
 
 

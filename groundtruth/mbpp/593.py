@@ -6,8 +6,7 @@ import re
 def removezero_ip(ip):
  assert isinstance(ip, str), "invalid inputs" # $_CONTRACT_$
  assert len(ip) > 0, "invalid inputs" # $_CONTRACT_$
- string = re.sub('\.[0]*', '.', ip)
- return string
+ return re.sub('\.[0]*', '.', ip)
 
 
 

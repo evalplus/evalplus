@@ -5,8 +5,7 @@ Write a python function to split a list at the nth eelment and add the first par
 def split_Arr(l, n):
   assert isinstance(l, list), "invalid inputs" # $_CONTRACT_$
   assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-  assert n >= 0, "invalid inputs" # $_CONTRACT_$
-  assert n <= len(l), "invalid inputs" # $_CONTRACT_$
+  assert 0 <= n <= len(l), "invalid inputs" # $_CONTRACT_$
   return l[n:] + l[:n]
 
 

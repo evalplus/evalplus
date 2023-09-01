@@ -4,7 +4,7 @@ Write a python function to split a string into characters.
 
 def split(word): 
     assert isinstance(word, str), "invalid inputs" # $_CONTRACT_$
-    return [char for char in word] 
+    return list(word)
 
 
 

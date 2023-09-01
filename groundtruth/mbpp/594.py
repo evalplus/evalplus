@@ -4,11 +4,12 @@ Write a function to find the difference of the first even and first odd number o
 
 def diff_even_odd(list1):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert all(isinstance(i, int) for i in list1), "invalid inputs" # $_CONTRACT_$
     assert any(el%2==0 for el in list1), "invalid inputs" # $_CONTRACT_$
     assert any(el%2!=0 for el in list1), "invalid inputs" # $_CONTRACT_$
-    first_even = next((el for el in list1 if el%2==0),-1)
-    first_odd = next((el for el in list1 if el%2!=0),-1)
-    return (first_even-first_odd)
+    first_even = next((el for el in list1 if el%2==0), -1)
+    first_odd = next((el for el in list1 if el%2!=0), -1)
+    return (first_even - first_odd)
 
 
 
