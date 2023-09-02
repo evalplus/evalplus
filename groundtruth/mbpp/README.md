@@ -46,7 +46,7 @@ issues shown in italics are less important, such as redundant argument, duplicat
 - *[109](109.py): redundant argument n as list len*
 - [128](128.py): wrong testcase: the input is not list of words as described in the problem description
 - *[170](170.py): imprecise problem description: doesn't specify the `range` precisely as inclusive/exclusive/half-open, groundtruth implies inclusive range, (maybe LLMs can learn that from contracts?)*
-- [229](229.py): bad logic + wrong testcase
+- [229](229.py): bad logic + wrong testcase([fixed](https://github.com/evalplus/evalplus/commit/6e60cf0fc0d263b273569d12be1d64489b00a8c9))
 - [307](307.py): confusing problem
 - [310](310.py): imprecise problem description: description doesn't require to ignore space, but the groundtruth does 
 - [391](391.py): imprecise problem description: doesn't specify list number in inputs and the output dict format
@@ -64,9 +64,9 @@ issues shown in italics are less important, such as redundant argument, duplicat
 - [603](603.py): problem description typo: 'lucid' => 'ludic'
 - [617](617.py): wrong testcase + bad logic: the jump steps should be a integer
 - *[622](622.py): redundant argument n as list len*
-- *[625](625.py): same as [591](591.py)*
+- *[625](625.py): duplicate task: same as [591](591.py)*
 - [627](627.py): unclear arguments: start and end are ill-defined in the problem description, unclear without reading implementation
-- [633](633.py): redundant argument n as list len*
+- *[633](633.py): redundant argument n as list len*
 - [640](640.py): bad logic + wrong testcase: should pass a string, not a list of string
 - [738](738.py): imprecise problem description: ill-defined math concept 'geometric sum'
 - *[745](745.py): range issue same as [170](170.py)*
