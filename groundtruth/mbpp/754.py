@@ -6,11 +6,8 @@ def extract_index_list(l1, l2, l3):
     assert isinstance(l1, list), "invalid inputs" # $_CONTRACT_$
     assert isinstance(l2, list), "invalid inputs" # $_CONTRACT_$
     assert isinstance(l3, list), "invalid inputs" # $_CONTRACT_$
-    result = []
-    for m, n, o in zip(l1, l2, l3):
-        if (m == n == o):
-            result.append(m)
-    return result
+    return [a for a, b, c in zip(l1, l2, l3) if a == b == c]
+
 
 
 

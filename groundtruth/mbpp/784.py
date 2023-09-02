@@ -4,6 +4,8 @@ Write a function to find the product of first even and odd number of a given lis
 
 def mul_even_odd(list1):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
+    assert any(x % 2 == 0 for x in list1), "invalid inputs" # $_CONTRACT_$
+    assert any(x % 2 != 0 for x in list1), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in list1), "invalid inputs" # $_CONTRACT_$
     first_even = next((el for el in list1 if el%2==0),-1)
     first_odd = next((el for el in list1 if el%2!=0),-1)

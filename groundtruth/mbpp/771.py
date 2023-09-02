@@ -5,7 +5,7 @@ Write a function to check if the given expression is balanced or not. https://ww
 from collections import deque
 def check_expression(exp):
     assert isinstance(exp, str), "invalid inputs" # $_CONTRACT_$
-    if len(exp) & 1:
+    if len(exp) == 0 or len(exp) % 2 == 1:
         return False
     stack = deque()
     for ch in exp:

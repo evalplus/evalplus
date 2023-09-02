@@ -5,8 +5,7 @@ Write a function to add the given tuple to the given list.
 def add_tuple(test_list, test_tup):
   assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
   assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
-  test_list += test_tup
-  return test_list
+  return test_list + list(test_tup)
 
 
 

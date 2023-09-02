@@ -10,6 +10,7 @@ def occurance_substring(text,pattern):
     s = match.start()
     e = match.end()
     return (text[s:e], s, e)
+ return None
 
 
 

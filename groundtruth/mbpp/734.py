@@ -4,16 +4,16 @@ Write a python function to find sum of products of all possible sublists of a gi
 
 def sum_Of_Subarray_Prod(arr):
     assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
+    assert len(arr) > 0, "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
-    ans = 0
-    res = 0
-    i = len(arr) - 1
-    while (i >= 0):
-        incr = arr[i]*(1 + res)
-        ans += incr
-        res = incr
-        i -= 1
-    return (ans)
+    result = 0  # final result
+    partial = 0 # partial sum
+    # stimulate the recursion
+    while arr != []:
+        partial = arr[-1] * (1 + partial)
+        result += partial
+        arr.pop()
+    return result
 
 
 

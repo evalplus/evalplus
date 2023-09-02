@@ -5,12 +5,7 @@ Write a python function to find the sum of non-repeated elements in a given list
 def find_sum(arr): 
     assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
-    arr.sort() 
-    sum = arr[0] 
-    for i in range(len(arr)-1): 
-        if (arr[i] != arr[i+1]): 
-            sum = sum + arr[i+1]   
-    return sum
+    return sum(set(arr))
 
 
 

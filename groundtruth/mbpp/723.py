@@ -7,7 +7,7 @@ def count_same_pair(nums1, nums2):
     assert isinstance(nums1, list), "invalid inputs" # $_CONTRACT_$
     assert isinstance(nums2, list), "invalid inputs" # $_CONTRACT_$
     assert len(nums1) == len(nums2), "invalid inputs" # $_CONTRACT_$
-    assert all(hasattr(el, '__eq__') for el in nums1), "invalid inputs" # $_CONTRACT_$
+    assert all(hasattr(a, '__eq__') and isinstance(a, type(b)) for a, b in zip(nums1, nums2)), "invalid inputs" # $_CONTRACT_$
     result = sum(map(eq, nums1, nums2))
     return result
 

@@ -5,7 +5,7 @@ Write a python function to reverse an array upto a given position.
 def reverse_Array_Upto_K(input, k): 
   assert isinstance(input, list), "invalid inputs" # $_CONTRACT_$
   assert 0 < k <= len(input), "invalid inputs" # $_CONTRACT_$
-  return (input[k-1::-1] + input[k:]) 
+  return input[k-1::-1] + input[k:]
 
 
 

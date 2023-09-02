@@ -5,7 +5,7 @@ Write a function to pack consecutive duplicates of a given list elements into su
 from itertools import groupby
 def pack_consecutive_duplicates(list1):
     assert isinstance(list1, list), "invalid inputs" # $_CONTRACT_$
-    return [list(group) for key, group in groupby(list1)]
+    return [list(group) for _, group in groupby(list1)]
 
 
 

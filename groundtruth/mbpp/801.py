@@ -7,10 +7,12 @@ def test_three_equal(x,y,z):
   assert isinstance(y, int), "invalid inputs" # $_CONTRACT_$
   assert isinstance(z, int), "invalid inputs" # $_CONTRACT_$
   result = set([x,y,z])
-  if len(result)==3:
+  if len(result) == 3:
     return 0
+  elif len(result) == 2:
+    return 2
   else:
-    return 4-len(result)
+    return 3
 
 
 

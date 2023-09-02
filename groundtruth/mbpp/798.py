@@ -4,11 +4,8 @@ Write a python function to find the sum of an array.
 
 def _sum(arr):  
     assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
-    assert all(hasattr(x, "__add__") for x in arr), "invalid inputs" # $_CONTRACT_$
-    sum=0
-    for i in arr: 
-        sum = sum + i      
-    return(sum)  
+    assert all(isinstance(n, (int, float)) for n in arr), "invalid inputs" # $_CONTRACT_$
+    return sum(arr)
 
 
 

@@ -5,9 +5,7 @@ Write a function to count the pairs of reverse strings in the given string list.
 def count_reverse_pairs(test_list):
   assert isinstance(test_list, list), "invalid inputs" # $_CONTRACT_$
   assert all(isinstance(x, str) for x in test_list), "invalid inputs" # $_CONTRACT_$
-  res = sum([1 for idx in range(0, len(test_list)) for idxn in range(idx, len( 
-	test_list)) if test_list[idxn] == str(''.join(list(reversed(test_list[idx]))))]) 
-  return res
+  return sum(test_list[i+1:].count(s[::-1]) for i, s in enumerate(test_list))
 
 
 

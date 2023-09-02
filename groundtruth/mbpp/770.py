@@ -4,7 +4,7 @@ Write a python function to find the sum of fourth power of first n odd natural n
 
 def odd_num_sum(n) : 
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-    assert n >= 0, "invalid inputs" # $_CONTRACT_$
+    assert n >= 1, "invalid inputs" # $_CONTRACT_$
     j = 0
     sm = 0
     for i in range(1,n + 1) : 

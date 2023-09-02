@@ -4,8 +4,7 @@ Write a function to check if the given tuple has any none value or not.
 
 def check_none(test_tup):
   assert isinstance(test_tup, tuple), "invalid inputs" # $_CONTRACT_$
-  res = any(map(lambda ele: ele is None, test_tup))
-  return res 
+  return any(ele is None for ele in test_tup)
 
 
 

@@ -5,11 +5,13 @@ Write a python function to find the sum of all odd length subarrays. https://www
 def odd_length_sum(arr):
     assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
-    Sum = 0
-    l = len(arr)
-    for i in range(l):
-        Sum += ((((i + 1) *(l - i) + 1) // 2) * arr[i])
-    return Sum
+    sum_ = 0
+    n = len(arr)
+    for i in range(n):
+        # arr[i] occurs (i + 1) * (n - i) times in all subarrays
+        times = ((i + 1) * (n - i) + 1) // 2
+        sum_ += arr[i] * times
+    return sum_
 
 
 

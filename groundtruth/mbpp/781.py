@@ -6,14 +6,14 @@ import math
 def count_divisors(n) : 
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
     assert n > 0, "invalid inputs" # $_CONTRACT_$
-    count = 0
-    for i in range(1, (int)(math.sqrt(n)) + 2) : 
+    cnt = 0
+    for i in range(1, (int)(math.sqrt(n)) + 1) : 
         if (n % i == 0) : 
-            if( n // i == i) : 
-                count = count + 1
+            if (n / i == i) : 
+                cnt = cnt + 1
             else : 
-                count = count + 2
-    return count % 2 == 0
+                cnt = cnt + 2
+    return cnt % 2 == 0
 
 
 

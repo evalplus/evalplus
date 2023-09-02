@@ -6,6 +6,7 @@ def find_first_occurrence(A, x):
     assert isinstance(A, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(a, (int, float)) for a in A), "invalid inputs" # $_CONTRACT_$
     assert all(a <= b for a, b in zip(A, A[1:])), "invalid inputs" # $_CONTRACT_$
+    assert x in A, "invalid inputs" # $_CONTRACT_$
     assert isinstance(x, int), "invalid inputs" # $_CONTRACT_$
     (left, right) = (0, len(A) - 1)
     result = -1

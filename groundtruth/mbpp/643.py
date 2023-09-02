@@ -4,8 +4,8 @@ Write a function that checks if a strings contains 'z', except at the start and 
 
 import re
 def text_match_wordz_middle(text):
-        assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
-        return bool(re.search(r'\Bz\B',  text))
+	assert isinstance(text, str), "invalid inputs" # $_CONTRACT_$
+	return re.search(r'\Bz\B',  text) is not None
 
 
 

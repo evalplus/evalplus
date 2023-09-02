@@ -7,13 +7,10 @@ def sector_area(r,a):
     assert isinstance(r, (int, float)), "invalid inputs" # $_CONTRACT_$
     assert isinstance(a, (int, float)), "invalid inputs" # $_CONTRACT_$
     assert r >= 0, "invalid inputs" # $_CONTRACT_$
-    assert a >= 0, "invalid inputs" # $_CONTRACT_$
-    if a > 360:
-        return None
+    assert 360 >= a >= 0, "invalid inputs" # $_CONTRACT_$
     return (math.pi*r**2) * (a/360)
 
 
 
-assert sector_area(4,45)==6.283185307179586
-assert sector_area(9,45)==31.808625617596654
-assert sector_area(9,361)==None
+assert math.isclose(sector_area(4,45), 6.283185307179586, rel_tol=0.001)
+assert math.isclose(sector_area(9,45), 31.808625617596654, rel_tol=0.001)

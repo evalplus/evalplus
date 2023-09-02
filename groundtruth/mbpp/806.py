@@ -15,7 +15,7 @@ def max_run_uppercase(test_str):
       cnt = 0
   if test_str[len(test_str) - 1].isupper():
     res = cnt
-  return (res)
+  return res
 
 
 

@@ -5,10 +5,7 @@ Write function to find the sum of all items in the given dictionary.
 def return_sum(d):
   assert isinstance(d, dict), "invalid inputs" # $_CONTRACT_$
   assert all(isinstance(x, (int, float)) for x in d.values()), "invalid inputs" # $_CONTRACT_$
-  sum = 0
-  for i in d.values():
-    sum = sum + i
-  return sum
+  return sum(d.values())
 
 
 

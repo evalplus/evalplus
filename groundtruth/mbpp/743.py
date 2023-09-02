@@ -6,8 +6,7 @@ def rotate_right(l, m):
   assert isinstance(l, list), "invalid inputs" # $_CONTRACT_$
   assert isinstance(m, int), "invalid inputs" # $_CONTRACT_$
   assert 0 <= m <= len(l), "invalid inputs" # $_CONTRACT_$
-  result =  l[-m:] + l[:-m]
-  return result
+  return l[-m:] + l[:-m]
 
 
 

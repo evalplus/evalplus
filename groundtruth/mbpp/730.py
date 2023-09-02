@@ -5,7 +5,7 @@ Write a function to remove consecutive duplicates of a given list.
 from itertools import groupby
 def consecutive_duplicates(nums):
     assert isinstance(nums, list), "invalid inputs" # $_CONTRACT_$
-    return [key for key, group in groupby(nums)] 
+    return [key for key, _ in groupby(nums)] 
 
 
 

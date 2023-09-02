@@ -2,16 +2,16 @@
 Write a python function to count the number of pairs whose sum is equal to ‘sum’. The funtion gets as input a list of numbers and the sum,
 """
 
-def get_pairs_count(arr, sum):
+def get_pairs_count(arr, sum_):
     assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
     assert all(isinstance(x, (int, float)) for x in arr), "invalid inputs" # $_CONTRACT_$
-    assert isinstance(sum, (int, float)), "invalid inputs" # $_CONTRACT_$
-    count = 0  
-    for i in range(len(arr)):
-        for j in range(i + 1,len(arr)):
-            if arr[i] + arr[j] == sum:
-                count += 1
-    return count
+    assert isinstance(sum_, (int, float)), "invalid inputs" # $_CONTRACT_$
+    cnt = 0
+    for n in arr:
+        cnt += arr.count(sum_ - n)
+        if sum_ - n == n:
+            cnt -= 1
+    return cnt / 2
 
 
 

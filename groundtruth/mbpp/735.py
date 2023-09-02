@@ -2,18 +2,12 @@
 Write a python function to toggle bits of the number except the first and the last bit. https://www.geeksforgeeks.org/toggle-bits-number-expect-first-last-bits/
 """
 
-def set_middle_bits(n):  
-    n |= n >> 1; 
-    n |= n >> 2; 
-    n |= n >> 4; 
-    n |= n >> 8; 
-    n |= n >> 16;  
-    return (n >> 1) ^ 1
 def toggle_middle_bits(n): 
     assert isinstance(n, int), "invalid inputs" # $_CONTRACT_$
-    if (n == 1): 
-        return 1
-    return n ^ set_middle_bits(n) 
+    assert n >= 0, "invalid inputs" # $_CONTRACT_$
+    binary = bin(n)[2:]
+    toggled = ''.join(['0' if i == '1' else '1' for i in binary[1:-1]])
+    return int(binary[0] + toggled + binary[-1], 2)
 
 
 

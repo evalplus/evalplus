@@ -4,8 +4,8 @@ Write a python function to check whether a list of numbers contains only one dis
 
 def unique_Element(arr):
     assert isinstance(arr, list), "invalid inputs" # $_CONTRACT_$
-    s = set(arr)
-    return len(s) == 1
+    assert len(arr) > 0, "invalid inputs" # $_CONTRACT_$
+    return arr.count(arr[0]) == len(arr)
 
 
 
