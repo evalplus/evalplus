@@ -17,7 +17,7 @@
     <a href="#-acknowledgement">🙏Acknowledgement</a>
 </p>
 
-> **Warning**
+> [!Warning]
 > <div align="center">
 > <b>
 > 🚨 Evaluating LLM-generated code over datasets with "3 test-cases" is **NOT** enough! 🚨
@@ -107,20 +107,20 @@ docker run -v $(pwd):/app ganler/evalplus:latest --dataset humaneval --samples s
 evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
 
-> **Warning**
-> Do you use a very slow machine?
->
-> LLM solutions are regarded as **failed** on timeout (and OOM etc.).
-> Specifically, we set the timeout $T=\max(T_{base}, T_{gt}\times k)$, where:
->
-> - $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 0.2s);
-> - $T_{gt}$ is the runtime of the ground-truth solutions (achieved via profiling);
-> - $k$ is a configurable factor `--gt-time-limit-factor` (default to 4);
->
-> If your machine is too slow and you are getting high-variance results, try to use larger $k$ and $T_{base}$.
->
-> Additionally, you are **NOT** encouraged to make your test-bed over stressed while running evaluation.
-> For example, using `--parallel 64` on a 4-core machine or doing something else during evaluation are bad ideas...
+- > [!Warning]
+  > Do you use a very slow machine?
+  >
+  > LLM solutions are regarded as **failed** on timeout (and OOM etc.).
+  > Specifically, we set the timeout $T=\max(T_{base}, T_{gt}\times k)$, where:
+  >
+  > - $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 0.2s);
+  > - $T_{gt}$ is the runtime of the ground-truth solutions (achieved via profiling);
+  > - $k$ is a configurable factor `--gt-time-limit-factor` (default to 4);
+  >
+  > If your machine is too slow and you are getting high-variance results, try to use larger $k$ and $T_{base}$.
+  >
+  > Additionally, you are **NOT** encouraged to make your test-bed over stressed while running evaluation.
+  > For example, using `--parallel 64` on a 4-core machine or doing something else during evaluation are bad ideas...
 
 <details><summary>🤔 Evaluate with local GitHub repo? <i>:: click to expand ::</i></summary>
 <div>
