@@ -107,7 +107,8 @@ docker run -v $(pwd):/app ganler/evalplus:latest --dataset humaneval --samples s
 evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
 
-> **Warning** ⚠️ Do you use a very slow machine?
+> **Warning**
+> Do you use a very slow machine?
 >
 > LLM solutions are regarded as **failed** on timeout (and OOM etc.).
 > Specifically, we set the timeout $T=\max(T_{base}, T_{gt}\times k)$, where:
