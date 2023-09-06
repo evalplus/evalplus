@@ -98,7 +98,13 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
                         }
 
 
+HUMANEVAL_OVERRIDE_PATH = os.environ.get("HUMANEVAL_OVERRIDE_PATH", None)
+
+
 def _ready_human_eval_plus_path(mini=False) -> str:
+    if HUMANEVAL_OVERRIDE_PATH:
+        return HUMANEVAL_OVERRIDE_PATH
+
     url, plus_path = get_dataset_metadata("HumanEvalPlus", HUMANEVAL_PLUS_VERSION, mini)
 
     # Check if human eval file exists in CACHE_DIR
