@@ -24,7 +24,7 @@ def fix(data):
     )
     data[0]["plus_input"] = [
         x
-        for x in data[0]["base_input"]
+        for x in data[0]["plus_input"]
         if isinstance(x[1], float) and x[1] > 0 and isinstance(x[0], list)
     ]
 
@@ -34,7 +34,7 @@ def fix(data):
         '\n    assert type(operations) == list, "invalid inputs" # $_CONTRACT_$'
         + '\n    assert all([isinstance(v, int) for v in operations]), "invalid inputs" # $_CONTRACT_$\n'
     )
-    data[3]["plus_input"] = [x for x in data[3]["base_input"] if isinstance(x[0], list)]
+    data[3]["plus_input"] = [x for x in data[3]["plus_input"] if isinstance(x[0], list)]
 
     # fix 9
     check_id(data, 9)
@@ -42,7 +42,7 @@ def fix(data):
         '\n    assert isinstance(numbers, list), "invalid inputs" # $_CONTRACT_$'
         + '\n    assert all([isinstance(v, int) for v in numbers]), "invalid inputs" # $_CONTRACT_$\n'
     )
-    data[9]["plus_input"] = [x for x in data[9]["base_input"] if isinstance(x[0], list)]
+    data[9]["plus_input"] = [x for x in data[9]["plus_input"] if isinstance(x[0], list)]
 
     # fix 148
     check_id(data, 148)
@@ -51,7 +51,7 @@ def fix(data):
     ] = '\n    assert isinstance(planet1, str) and isinstance(planet2, str), "invalid inputs" # $_CONTRACT_$\n'
     data[148]["plus_input"] = [
         x
-        for x in data[148]["base_input"]
+        for x in data[148]["plus_input"]
         if isinstance(x[0], str) and isinstance(x[1], str)
     ]
 
