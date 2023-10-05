@@ -1,3 +1,4 @@
 fschat
 openai
+litellm
 rich

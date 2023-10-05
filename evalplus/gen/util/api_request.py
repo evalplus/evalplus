@@ -3,6 +3,7 @@ import time
 from typing import Dict
 
 import openai
+import litellm
 
 # TODO Codex request if we need it.
 
@@ -39,7 +40,7 @@ def request_chatgpt_engine(config) -> Dict:
         try:
             signal.signal(signal.SIGALRM, handler)
             signal.alarm(100)
-            ret = openai.ChatCompletion.create(**config)
+            ret = litellm.completion(**config)
             signal.alarm(0)
         except openai.error.InvalidRequestError as e:
             print(e)
