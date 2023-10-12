@@ -30,13 +30,13 @@ import openai
 # Acknoledgement:
 # Modified from https://github.com/lm-sys/FastChat/blob/main/fastchat/serve/huggingface_api.py
 import torch
-from fastchat.serve.inference import load_model
 from transformers import (
     AutoModelForCausalLM,
     AutoModelForSeq2SeqLM,
     AutoTokenizer,
     StoppingCriteria,
     StoppingCriteriaList,
+    LlamaForCausalLM,
 )
 
 from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine
@@ -177,6 +177,12 @@ class HFTorchDecoder(DecoderBase):
                 # kwargs["load_in_8bit"] = True
         if "starcoder" in name:
             kwargs["torch_dtype"] = torch.bfloat16
+        if name in {"Phind/Phind-CodeLlama-34B-v2", "codellama/CodeLlama-7b-Python-hf"}:
+            kwargs["device_map"] = "auto"
+            kwargs["torch_dtype"] = torch.bfloat16
+            self.skip_special_tokens = True
+        if "Mistral" in name:
+            kwargs["torch_dtype"] = torch.bfloat16
 
         self.tokenizer = AutoTokenizer.from_pretrained(name)
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
@@ -209,7 +215,7 @@ class HFTorchDecoder(DecoderBase):
             max_new_tokens=self.max_new_tokens,
             stopping_criteria=scores,
             do_sample=do_sample,
-            top_p=0.95,
+            top_p=0.95 if do_sample else None,
             top_k=None,
             temperature=self.temperature,
             output_scores=True,
@@ -235,6 +241,8 @@ class HFTorchDecoder(DecoderBase):
 
 class FsChatDecoder(HFTorchDecoder):
     def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
+        from fastchat.serve.inference import load_model
+
         DecoderBase.__init__(
             self, name=name, batch_size=batch_size, temperature=temperature
         )
@@ -631,51 +639,6 @@ class CodeT5P(DecoderBase):
         return outputs
 
 
-CODE_LLAMA_ROOT = os.environ.get("CODE_LLAMA_ROOT", "/JawTitan/codellama/")
-
-
-# S1: Install package from https://github.com/facebookresearch/codellama
-# S2: Install model to ${CODE_LLAMA_ROOT} (This can be any actual path)
-# S3: CODE_LLAMA_ROOT=?? torchrun --nproc_per_node 1 codegen/generate.py --model code-llama-7b --bs 1 --temperature 0 --n_samples 1 --resume --greedy
-class CodeLlama(DecoderBase):
-    def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
-        super().__init__(name=name, batch_size=batch_size, temperature=temperature)
-        assert CODE_LLAMA_ROOT is not None
-        from llama import Llama  # See https://github.com/facebookresearch/codellama
-
-        self.generator = Llama.build(
-            ckpt_dir=os.path.join(CODE_LLAMA_ROOT, name),
-            tokenizer_path=os.path.join(CODE_LLAMA_ROOT, name, "tokenizer.model"),
-            max_seq_len=512,
-            max_batch_size=batch_size,
-        )
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if not do_sample:
-            assert self.temperature == 0, "Temperature must be 0 for greedy decoding"
-
-        batch_size = min(self.batch_size, num_samples)
-        gen_strs = self.generator.text_completion(
-            [prompt] * batch_size,
-            max_gen_len=self.max_new_tokens,
-            temperature=self.temperature,
-            top_p=0.95,
-        )
-        gen_strs = [gen_str["generation"] for gen_str in gen_strs]
-
-        outputs = []  # removes eos tokens.
-        for output in gen_strs:
-            min_index = 10000
-            for eos in self.eos:
-                if eos in output:
-                    # could be multiple eos in outputs, better pick minimum one
-                    min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index])
-        return outputs
-
-
 def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     if name == "codegen-2b":
         return HFTorchDecoder(
@@ -804,9 +767,21 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     elif name.startswith("code-llama-"):
         assert name.endswith("b")
         nb = name.split("-")[-1]
-        return CodeLlama(
+        return HFTorchDecoder(
             batch_size=batch_size,
-            name=f"CodeLlama-{nb}-Python",
+            name=f"codellama/CodeLlama-{nb}-Python-hf",
+            temperature=temperature,
+        )
+    elif name == "phind-code-llama-34b-v2":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="Phind/Phind-CodeLlama-34B-v2",
+            temperature=temperature,
+        )
+    elif name == "mistral-7b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="mistralai/Mistral-7B-v0.1",
             temperature=temperature,
         )
 
