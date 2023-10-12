@@ -21,7 +21,7 @@
 > [!Important]
 > <div align="center">
 > <b>
-> 📢 Who is the best LLM coder? Take a look at <a href="https://evalplus.github.io/leaderboard.html">the EvalPlus leaderboard <img src="https://img.shields.io/badge/%F0%9F%8F%86-leaderboard-8A2BE2"></a>! 📢
+> 📢 Who is the best LLM coder? Take a look at <a href="https://evalplus.github.io/leaderboard.html">the EvalPlus leaderboard 🏆</a>! 📢
 > </b>
 > </div>
 
