@@ -177,7 +177,7 @@ class HFTorchDecoder(DecoderBase):
                 # kwargs["load_in_8bit"] = True
         if "starcoder" in name:
             kwargs["torch_dtype"] = torch.bfloat16
-        if name in {"Phind/Phind-CodeLlama-34B-v2", "codellama/CodeLlama-7b-Python-hf"}:
+        if "CodeLlama" in name:
             kwargs["device_map"] = "auto"
             kwargs["torch_dtype"] = torch.bfloat16
             self.skip_special_tokens = True
