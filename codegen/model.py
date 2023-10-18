@@ -36,7 +36,6 @@ from transformers import (
     AutoTokenizer,
     StoppingCriteria,
     StoppingCriteriaList,
-    LlamaForCausalLM,
 )
 
 from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine
@@ -503,7 +502,7 @@ class SantaCoder(HFTorchDecoder):
         return outputs
 
 
-class StarCoder(HFTorchDecoder):
+class StarCoderInfill(HFTorchDecoder):
     def __init__(
         self, name: str, batch_size: int = 1, temperature: float = 0.8
     ) -> None:
@@ -742,9 +741,9 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
         )
-    elif name == "starcoder":
-        return StarCoder(
-            batch_size=batch_size, name="bigcode/starcoder", temperature=temperature
+    elif name.startswith("starcoder"):
+        return StarCoderInfill(
+            batch_size=batch_size, name=f"bigcode/{name}", temperature=temperature
         )
     elif name == "codet5p-2b":
         return CodeT5P(

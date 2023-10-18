@@ -101,7 +101,7 @@ def main():
     parser.add_argument("--bs", required=True, type=int)
     parser.add_argument("--temperature", required=True, type=float)
     parser.add_argument("--dataset", default="humaneval", type=str)
-    parser.add_argument("--root", type=str)
+    parser.add_argument("--root", type=str, required=True)
     parser.add_argument("--n_samples", default=200, type=int)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--use_contracts", default="no", type=str)
