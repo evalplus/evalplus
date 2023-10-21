@@ -37,7 +37,7 @@ def construct_contract_prompt(prompt: str, contract_type: str, contract: str) ->
         return prompt + contract
 
 
-def code_generate(args, workdir: PathLike, model: DecoderBase):
+def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
     with Progress(
         TextColumn(
             f"{args.dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"
@@ -48,6 +48,13 @@ def code_generate(args, workdir: PathLike, model: DecoderBase):
         TimeElapsedColumn(),
     ) as p:
         for task_id, task in p.track(get_human_eval_plus().items()):
+            if id_range is not None:
+                id_num = int(task_id.split("/")[1])
+                low, high = id_range
+                if id_num < low or id_num >= high:
+                    p.console.print(f"Skipping {task_id} as it is not in {id_range}")
+                    continue
+
             p_name = task_id.replace("/", "_")
             if args.use_contracts != "no" and task["contract"] == "":
                 continue
@@ -106,6 +113,8 @@ def main():
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--use_contracts", default="no", type=str)
     parser.add_argument("--greedy", action="store_true")
+    # id_range is list
+    parser.add_argument("--id-range", default=None, nargs="+", type=int)
     args = parser.parse_args()
 
     if args.dataset not in ["humaneval"]:
@@ -120,6 +129,11 @@ def main():
             f"Greedy decoding is only supported with temperature({args.temperature}) = 0, batch_size({args.bs}) = 1"
             f" and n_samples({args.n_samples}) = 1"
         )
+
+    if args.id_range is not None:
+        assert len(args.id_range) == 2, "id_range must be a list of length 2"
+        assert args.id_range[0] < args.id_range[1], "id_range must be increasing"
+        args.id_range = tuple(args.id_range)
 
     # Make project dir
     os.makedirs(args.root, exist_ok=True)
@@ -142,7 +156,7 @@ def main():
     with open(os.path.join(workdir, "args.txt"), "w") as f:
         f.write(str(args))
 
-    code_generate(args, workdir=workdir, model=model)
+    code_generate(args, workdir=workdir, model=model, id_range=args.id_range)
 
 
 if __name__ == "__main__":
