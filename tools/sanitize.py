@@ -47,6 +47,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", type=str, required=True)
     parser.add_argument("--eof", action="store_true")
+    parser.add_argument("--inplace", action="store_true")
 
     args = parser.parse_args()
 
@@ -57,7 +58,10 @@ if __name__ == "__main__":
 
     # make a new folder with "-sanitized" suffix
     old_folder = pathlib.Path(args.folder)
-    new_folder = old_folder.parent / (old_folder.name + "-sanitized")
+    if args.inplace:
+        new_folder = old_folder
+    else:
+        new_folder = old_folder.parent / (old_folder.name + "-sanitized")
 
     nsan = 0
     ntotal = 0
