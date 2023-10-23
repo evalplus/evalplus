@@ -172,8 +172,6 @@ class HFTorchDecoder(DecoderBase):
             kwargs["torch_dtype"] = torch.float16
             if "16b" in name.lower():
                 kwargs["device_map"] = "auto"
-                # Not working... # int8 acceleration
-                # kwargs["load_in_8bit"] = True
         if "starcoder" in name:
             kwargs["torch_dtype"] = torch.bfloat16
         if "CodeLlama" in name:
@@ -197,6 +195,10 @@ class HFTorchDecoder(DecoderBase):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
         input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
             self.device
         )
@@ -409,6 +411,10 @@ class Codegen2Decoder(HFTorchDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
         input = prompt + self.infill_ph + self.extra_end
         input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
         scores = StoppingCriteriaList(
@@ -461,6 +467,10 @@ class SantaCoder(HFTorchDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
         input = self.prefix_token + prompt + self.suffix_token
         input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
         scores = StoppingCriteriaList(
@@ -513,6 +523,10 @@ class StarCoderInfill(HFTorchDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
         input = self.prefix_token + prompt + self.suffix_token
         input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
         scores = StoppingCriteriaList(
@@ -580,6 +594,10 @@ class CodeT5P(DecoderBase):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
         prompt = prompt.replace("    ", "\t")
         input_tokens = self.tokenizer(prompt, return_tensors="pt").to(self.device)
         scores = StoppingCriteriaList(
