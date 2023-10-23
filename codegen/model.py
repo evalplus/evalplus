@@ -175,7 +175,8 @@ class HFTorchDecoder(DecoderBase):
         if "starcoder" in name:
             kwargs["torch_dtype"] = torch.bfloat16
         if "CodeLlama" in name:
-            kwargs["device_map"] = "auto"
+            if "34b" in name.lower():
+                kwargs["device_map"] = "auto"
             kwargs["torch_dtype"] = torch.bfloat16
             self.skip_special_tokens = True
         if "Mistral" in name:
