@@ -2,3 +2,4 @@ fschat
 openai
 rich
 accelerate
+vllm

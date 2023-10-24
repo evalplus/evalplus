@@ -37,6 +37,7 @@ from transformers import (
     StoppingCriteria,
     StoppingCriteriaList,
 )
+from vllm import LLM, SamplingParams
 
 from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine
 
@@ -112,6 +113,51 @@ class DecoderBase(ABC):
 
     def __str__(self) -> str:
         return self.name
+
+
+class VLlmDecoder(DecoderBase):
+    def __init__(
+        self,
+        name: str,
+        batch_size: int = 1,
+        temperature: float = 0.8,
+        max_new_tokens: int = 512,
+    ) -> None:
+        super().__init__(name, batch_size, temperature, max_new_tokens)
+        kwargs = {}
+        if "CodeLlama" in name:
+            kwargs["dtype"] = "bfloat16"
+
+        self.llm = LLM(model=name, **kwargs)
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        batch_size = min(self.batch_size, num_samples)
+
+        vllm_outputs = self.llm.generate(
+            [prompt] * batch_size,
+            SamplingParams(
+                temperature=self.temperature,
+                max_tokens=self.max_new_tokens,
+                top_p=0.95 if do_sample else None,
+            ),
+            use_tqdm=False,
+        )
+
+        outputs = []
+        for output in vllm_outputs:
+            output = output.outputs[0].text
+            min_index = 10000
+            for eos in self.eos:
+                if eos in output:
+                    # could be multiple eos in outputs, better pick minimum one
+                    min_index = min(min_index, output.index(eos))
+            outputs.append(output[:min_index])
+        return outputs
 
 
 class OpenAIDecoder(DecoderBase):
@@ -785,7 +831,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     elif name.startswith("code-llama-"):
         assert name.endswith("b")
         nb = name.split("-")[-1]
-        return HFTorchDecoder(
+        return VLlmDecoder(
             batch_size=batch_size,
             name=f"codellama/CodeLlama-{nb}-Python-hf",
             temperature=temperature,
