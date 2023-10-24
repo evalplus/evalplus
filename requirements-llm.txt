@@ -1,4 +1,3 @@
-fschat
 openai
 rich
 accelerate

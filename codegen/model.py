@@ -7,28 +7,6 @@ from warnings import warn
 os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/JawTitan/huggingface/")
 
 import openai
-
-# ==============================================================
-# # The vicuna-7b weights are at /ColossalTitan/vicuna/vicuna-7b
-# Made by running:
-# ```
-# python3 -m fastchat.model.apply_delta \
-#     --base /ColossalTitan/llama/converted_hf_7B \
-#     --target /ColossalTitan/vicuna/vicuna-7b \
-#     --delta lmsys/vicuna-7b-delta-v1.1
-# ```
-# ==============================================================
-# The vicuna-13b weights are at /ColossalTitan/vicuna/vicuna-13b
-# Made by running:
-# ```
-# python3 -m fastchat.model.apply_delta \
-#     --base /ColossalTitan/llama/converted_hf_13B \
-#     --target /ColossalTitan/vicuna/vicuna-13b \
-#     --delta lmsys/vicuna-13b-delta-v1.1
-# ```
-# ==============================================================
-# Acknoledgement:
-# Modified from https://github.com/lm-sys/FastChat/blob/main/fastchat/serve/huggingface_api.py
 import torch
 from transformers import (
     AutoModelForCausalLM,
@@ -285,23 +263,6 @@ class HFTorchDecoder(DecoderBase):
                     min_index = min(min_index, output.index(eos))
             outputs.append(output[:min_index])
         return outputs
-
-
-class FsChatDecoder(HFTorchDecoder):
-    def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
-        from fastchat.serve.inference import load_model
-
-        DecoderBase.__init__(
-            self, name=name, batch_size=batch_size, temperature=temperature
-        )
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model, self.tokenizer = load_model(
-            f"/ColossalTitan/vicuna/{name}",
-            device="cuda",
-            num_gpus=1,
-            load_8bit=False,
-            debug=False,
-        )
 
 
 class ChatGPTDecoder(DecoderBase):
@@ -762,8 +723,6 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="NinedayWang/PolyCoder-2.7B",
             temperature=temperature,
         )
-    elif name == "vicuna-7b" or name == "vicuna-13b":
-        return FsChatDecoder(batch_size=batch_size, name=name, temperature=temperature)
     elif name == "santacoder":
         return SantaCoder(
             batch_size=batch_size, name="bigcode/santacoder", temperature=temperature
