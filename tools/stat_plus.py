@@ -1,12 +1,20 @@
+import argparse
+
 import numpy as np
 
 from evalplus.data import get_human_eval_plus
 
 if __name__ == "__main__":
-    sizes = [
-        [len(inp["base_input"]), len(inp["plus_input"])]
-        for inp in get_human_eval_plus().values()
-    ]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mini", action="store_true")
+    args = parser.parse_args()
+
+    sizes = np.array(
+        [
+            [len(inp["base_input"]), len(inp["plus_input"])]
+            for inp in get_human_eval_plus(mini=args.mini).values()
+        ]
+    )
     size_base = sizes[:, 0]
     print(f"{size_base.min() = }", f"{size_base.argmin() = }")
     print(f"{size_base.max() = }", f"{size_base.argmax() = }")

@@ -101,13 +101,13 @@ def texprint(before_summary, after_summary, bfgreedy, afgreedy):
 
     print("======== LaTeX Table Ingredent ========")
     argmax = [np.argmax(v) for v in before_summary.values()]
-    text1 = "before & "
+    text1 = "base & "
     if bfgreedy is not None:
         text1 += f"{bfgreedy:.1f} & "
     argmax = [np.argmax(v) for v in after_summary.values()]
     text1 += make_line(before_summary, argmax)
 
-    text2 = "after & "
+    text2 = "\\aplus{+extra} & "
     if afgreedy is not None:
         text2 += aplus(f"{afgreedy:.1f}") + " & "
     text2 += make_line(after_summary, argmax, ap=True)
