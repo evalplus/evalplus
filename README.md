@@ -50,14 +50,17 @@ To get started, please first setup the environment:
 pip install evalplus --upgrade
 ```
 
-...Or you can try out the latest developing version:
-
+<details><summary>⏬ Using EvalPlus as a local repo? <i>:: click to expand ::</i></summary>
+<div>
 
 ```bash
 pip install "git+https://github.com/evalplus/evalplus.git" --upgrade
 ```
 
-<details><summary>🤔 Want to use local GitHub repo? <i>:: click to expand ::</i></summary>
+</div>
+</details>
+
+<details><summary>⏬ Using EvalPlus as a local repo? <i>:: click to expand ::</i></summary>
 <div>
 
 ```bash
@@ -72,25 +75,21 @@ pip install -r requirements.txt
 
 ### HumanEval+
 
-#### Generate Code Samples
+#### Code generation
 
-The usage is just like the original HumanEval where you just need to implement the `generate_one_completion` function!
+Just like the original HumanEval: implement the `GEN_ONE_COMPLETION` function by calling the LLM to produce the completion (prompt not included)!
 
 ```python
 from evalplus.data import get_human_eval_plus, write_jsonl
 
-problems = get_human_eval_plus()
-
-num_samples_per_task = 200
 samples = [
-    dict(task_id=task_id, completion=generate_one_completion(problems[task_id]["prompt"]))
-    for task_id in problems
-    for _ in range(num_samples_per_task)
+    dict(task_id=task_id, completion=GEN_ONE_COMPLETION(problem["prompt"]))
+    for task_id, problem in get_human_eval_plus().items()
 ]
 write_jsonl("samples.jsonl", samples)
 ```
 
-<details><summary>🤔 What is in a `problem`? <i>:: click to expand ::</i></summary>
+<details><summary>🤔 Structure of `problem`? <i>:: click to expand ::</i></summary>
 <div>
 
 * `task_id` is the identifier string for the task
@@ -103,7 +102,7 @@ write_jsonl("samples.jsonl", samples)
 </div>
 </details>
 
-#### Evaluate Code Samples with HumanEval+
+#### Code evaluation
 
 You are strongly recommended to use a sandbox such as [docker](https://docs.docker.com/get-docker/):
 
@@ -187,6 +186,8 @@ Here are some tips to speed up the evaluation:
 </div>
 </details>
 
+> [!Note]
+> 
 > 🚀 **Try out `HumanEvalPlus-Mini`!** which selects a *minimal* set of additional tests with the highest quality, achieving almost the same effectiveness of the full version. Just add a **`--mini`** flag, it can run 23+% faster! (even faster if you evaluate all tests without fail-stop with `--test-details`).
 >
 > ```bash
@@ -200,7 +201,7 @@ Here are some tips to speed up the evaluation:
 
 ## 💻 LLM-generated code
 
-Please kindly find the LLM-pre-generated code samples [in the attachment of our v0.1.0 release](https://github.com/evalplus/evalplus/releases/tag/v0.1.0).
+We also share pre-generated code samples from LLMs we have [evaluated](https://evalplus.github.io/leaderboard.html) in the attachment of our [v0.1.0 release](https://github.com/evalplus/evalplus/releases/tag/v0.1.0).
 Each sample file is packaged in a zip file named like `${model_name}_temp_${temperature}.zip`.
 You can unzip them to a folder named like `${model_name}_temp_${temperature}` and run the evaluation from scratch with:
 
