@@ -123,7 +123,7 @@ class VLlmDecoder(DecoderBase):
             SamplingParams(
                 temperature=self.temperature,
                 max_tokens=self.max_new_tokens,
-                top_p=0.95 if do_sample else None,
+                top_p=0.95 if do_sample else 1.0,
             ),
             use_tqdm=False,
         )
@@ -242,18 +242,21 @@ class HFTorchDecoder(DecoderBase):
                 )
             ]
         )
+        kwargs = {}
+        if do_sample:
+            kwargs["top_p"] = 0.95
+            kwargs["temperature"] = self.temperature
+
         raw_outputs = self.model.generate(
             input_tokens,
             max_new_tokens=self.max_new_tokens,
             stopping_criteria=scores,
             do_sample=do_sample,
-            top_p=0.95 if do_sample else None,
-            top_k=None,
-            temperature=self.temperature,
             output_scores=True,
             return_dict_in_generate=True,
             num_return_sequences=min(self.batch_size, num_samples),
             pad_token_id=self.tokenizer.eos_token_id,
+            **kwargs,
         )  # remove warning
         gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
         gen_strs = self.tokenizer.batch_decode(
@@ -802,7 +805,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name == "codebooga-34b":
-        return VLlmDecoder(
+        return HFTorchDecoder(
             batch_size=batch_size,
             name="oobabooga/CodeBooga-34B-v0.1",
             temperature=temperature,
