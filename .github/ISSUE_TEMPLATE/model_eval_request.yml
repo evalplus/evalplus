@@ -30,8 +30,8 @@ body:
         - "bfloat16"
         - "float32"
         - "None of above: specify the details in the 'Other context' section"
-      validations:
-        required: true
+    validations:
+      required: true
   - type: textarea
     id: other
     attributes:
@@ -48,8 +48,8 @@ body:
       options:
         - label: "Yes"
         - label: "No"
-      validations:
-        required: true
+    validations:
+      required: true
   - type: checkboxes
     id: security
     attributes:
