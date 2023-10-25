@@ -92,6 +92,7 @@ if __name__ == "__main__":
             "vicuna" in args.folder
             or "code-llama" in args.folder
             or "mistral" in args.folder
+            or "codebooga" in args.folder
         ):
             tmp = ""
             for line in new_code.splitlines():
