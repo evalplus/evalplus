@@ -50,7 +50,7 @@ To get started, please first setup the environment:
 pip install evalplus --upgrade
 ```
 
-<details><summary>⏬ Using EvalPlus as a local repo? <i>:: click to expand ::</i></summary>
+<details><summary>⏬ Install nightly version <i>:: click to expand ::</i></summary>
 <div>
 
 ```bash
