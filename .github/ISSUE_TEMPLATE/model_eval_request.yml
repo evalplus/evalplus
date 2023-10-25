@@ -40,7 +40,7 @@ body:
       placeholder: What data type precision should be used? What is the minimal hardware requirement? Can it be accelerated by tools such as vLLM?
     validations:
       required: false
-  - type: checkboexs
+  - type: checkboxes
     id: author
     attributes:
       label: "Author"
