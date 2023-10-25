@@ -105,6 +105,8 @@ class VLlmDecoder(DecoderBase):
         kwargs = {}
         if "CodeLlama" in name:
             kwargs["dtype"] = "bfloat16"
+        elif "CodeBooga" in name:
+            kwargs["dtype"] = "float16"
 
         self.llm = LLM(model=name, **kwargs)
 
@@ -202,6 +204,10 @@ class HFTorchDecoder(DecoderBase):
             if "34b" in name.lower():
                 kwargs["device_map"] = "auto"
             kwargs["torch_dtype"] = torch.bfloat16
+            self.skip_special_tokens = True
+        if "CodeBooga" in name:
+            kwargs["torch_dtype"] = torch.float16
+            kwargs["device_map"] = "auto"
             self.skip_special_tokens = True
         if "Mistral" in name:
             kwargs["torch_dtype"] = torch.bfloat16
@@ -793,6 +799,12 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return VLlmDecoder(
             batch_size=batch_size,
             name=f"codellama/CodeLlama-{nb}-Python-hf",
+            temperature=temperature,
+        )
+    elif name == "codebooga-34b":
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name="oobabooga/CodeBooga-34B-v0.1",
             temperature=temperature,
         )
     elif name == "phind-code-llama-34b-v2":
