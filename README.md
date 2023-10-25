@@ -23,7 +23,7 @@
 > <b>
 > 📢 Who is the best LLM coder? Take a look at <a href="https://evalplus.github.io/leaderboard.html">the EvalPlus leaderboard 🏆</a>! 📢
 > </b>
->
+> <br>
 > <b>
 > 🤗 Request for independent model evaluation is <a href="https://github.com/evalplus/evalplus/issues/new/choose">open</a>!
 > </b>
