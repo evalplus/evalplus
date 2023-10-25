@@ -29,10 +29,7 @@ body:
     attributes:
       label: "Test input"
       description: The text form of the test input that you think should be removed
-      placeholder: |
-      ```
-      [PASTE_HERE]
-      ```
+      render: python
     validations:
       required: true
   - type: textarea
