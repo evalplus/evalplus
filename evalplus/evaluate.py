@@ -9,6 +9,7 @@ from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
+from warnings import warn
 
 import numpy as np
 from tqdm import tqdm
@@ -177,11 +178,12 @@ def evaluate_humaneval(flags):
             def stucking_checker():
                 while remainings:
                     last_size = len(remainings)
-                    time.sleep(10)
-                    if last_size == len(remainings) and len(remainings) > 0:
-                        print(f"Stucking for 10 seconds... {len(remainings)} left")
-                        for remaining in remainings:
-                            print(remaining)
+                    time.sleep(20)
+                    if last_size != len(remainings) or len(remainings) == 0:
+                        continue
+                    # Potential stucking
+                    warn("No samples had finished testing in the last 20s")
+                    warn(f"{len(remainings)} samples to be tested: {remainings}")
 
             threading.Thread(target=stucking_checker).start()
 
