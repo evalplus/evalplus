@@ -29,20 +29,14 @@ body:
     attributes:
       label: "The original wrong contract"
       description: You can run `python -c "from evalplus.data import get_human_eval_plus; print(get_human_eval_plus()['HumanEval/❓']['contract'])"`
-      placeholder: |
-      ```python
-      [PASTE_HERE]
-      ```
+      render: python
     validations:
       required: true
   - type: textarea
     id: new
     attributes:
       label: "Your proposed new contract"
-      placeholder: |
-      ```python
-      [PASTE_HERE]
-      ```
+      render: python
     validations:
       required: true
   - type: textarea
