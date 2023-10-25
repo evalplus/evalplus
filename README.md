@@ -23,6 +23,10 @@
 > <b>
 > 📢 Who is the best LLM coder? Take a look at <a href="https://evalplus.github.io/leaderboard.html">the EvalPlus leaderboard 🏆</a>! 📢
 > </b>
+>
+> <b>
+> 🤗 Request for independent model evaluation is <a href="https://github.com/evalplus/evalplus/issues/new/choose">open</a>!
+> </b>
 > </div>
 
 ## About
@@ -187,7 +191,7 @@ Here are some tips to speed up the evaluation:
 </details>
 
 > [!Note]
-> 
+>
 > 🚀 **Try out `HumanEvalPlus-Mini`!** which selects a *minimal* set of additional tests with the highest quality, achieving almost the same effectiveness of the full version. Just add a **`--mini`** flag, it can run 23+% faster! (even faster if you evaluate all tests without fail-stop with `--test-details`).
 >
 > ```bash
