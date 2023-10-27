@@ -108,6 +108,8 @@ if __name__ == "__main__":
                 eof_strs = eof_strs + INCODER_EXTRA
             if "polycoder" in args.folder:
                 eof_strs = eof_strs + POLYCODER_EXTRA
+            if "mistral" in args.folder:
+                eof_strs = eof_strs + [r"</s>"]
             for eof in eof_strs:
                 new_code = new_code.split(eof)[0]
 
