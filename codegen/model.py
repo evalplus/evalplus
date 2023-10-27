@@ -107,6 +107,8 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "bfloat16"
         elif "CodeBooga" in name:
             kwargs["dtype"] = "float16"
+        elif "WizardCoder" in name:
+            kwargs["dtype"] = "float16"
 
         self.llm = LLM(model=name, **kwargs)
 
@@ -209,7 +211,10 @@ class HFTorchDecoder(DecoderBase):
             kwargs["torch_dtype"] = torch.float16
             kwargs["device_map"] = "auto"
             self.skip_special_tokens = True
-        if "Mistral" in name:
+        if "Mistral-7B-codealpaca-lora" == name:
+            kwargs["torch_dtype"] = torch.float16
+            self.skip_special_tokens = True
+        elif "Mistral" in name:
             kwargs["torch_dtype"] = torch.bfloat16
 
         self.tokenizer = AutoTokenizer.from_pretrained(name)
@@ -802,6 +807,18 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return VLlmDecoder(
             batch_size=batch_size,
             name=f"codellama/CodeLlama-{nb}-Python-hf",
+            temperature=temperature,
+        )
+    elif name == "wizardcoder-34b":
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-Python-34B-V1.0",
+            temperature=temperature,
+        )
+    elif name == "mistral-7b-codealpaca":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="Nondzu/Mistral-7B-codealpaca-lora",
             temperature=temperature,
         )
     elif name == "codebooga-34b":
