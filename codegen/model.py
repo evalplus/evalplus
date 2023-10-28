@@ -70,7 +70,7 @@ class DecoderBase(ABC):
         name: str,
         batch_size: int = 1,
         temperature: float = 0.8,
-        max_new_tokens: int = 512,
+        max_new_tokens: int = 384,
     ) -> None:
         print("Initializing a decoder model: {} ...".format(name))
         self.name = name
@@ -112,12 +112,22 @@ class VLlmDecoder(DecoderBase):
 
         self.llm = LLM(model=name, **kwargs)
 
+
+class WizardCoderDecoder(VLlmDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
+        prompt = f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+
+### Instruction:
+Create a Python script for this problem:
+{prompt}
+
+### Response:"""
         batch_size = min(self.batch_size, num_samples)
 
         vllm_outputs = self.llm.generate(
@@ -130,16 +140,7 @@ class VLlmDecoder(DecoderBase):
             use_tqdm=False,
         )
 
-        outputs = []
-        for output in vllm_outputs:
-            output = output.outputs[0].text
-            min_index = 10000
-            for eos in self.eos:
-                if eos in output:
-                    # could be multiple eos in outputs, better pick minimum one
-                    min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index])
-        return outputs
+        return [x.outputs[0].text.replace("\t", "    ") for x in vllm_outputs]
 
 
 class OpenAIDecoder(DecoderBase):
@@ -810,7 +811,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name == "wizardcoder-34b":
-        return VLlmDecoder(
+        return WizardCoderDecoder(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-Python-34B-V1.0",
             temperature=temperature,

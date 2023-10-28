@@ -40,6 +40,16 @@ def remove_unindented_lines(code, ok_starts):
     return new_code
 
 
+def to_four_space_indents(old_code):
+    new_code = ""
+    for line in old_code.splitlines():
+        lspace = len(line) - len(line.lstrip())
+        if lspace == 3:
+            new_code += " "
+        new_code += line + "\n"
+    return new_code
+
+
 if __name__ == "__main__":
     import argparse
     import pathlib
@@ -53,8 +63,10 @@ if __name__ == "__main__":
 
     # task_id -> entry_point
     entry_point = {}
+    prompts = {}
     for task_id, problem in get_human_eval().items():
         entry_point[task_id] = problem["entry_point"]
+        prompts[task_id] = problem["prompt"]
 
     # make a new folder with "-sanitized" suffix
     old_folder = pathlib.Path(args.folder)
@@ -72,13 +84,12 @@ if __name__ == "__main__":
         ntotal += 1
         old_code = open(pyf).read()
 
-        fndef = "def " + entry_point[task_id] + "("
-        new_code = old_code
-        chunks = new_code.split(fndef)
-        # prefix
-        # impl
+        def_left = "def " + entry_point[task_id] + "("
+        imports, def_right = prompts[task_id].split(def_left)
+        new_code = imports + def_left + old_code.split(def_left)[-1]
+        chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
         if len(chunks) == 2:
-            new_code = fndef + chunks[-1]  # fn + impl
+            new_code = def_left + chunks[-1]  # fn + impl
 
         if "chatgpt" in args.folder:
             tmp = ""
@@ -88,19 +99,7 @@ if __name__ == "__main__":
                 tmp += line + "\n"
             new_code = tmp
 
-        if (
-            "vicuna" in args.folder
-            or "code-llama" in args.folder
-            or "mistral" in args.folder
-            or "codebooga" in args.folder
-        ):
-            tmp = ""
-            for line in new_code.splitlines():
-                lspace = len(line) - len(line.lstrip())
-                if lspace == 3:
-                    tmp += " "
-                tmp += line + "\n"
-            new_code = tmp
+        new_code = to_four_space_indents(new_code)
 
         if args.eof:
             eof_strs = NON_CODE_EOFS
@@ -114,7 +113,7 @@ if __name__ == "__main__":
                 new_code = new_code.split(eof)[0]
 
         # remove lines that are not indented
-        new_code = remove_unindented_lines(new_code, ok_starts=[fndef])
+        new_code = remove_unindented_lines(new_code, ok_starts=[def_left])
 
         if len(chunks) == 2:
             new_code = chunks[0] + new_code
