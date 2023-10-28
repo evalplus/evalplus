@@ -70,7 +70,7 @@ class DecoderBase(ABC):
         name: str,
         batch_size: int = 1,
         temperature: float = 0.8,
-        max_new_tokens: int = 384,
+        max_new_tokens: int = 512,
     ) -> None:
         print("Initializing a decoder model: {} ...".format(name))
         self.name = name
@@ -194,11 +194,11 @@ class HFTorchDecoder(DecoderBase):
                 "Salesforce/codegen2-16B",
             }
         }
+
         if "codegen-" in name:  # use fp16 for codegen models
             kwargs["torch_dtype"] = torch.float16
         if "codegen2-" in name:  # avoid warning of trust remote code
             kwargs["revision"] = "main"
-            kwargs["torch_dtype"] = torch.float16
             if "16b" in name.lower():
                 kwargs["device_map"] = "auto"
         if "starcoder" in name:
@@ -215,7 +215,7 @@ class HFTorchDecoder(DecoderBase):
         if "Mistral-7B-codealpaca-lora" == name:
             kwargs["torch_dtype"] = torch.float16
             self.skip_special_tokens = True
-        elif "Mistral" in name:
+        elif "Mistral" in name or "zephyr-7b-beta" in name:
             kwargs["torch_dtype"] = torch.bfloat16
 
         self.tokenizer = AutoTokenizer.from_pretrained(name)
@@ -228,6 +228,54 @@ class HFTorchDecoder(DecoderBase):
 
     # Assumption is that all inputs should probably fit under maximum context. but can add a checking function
     # just in case. TODO: think about
+    @torch.inference_mode()
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
+        prompt = self.tokenizer.apply_chat_template(
+            [
+                {
+                    "role": "system",
+                    "content": "You are a proficient Python developer good at programming fast and robust code",
+                },
+                {
+                    "role": "user",
+                    "content": f"Can you complete the following Python function?\n```python\n{prompt}\n```\n",
+                },
+            ],
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
+            self.device
+        )
+        kwargs = {}
+        if do_sample:
+            kwargs["top_p"] = 0.95
+            kwargs["temperature"] = self.temperature
+
+        raw_outputs = self.model.generate(
+            input_tokens,
+            max_new_tokens=self.max_new_tokens,
+            do_sample=do_sample,
+            output_scores=True,
+            return_dict_in_generate=True,
+            num_return_sequences=min(self.batch_size, num_samples),
+            pad_token_id=self.tokenizer.eos_token_id,
+            **kwargs,
+        )  # remove warning
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
+        return [x.split("```python")[-1].split("```")[0] for x in gen_strs]
+
+
+class ZephyrDecoder(HFTorchDecoder):
     @torch.inference_mode()
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -820,6 +868,12 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Nondzu/Mistral-7B-codealpaca-lora",
+            temperature=temperature,
+        )
+    elif name == "zephyr-7b":
+        return ZephyrDecoder(
+            batch_size=batch_size,
+            name="HuggingFaceH4/zephyr-7b-beta",
             temperature=temperature,
         )
     elif name == "codebooga-34b":
