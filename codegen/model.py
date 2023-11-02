@@ -71,6 +71,7 @@ class DecoderBase(ABC):
         batch_size: int = 1,
         temperature: float = 0.8,
         max_new_tokens: int = 512,
+        conversational: bool = False,
     ) -> None:
         print("Initializing a decoder model: {} ...".format(name))
         self.name = name
@@ -79,6 +80,7 @@ class DecoderBase(ABC):
         self.eos = EOS
         self.skip_special_tokens = False
         self.max_new_tokens = max_new_tokens
+        self.conversational = conversational
 
     @abstractmethod
     def codegen(
@@ -212,8 +214,8 @@ class OpenAIDecoder(DecoderBase):
 
 
 class HFTorchDecoder(DecoderBase):
-    def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
-        super().__init__(name=name, batch_size=batch_size, temperature=temperature)
+    def __init__(self, name: str, **kwargs):
+        super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         kwargs = {
             "trust_remote_code": name
@@ -316,7 +318,7 @@ class HFTorchDecoder(DecoderBase):
         return outputs
 
 
-class ZephyrDecoder(HFTorchDecoder):
+class DeepSeekInstruct(HFTorchDecoder):
     @torch.inference_mode()
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -325,23 +327,15 @@ class ZephyrDecoder(HFTorchDecoder):
             assert not do_sample
             assert num_samples == 1
 
-        prompt = self.tokenizer.apply_chat_template(
+        input_tokens = self.tokenizer.apply_chat_template(
             [
                 {
-                    "role": "system",
-                    "content": "You are a proficient Python developer good at programming fast and robust code",
-                },
-                {
                     "role": "user",
-                    "content": f"Can you complete the following Python function?\n```python\n{prompt}\n```\n",
-                },
+                    "content": f"Please implement the following Python function in a markdown style code block:\n\n```python\n{prompt}\n```\n",
+                }
             ],
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
-            self.device
-        )
+            return_tensors="pt",
+        ).to(self.device)
         kwargs = {}
         if do_sample:
             kwargs["top_p"] = 0.95
@@ -353,26 +347,23 @@ class ZephyrDecoder(HFTorchDecoder):
             do_sample=do_sample,
             output_scores=True,
             return_dict_in_generate=True,
+            top_k=50,
             num_return_sequences=min(self.batch_size, num_samples),
             pad_token_id=self.tokenizer.eos_token_id,
+            eos_token_id=32021,
             **kwargs,
         )  # remove warning
         gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
         gen_strs = self.tokenizer.batch_decode(
             gen_seqs, skip_special_tokens=self.skip_special_tokens
         )
-        return [x.split("```python")[-1].split("```")[0] for x in gen_strs]
+        return gen_strs
+        # return [x.split("```python")[-1].split("```")[0] for x in gen_strs]
 
 
-class ChatGPTDecoder(DecoderBase):
-    def __init__(
-        self,
-        name: str,
-        batch_size: int = 1,
-        temperature: float = 0.8,
-        model_name: str = "gpt-3.5-turbo",
-    ) -> None:
-        super().__init__(name, batch_size, temperature)
+class OpenAIChatDecoder(DecoderBase):
+    def __init__(self, name: str, model_name: str = "gpt-3.5-turbo", **kwargs) -> None:
+        super().__init__(name, **kwargs)
         self.model_name = model_name
         openai.api_key = os.environ.get("OPENAI_API_KEY", "dummy")
 
@@ -445,10 +436,8 @@ class ChatGPTDecoder(DecoderBase):
 
 
 class IncoderDecoder(HFTorchDecoder):
-    def __init__(
-        self, name: str, batch_size: int = 1, temperature: float = 0.8
-    ) -> None:
-        super().__init__(name, batch_size, temperature)
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
         self.infill_ph = "<|mask:0|>"
         self.extra_end = "<|mask:1|><|mask:0|>"
         self.extra_eos = [
@@ -504,10 +493,8 @@ class IncoderDecoder(HFTorchDecoder):
 
 
 class Codegen2Decoder(HFTorchDecoder):
-    def __init__(
-        self, name: str, batch_size: int = 1, temperature: float = 0.8
-    ) -> None:
-        super().__init__(name, batch_size, temperature)
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
         self.infill_ph = "<mask_1>"
         # taken from: https://huggingface.co/Salesforce/codegen2-16B
         self.extra_end = "<|endoftext|><sep><mask_1>"
@@ -562,10 +549,8 @@ class Codegen2Decoder(HFTorchDecoder):
 
 
 class SantaCoder(HFTorchDecoder):
-    def __init__(
-        self, name: str, batch_size: int = 1, temperature: float = 0.8
-    ) -> None:
-        super().__init__(name, batch_size, temperature)
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
         self.prefix_token = "<fim-prefix>"
         self.suffix_token = "<fim-suffix>\n<fim-middle>"
         self.extra_eos = ["<|endofmask|>"]
@@ -620,10 +605,8 @@ class SantaCoder(HFTorchDecoder):
 
 
 class StarCoderInfill(HFTorchDecoder):
-    def __init__(
-        self, name: str, batch_size: int = 1, temperature: float = 0.8
-    ) -> None:
-        super().__init__(name, batch_size, temperature)
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
         self.prefix_token = "<fim_prefix>"
         self.suffix_token = "<fim_suffix><fim_middle>"
 
@@ -676,8 +659,8 @@ class StarCoderInfill(HFTorchDecoder):
 
 
 class CodeT5P(DecoderBase):
-    def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
-        super().__init__(name=name, batch_size=batch_size, temperature=temperature)
+    def __init__(self, name: str, **kwargs):
+        super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         assert name in {
             "Salesforce/codet5p-2b",
@@ -841,18 +824,20 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name == "chatgpt":
-        return ChatGPTDecoder(
+        return OpenAIChatDecoder(
             batch_size=batch_size,
             name="ChatGPT",
             temperature=temperature,
             model_name="gpt-3.5-turbo",
+            conversational=True,
         )
     elif name == "gpt-4":
-        return ChatGPTDecoder(
+        return OpenAIChatDecoder(
             batch_size=batch_size,
             name="GPT4",
             temperature=temperature,
             model_name="gpt-4",
+            conversational=True,
         )
     elif name == "gptneo-2b":
         return HFTorchDecoder(
@@ -895,18 +880,33 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name.startswith("deepseek-coder"):
-        assert name.endswith("b")
-        nb = name.split("-")[-1]
-        return HFTorchDecoder(
-            batch_size=batch_size,
-            name=f"deepseek-ai/deepseek-coder-{nb}-base",
-            temperature=temperature,
-        )
+        import re
+
+        # format deepseek-coder-{nb}b*
+        pattern = re.compile(r"deepseek-coder-(\d+\.?\d*)b(.*)")
+        matches = pattern.findall(name)[0]
+        nb = matches[0]
+        assert int(nb) > 0
+
+        if "instruct" in name:
+            return DeepSeekInstruct(
+                batch_size=batch_size,
+                name=f"deepseek-ai/deepseek-coder-{nb}b-instruct",
+                temperature=temperature,
+                conversational=True,
+            )
+        else:
+            return HFTorchDecoder(
+                batch_size=batch_size,
+                name=f"deepseek-ai/deepseek-coder-{nb}b-base",
+                temperature=temperature,
+            )
     elif name == "wizardcoder-34b":
         return WizardCoderDecoder(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-Python-34B-V1.0",
             temperature=temperature,
+            conversational=True,
         )
     elif name == "mistral-7b-codealpaca":
         return HFTorchDecoder(
@@ -915,7 +915,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name == "zephyr-7b":
-        return ZephyrDecoder(
+        return HFTorchDecoder(
             batch_size=batch_size,
             name="HuggingFaceH4/zephyr-7b-beta",
             temperature=temperature,

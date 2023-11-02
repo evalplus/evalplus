@@ -93,10 +93,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
                             "w",
                             encoding="utf-8",
                         ) as f:
-                            if (
-                                args.model in {"chatgpt", "gpt-4"}
-                                or "wizardcoder" in args.model
-                            ):
+                            if model.conversational:
                                 f.write(impl)
                             else:
                                 f.write(task["prompt"] + impl)
