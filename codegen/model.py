@@ -109,8 +109,39 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "float16"
         elif "WizardCoder" in name:
             kwargs["dtype"] = "float16"
+        elif "deepseek" in name:
+            kwargs["dtype"] = "bfloat16"
 
         self.llm = LLM(model=name, **kwargs)
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+        batch_size = min(self.batch_size, num_samples)
+
+        vllm_outputs = self.llm.generate(
+            [prompt] * batch_size,
+            SamplingParams(
+                temperature=self.temperature,
+                max_tokens=self.max_new_tokens,
+                top_p=0.95 if do_sample else 1.0,
+            ),
+            use_tqdm=False,
+        )
+
+        gen_strs = [x.outputs[0].text.replace("\t", "    ") for x in vllm_outputs]
+        outputs = []
+        # removes eos tokens.
+        for output in gen_strs:
+            min_index = 10000
+            for eos in self.eos:
+                if eos in output:
+                    # could be multiple eos in outputs, better pick minimum one
+                    min_index = min(min_index, output.index(eos))
+            outputs.append(output[:min_index])
+        return outputs
 
 
 class WizardCoderDecoder(VLlmDecoder):
@@ -192,6 +223,8 @@ class HFTorchDecoder(DecoderBase):
                 "Salesforce/codegen2-3_7B",
                 "Salesforce/codegen2-7B",
                 "Salesforce/codegen2-16B",
+                "deepseek-ai/deepseek-coder-6.7b-base",
+                "deepseek-ai/deepseek-coder-33b-base",
             }
         }
 
@@ -217,6 +250,11 @@ class HFTorchDecoder(DecoderBase):
             self.skip_special_tokens = True
         elif "Mistral" in name or "zephyr-7b-beta" in name:
             kwargs["torch_dtype"] = torch.bfloat16
+        if "deepseek" in name:
+            kwargs["torch_dtype"] = torch.bfloat16
+            self.skip_special_tokens = True
+
+        print(f"{kwargs = }")
 
         self.tokenizer = AutoTokenizer.from_pretrained(name)
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
@@ -226,56 +264,6 @@ class HFTorchDecoder(DecoderBase):
             self.skip_special_tokens = True
         self.model = self.model.to(self.device)
 
-    # Assumption is that all inputs should probably fit under maximum context. but can add a checking function
-    # just in case. TODO: think about
-    @torch.inference_mode()
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if self.temperature == 0:
-            assert not do_sample
-            assert num_samples == 1
-
-        prompt = self.tokenizer.apply_chat_template(
-            [
-                {
-                    "role": "system",
-                    "content": "You are a proficient Python developer good at programming fast and robust code",
-                },
-                {
-                    "role": "user",
-                    "content": f"Can you complete the following Python function?\n```python\n{prompt}\n```\n",
-                },
-            ],
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
-            self.device
-        )
-        kwargs = {}
-        if do_sample:
-            kwargs["top_p"] = 0.95
-            kwargs["temperature"] = self.temperature
-
-        raw_outputs = self.model.generate(
-            input_tokens,
-            max_new_tokens=self.max_new_tokens,
-            do_sample=do_sample,
-            output_scores=True,
-            return_dict_in_generate=True,
-            num_return_sequences=min(self.batch_size, num_samples),
-            pad_token_id=self.tokenizer.eos_token_id,
-            **kwargs,
-        )  # remove warning
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
-        gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
-        )
-        return [x.split("```python")[-1].split("```")[0] for x in gen_strs]
-
-
-class ZephyrDecoder(HFTorchDecoder):
     @torch.inference_mode()
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -326,6 +314,54 @@ class ZephyrDecoder(HFTorchDecoder):
                     min_index = min(min_index, output.index(eos))
             outputs.append(output[:min_index])
         return outputs
+
+
+class ZephyrDecoder(HFTorchDecoder):
+    @torch.inference_mode()
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
+        prompt = self.tokenizer.apply_chat_template(
+            [
+                {
+                    "role": "system",
+                    "content": "You are a proficient Python developer good at programming fast and robust code",
+                },
+                {
+                    "role": "user",
+                    "content": f"Can you complete the following Python function?\n```python\n{prompt}\n```\n",
+                },
+            ],
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
+            self.device
+        )
+        kwargs = {}
+        if do_sample:
+            kwargs["top_p"] = 0.95
+            kwargs["temperature"] = self.temperature
+
+        raw_outputs = self.model.generate(
+            input_tokens,
+            max_new_tokens=self.max_new_tokens,
+            do_sample=do_sample,
+            output_scores=True,
+            return_dict_in_generate=True,
+            num_return_sequences=min(self.batch_size, num_samples),
+            pad_token_id=self.tokenizer.eos_token_id,
+            **kwargs,
+        )  # remove warning
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
+        return [x.split("```python")[-1].split("```")[0] for x in gen_strs]
 
 
 class ChatGPTDecoder(DecoderBase):
@@ -856,6 +892,14 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return VLlmDecoder(
             batch_size=batch_size,
             name=f"codellama/CodeLlama-{nb}-Python-hf",
+            temperature=temperature,
+        )
+    elif name.startswith("deepseek-coder"):
+        assert name.endswith("b")
+        nb = name.split("-")[-1]
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name=f"deepseek-ai/deepseek-coder-{nb}-base",
             temperature=temperature,
         )
     elif name == "wizardcoder-34b":
