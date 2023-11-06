@@ -8,7 +8,7 @@ from importlib import import_module, util
 from inspect import getsource, isfunction, getmembers
 from typing import Tuple, List
 
-from evalplus.data import get_mbpp
+from evalplus.data import get_mbpp, mbpp_inputs_convert
 
 MBPP_PLUS_PATH = (
     pathlib.Path(__file__).parent.parent.parent / "MbppPlus.jsonl"
@@ -21,7 +21,7 @@ def _ret(entry_point) -> str:
     successfully run the function .
     """
     set_assertion_func = ["similar_elements", "find_char_long", "common_in_nested_lists",\
-        "extract_singly", "larg_nnum"]
+        "extract_singly", "larg_nnum", "intersection_array", "k_smallest_pairs"]
     if entry_point in set_assertion_func:
         return "()"
     return "1"
@@ -40,7 +40,7 @@ def get_entry_point(task_id: int, assertion: str) -> str:
 
     return functions[0] if len(functions) > 0 else None
 
-def get_code_and_contract(task: id) -> Tuple[str, str]:
+def get_code_and_contract_and_assertion(task: id) -> Tuple[str, str, str]:
     py_file_path = str(GROUNDTRUTH_MBPP_PATH) + f"/{str(task_id).zfill(3)}.py"
     with open(py_file_path) as reader:
         text = reader.read()
@@ -50,23 +50,28 @@ def get_code_and_contract(task: id) -> Tuple[str, str]:
         if start_index != -1 and end_index != -1:
             text = text[:start_index] + text[end_index + 3:]
 
-        # remove assertion
         lines = text.splitlines()  
-        for i in range(len(lines) - 1, -1, -1):  
-            line = lines[i].strip()
-            if line.startswith("assert") or line == "":
-                del lines[i] 
-            else:
-                break  
-
-        # extract contract
+        assertion = ""
         contract = ""
-        for line in lines:
-            if "$_CONTRACT_$" in line:
-                contract += line + "\n"
+
+        for i in range(len(lines)):
+            if "$_CONTRACT_$" in lines[i]:
+                contract += lines[i] + "\n"
+            elif lines[i].startswith("assert"):
+                assertion += lines[i] + "\n"
+
+        for i in range(len(lines)-1, -1, -1):
+            if "$_CONTRACT_$" in lines[i] or lines[i].startswith("assert") or lines[i] == "":
+                del lines[i]
+
+        for i in range(len(lines)-1, -1, -1):
+            if lines[i].startswith("import"):
+                del lines[i]
+            else:
+                break
 
         code = '\n'.join(lines)  # 将修改后的行列表重新组合为文本
-        return code + "\n", contract
+        return "\n" + code + "\n", "\n" + contract, "\n" + assertion
     
 def instrument_inputs(code, entry_point, test_code) -> str:
     globals()["_inputs"] = []
@@ -77,6 +82,8 @@ def {entry_point}(*args):
     return {_ret(entry_point)}
 """
     exec(fn_text + "\n" + test_code.replace("assert ", ""), globals())
+    print(fn_text + "\n" + test_code.replace("assert ", ""))
+    print(globals()["_inputs"])
     return globals()["_inputs"]
 
 def get_atol(task_id: int) -> float:
@@ -85,13 +92,6 @@ def get_atol(task_id: int) -> float:
     if task_id in float_ans_list:
         return 1e-4
     return 0
-
-def set_default(obj):
-    if isinstance(obj, set):
-        return list(obj)
-    elif isinstance(obj, complex):
-        return abs(obj)
-    raise TypeError
 
 if __name__ == "__main__":
     assert not MBPP_PLUS_PATH.exists(), f"{MBPP_PLUS_PATH} already exists!"
@@ -105,17 +105,23 @@ if __name__ == "__main__":
                 task_id = int(task_id)
                 task["entry_point"] = get_entry_point(task_id, task["test_list"][0])
 
-                task["canonical_solution"], task["contract"] = get_code_and_contract(task_id)
+                task["canonical_solution"], task["contract"], task["assertion"] = get_code_and_contract_and_assertion(task_id)
+                if len(task["test_imports"]):
+                    task["assertion"] = "\n".join(task["test_imports"]) + "\n" + task["assertion"]
 
                 task["base_input"] = instrument_inputs(
-                    task["canonical_solution"], task["entry_point"], "\n".join(task["test_list"])
+                    task["canonical_solution"], task["entry_point"], task["assertion"]
                 )
 
                 task["atol"] = get_atol(task_id)
 
+                task["prompt"] = "'''\n" + task["prompt"] + "\n'''"
+
                 del task["source_file"]
                 del task["code"]
 
-                writer.write(json.dumps(task, default=set_default) + "\n")
+                task["base_input"] = mbpp_inputs_convert(task_id, task["base_input"])
+
+                writer.write(json.dumps(task) + "\n")
         # move tmp_file to HUMANEVAL_PLUS_PATH
         shutil.copy2(tmp_file, MBPP_PLUS_PATH)
