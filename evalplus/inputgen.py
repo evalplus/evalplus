@@ -9,6 +9,7 @@ import os
 
 from evalplus.gen.chatgpt_gen import ChatGPTGen
 from evalplus.gen.type_mut import TypedMutGen
+from evalplus.data import mbpp_inputs_revert, concate_code_and_contract
 
 
 class SetEncoder(json.JSONEncoder):
@@ -21,14 +22,19 @@ class SetEncoder(json.JSONEncoder):
 def input_generation(args, problems):
     with open(args.output, "w") as file:
         for problem in problems:
+            if int(problem["task_id"]) in [i+1 for i in range(11)] :
+                print(f"skipping {problem['task_id']} ...")
+                continue
             new_input = {}
             task_id = problem["task_id"]
             print(f"generating inputs for {task_id} ...")
             # by default we do not include constraints in the prompt
             code = problem["prompt"] + problem["canonical_solution"]
             c_code = (
-                problem["prompt"] + problem["contract"] + problem["canonical_solution"]
+                problem["prompt"] + concate_code_and_contract(problem["canonical_solution"], problem["contract"], problem["entry_point"])
             )
+            problem["base_input"] = mbpp_inputs_revert(int(problem["task_id"]), problem["base_input"])
+
             # first generate chatgpt
             input_gen = ChatGPTGen(
                 problem["base_input"], problem["entry_point"], c_code, code
@@ -63,6 +69,13 @@ def main():
         problems = get_human_eval_plus(err_incomplete=False)
         if args.output is None:
             args.output = "HumanEvalPlusInputs.jsonl"
+
+    if args.dataset == "mbpp":
+        from evalplus.data import get_mbpp_plus
+
+        problems = get_mbpp_plus()
+        if args.output is None:
+            args.output = "/evalplus/MBPPPlusInput.jsonl"
 
     if problems is None:
         raise NotImplementedError(f"Unsupported dataset: {args.dataset}")

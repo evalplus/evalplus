@@ -31,6 +31,9 @@ class ChatGPTGen(BaseGen):
     def _parse_ret(ret: Dict) -> List:
         rets = []
         output = ret["choices"][0]["message"]["content"]
+        print("-------------------")
+        print(output)
+        print("-------------------")
         if "```" in output:
             for x in output.split("```")[1].splitlines():
                 if x.strip() == "":
@@ -41,6 +44,18 @@ class ChatGPTGen(BaseGen):
                 except:  # something wrong.
                     continue
                 rets.append(input)
+        elif "`" in output:
+            is_input = False
+            for x in output.split("`"):
+                if is_input:
+                    try:
+                        # remove comments
+                        is_input = False
+                        input = ast.literal_eval(f"[{x.split('#')[0].strip()}]")
+                    except:  # something wrong.
+                        continue
+                else:
+                    is_input = True
         return rets
 
     def chatgpt_generate(self, selected_inputs: List) -> List:
@@ -66,6 +81,7 @@ class ChatGPTGen(BaseGen):
             for new_input in new_inputs:
                 if hash(str(new_input)) not in self.seed_hash:
                     if trusted_check_exec(self.contract, [new_input], self.entry_point):
+                        print("new input: ", new_input)
                         self.seed_pool.append(new_input)
                         self.seed_hash.add(hash(str(new_input)))
                         self.new_inputs.append(new_input)
