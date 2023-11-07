@@ -39,6 +39,7 @@ class TypedMutGen(MutateGen):
             int: set(),
             float: set(),
             str: set(),
+            complex: set(),
         }
         for x in inputs:
             self.fetch_ingredient(x)
@@ -167,6 +168,15 @@ class TypedMutGen(MutateGen):
 
         return _impl(self, seed_input)
 
+    @dispatch(complex)
+    def typed_mutate(self, seed_input: complex):
+        @use_ingredient(0.5)
+        def _impl(_, seed_input: complex):
+            imag = seed_input.imag + random.uniform(-1, 1)
+            return complex(0, imag)
+
+        return _impl(self, seed_input)
+
     @dispatch(bool)
     def typed_mutate(self, seed_input: bool):
         return random.choice([True, False])
@@ -272,6 +282,10 @@ class TypedMutGen(MutateGen):
     @dispatch(float)
     def typed_fetch(self, seed_input: float):
         self.ingredients[float].add(seed_input)
+
+    @dispatch(complex)
+    def typed_fetch(self, seed_input: complex):
+        self.ingredients[complex].add(seed_input)
 
     @dispatch(str)
     def typed_fetch(self, seed_input: str):
