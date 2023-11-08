@@ -238,25 +238,20 @@ def get_mbpp() -> Dict[str, Dict]:
     return {str(task["task_id"]): task for task in mbpp}
 
 def mbpp_inputs_convert(task_id: int, inputs: list) -> list:
-    print(task_id, "before ----------------- ")
-    print(inputs)
 
     if task_id == 115:
         modified_inputs = [[[list(item) for item in inp[0]]]for inp in inputs]
     elif task_id == 124:
         modified_inputs = [(str(inp[0]), str(inp[1]))for inp in inputs]
+    elif task_id == 252:
+        modified_inputs = [[str(inp[0])] for inp in inputs]
     else:
         modified_inputs = inputs
-
-    print(task_id, "after ----------------- ")
-    print(modified_inputs)
 
     return modified_inputs
 
 
 def mbpp_inputs_revert(task_id: int, inputs: list) -> list:
-    print(task_id, "before ----------------- ")
-    # print(inputs)
     if task_id in [2, 116, 132, 143, 222, 261, 273, 394, 399, 421, 424, 429, 470, 560, 579, 596, 616, 630, 726, 740, 744, 809]:
         modified_inputs = [[tuple(lst) for lst in inp] for inp in inputs]
 
@@ -292,6 +287,9 @@ def mbpp_inputs_revert(task_id: int, inputs: list) -> list:
     elif task_id == 722:
         modified_inputs = [[{key: tuple(value) for key, value in inp[0].items()}] + inp[1:] for inp in inputs]
 
+    elif task_id == 252:
+        modified_inputs = [[complex(inp[0])] for inp in inputs]
+    
     elif task_id in [580, 615, 791]:
         def turn_all_list_into_tuple(inp):
             if isinstance(inp, list):
@@ -303,8 +301,6 @@ def mbpp_inputs_revert(task_id: int, inputs: list) -> list:
     else:
         modified_inputs = inputs
 
-    # print(task_id, "after ----------------- ")
-    # print(modified_inputs)
     return modified_inputs
 
 

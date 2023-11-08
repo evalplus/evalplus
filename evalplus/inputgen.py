@@ -9,7 +9,7 @@ import os
 
 from evalplus.gen.chatgpt_gen import ChatGPTGen
 from evalplus.gen.type_mut import TypedMutGen
-from evalplus.data import mbpp_inputs_revert, concate_code_and_contract
+from evalplus.data import mbpp_inputs_revert, concate_code_and_contract, mbpp_inputs_convert
 
 
 class SetEncoder(json.JSONEncoder):
@@ -22,9 +22,6 @@ class SetEncoder(json.JSONEncoder):
 def input_generation(args, problems):
     with open(args.output, "w") as file:
         for problem in problems:
-            if int(problem["task_id"]) in [i+1 for i in range(11)] :
-                print(f"skipping {problem['task_id']} ...")
-                continue
             new_input = {}
             task_id = problem["task_id"]
             print(f"generating inputs for {task_id} ...")
@@ -40,6 +37,13 @@ def input_generation(args, problems):
                 problem["base_input"], problem["entry_point"], c_code, code
             ).generate(args.chatgpt_len)
             # generate mutation next
+            
+            if input_gen is None or len(input_gen) == 0:
+                new_input["task_id"] = task_id
+                new_input["inputs"] = {}
+                file.write(json.dumps(new_input, cls=SetEncoder) + "\n")
+                continue
+
             input_gen.extend(
                 TypedMutGen(input_gen, problem["entry_point"], c_code).generate(
                     args.mut_len
@@ -47,7 +51,7 @@ def input_generation(args, problems):
             )
             print(f"generated {len(input_gen)} inputs")
             new_input["task_id"] = task_id
-            new_input["inputs"] = input_gen
+            new_input["inputs"] = mbpp_inputs_convert(task_id, input_gen)
             file.write(json.dumps(new_input, cls=SetEncoder) + "\n")
 
 
