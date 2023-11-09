@@ -17,6 +17,8 @@ from evalplus.data import (
     CACHE_DIR,
     get_human_eval_plus,
     get_human_eval_plus_hash,
+    get_mbpp_plus,
+    get_mbpp_plus_hash,
     load_solutions,
 )
 from evalplus.eval import (
@@ -129,9 +131,14 @@ def evaluate_humaneval(flags):
 
         results = compatible_eval_result(results)
     else:
-        problems = get_human_eval_plus(mini=flags.mini)
+        if flags.dataset == "humaneval":
+            problems = get_human_eval_plus(mini=flags.mini)
 
-        dataset_hash = get_human_eval_plus_hash()
+            dataset_hash = get_human_eval_plus_hash()
+        elif flags.dataset == "mbpp":
+            problems = get_mbpp_plus()
+            dataset_hash = get_mbpp_plus_hash()
+
         expected_output = get_groundtruth(problems, dataset_hash)
 
         results = {
@@ -269,7 +276,7 @@ def main():
     parser.add_argument("--mini", action="store_true")
     args = parser.parse_args()
 
-    if args.dataset == "humaneval":
+    if args.dataset == "humaneval" or args.dataset == "mbpp":
         evaluate_humaneval(args)
     else:
         raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
