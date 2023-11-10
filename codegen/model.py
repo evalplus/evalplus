@@ -358,7 +358,6 @@ class DeepSeekInstruct(HFTorchDecoder):
             gen_seqs, skip_special_tokens=self.skip_special_tokens
         )
         return gen_strs
-        # return [x.split("```python")[-1].split("```")[0] for x in gen_strs]
 
 
 class OpenAIChatDecoder(DecoderBase):
@@ -885,8 +884,9 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         # format deepseek-coder-{nb}b*
         pattern = re.compile(r"deepseek-coder-(\d+\.?\d*)b(.*)")
         matches = pattern.findall(name)[0]
-        nb = matches[0]
-        assert int(nb) > 0
+        nb = float(matches[0])
+        if nb.is_integer():
+            nb = int(nb)
 
         if "instruct" in name:
             return DeepSeekInstruct(
