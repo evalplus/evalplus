@@ -213,7 +213,7 @@ def get_human_eval() -> Dict[str, Dict]:
     human_eval = [json.loads(line) for line in human_eval if line]
 
     # Handle 115_max_fill.py to make its docstring well-formed
-    human_eval[114]["prompt"] = "import math\n" + human_eval[114]["prompt"].replace(
+    human_eval[115]["prompt"] = "import math\n" + human_eval[115]["prompt"].replace(
         "import math\n", ""
     )
 
