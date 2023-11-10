@@ -41,7 +41,7 @@
 To address this, we started the EvalPlus project -- a rigourous evaluation framework for LLM4Code that:
 
 + ✨ improves code benchmarks by adding up to thousands of new tests! (81x new tests for HumanEval!)
-+ ✨ crafts a set [utility tools](#useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
++ ✨ crafts a set [utility tools](#-useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
 + ✨ accelerates LLM4Code research by open-sourcing [LLM-generated samples](https://github.com/evalplus/evalplus/releases/tag/v0.1.0) for 14+ models -- no need to re-run the expensive benchmarks!
 
 Want to know more details? Please read our [**NeurIPS'23 paper**](https://arxiv.org/abs/2305.01210) [![](https://img.shields.io/badge/arXiv-2305.01210-b31b1b.svg)](https://arxiv.org/abs/2305.01210)!
@@ -76,6 +76,7 @@ pip install -r requirements.txt
 
 </div>
 </details>
+
 
 ### HumanEval+
 
