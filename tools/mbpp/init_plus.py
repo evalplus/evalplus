@@ -11,7 +11,7 @@ from typing import Tuple, List
 from evalplus.data import get_mbpp, mbpp_inputs_convert
 
 MBPP_PLUS_PATH = (
-    pathlib.Path(__file__).parent.parent.parent / "MbppPlus.jsonl"
+    pathlib.Path(__file__).parent.parent.parent / "MbppPlusInit.jsonl"
 )
 
 GROUNDTRUTH_MBPP_PATH = pathlib.Path(__file__).parent.parent.parent / "groundtruth/mbpp"
