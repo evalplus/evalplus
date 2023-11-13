@@ -9,7 +9,7 @@ def fix(data):
     # https://github.com/evalplus/evalplus/issues/44
     check_id(data, 115)
     data[115]["prompt"] = "import math\n" + data[115]["prompt"].replace(
-        "import math\n", ""
+        "    import math\n", ""
     )
     check_id(data, 114)
     data[114]["prompt"] = data[114]["prompt"].replace("import math\n", "")
@@ -50,7 +50,7 @@ def fix(data):
 if __name__ == "__main__":
     import json
 
-    TASK_INSPECT = [28, 32, 35, 114, 160]
+    TASK_INSPECT = [28, 32, 35, 114, 115, 160]
     SOURCE_VERSION = "v0.1.8"
     TARGET_VERSION = "v0.1.9"
 
