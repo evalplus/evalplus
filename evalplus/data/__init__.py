@@ -83,8 +83,14 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
 
     # if it is a file
     if os.path.isfile(sample_path):
+        filter_list = [87, 163, 228, 304, 306, 400, 408, 737, 776, 787, 307, 417, 443, 444, 452, 464, 617, 627, 738, 747, 802\
+        , 393, 411, 584, 625, 756, 779, 164, 295]
+        filter_list.append(792)
+        filter_list.append(794)
         for i, sample in enumerate(stream_jsonl(sample_path)):
-            sample["_identifier"] = sample["task_id"] + "_" + str(i)
+            if int(sample["task_id"]) in filter_list:
+                continue
+            sample["_identifier"] = str(sample["task_id"]) + "_" + str(i)
             yield sample
     else:
         # if it is a folder
@@ -334,13 +340,17 @@ def get_mbpp_plus() -> Dict[str, Dict]:
     """Get MBPPPlus from Google's Github repo."""
     plus_path = _ready_mbpp_plus_path()
 
-    plus = {task["task_id"]: task for task in stream_jsonl(plus_path)}
+    filter_list = [87, 163, 228, 304, 306, 400, 408, 737, 776, 787, 307, 417, 443, 444, 452, 464, 617, 627, 738, 747, 802\
+        , 393, 411, 584, 625, 756, 779, 164, 295]
+    filter_list.append(792)
+    filter_list.append(794)
+    plus = {task["task_id"]: task for task in stream_jsonl(plus_path) if int(task["task_id"]) not in filter_list}
     for task_id, task in plus.items():
         task["base_input"] = mbpp_inputs_revert(int(task_id), task["base_input"])
         task["plus_input"] = mbpp_inputs_revert(int(task_id), task["plus_input"])
         for key in [
             "prompt",
-            # "contract",
+            "contract",
             "canonical_solution",
             "base_input",
             "plus_input",

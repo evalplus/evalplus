@@ -31,9 +31,6 @@ class ChatGPTGen(BaseGen):
     def _parse_ret(ret: Dict) -> List:
         rets = []
         output = ret["choices"][0]["message"]["content"]
-        print("-------------------")
-        print(output)
-        print("-------------------")
         if "```" in output:
             for x in output.split("```")[1].splitlines():
                 if x.strip() == "":
