@@ -5,7 +5,7 @@ Write a function to determine if the sum of the divisors of two integers are the
 import math 
 def div_sum(n): 
   total = 1
-  i = 2
+  i = 1
   while i * i <= n:
     if (n % i == 0):
       total = total + i + n / i
@@ -23,4 +23,4 @@ def are_equivalent(num1, num2):
 
 assert are_equivalent(36, 57) == False
 assert are_equivalent(2, 4) == False
-assert are_equivalent(23, 47) == True
+assert are_equivalent(23, 47) == False

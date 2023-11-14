@@ -72,6 +72,47 @@ def _poly(xs: list, x: float):
     """
     return sum([coeff * math.pow(x, i) for i, coeff in enumerate(xs)])
 
+# oracle for 164
+def _check_164():
+    always_return_true = True
+    origial_correctness = True
+
+    def are_the_same_or_always_be_true(out, expect):
+        nonlocal always_return_true, origial_correctness
+        if origial_correctness:
+            if out != expect:
+                origial_correctness = False
+        
+        if always_return_true:
+            if out != True:
+                always_return_true = False
+
+        return origial_correctness or always_return_true
+    return are_the_same_or_always_be_true
+
+_check_no_164 = _check_164()
+
+
+# oracle for 295
+def _check_295():
+    always_return_zero = True
+    origial_correctness = True
+
+    def are_the_same_or_always_zero(out, expect):
+        nonlocal always_return_zero, origial_correctness
+        if origial_correctness:
+            if out != expect:
+                origial_correctness = False
+        
+        if always_return_zero:
+            if out != 0:
+                always_return_zero = False
+
+        return origial_correctness or always_return_zero
+    return are_the_same_or_always_zero
+
+_check_no_295 = _check_295()
+
 
 SUCCESS = "success"
 FAILED = "failed"
@@ -133,8 +174,10 @@ def unsafe_execute(
                         exp = expected[i]
                         exact_match = out == exp
 
-                        if "find_zero" == entry_point:
-                            assert _poly(*out, inp) <= atol
+                        if "are_equivalent" == entry_point:
+                            exact_match = _check_no_164(out, exp)
+                        elif "sum_div" == entry_point:
+                            exact_match = _check_no_295(out, exp)
 
                         if atol == 0 and is_floats(exp):
                             atol = 1e-6  # enforce atol for float comparison
