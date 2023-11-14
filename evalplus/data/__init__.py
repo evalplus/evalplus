@@ -83,10 +83,7 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
 
     # if it is a file
     if os.path.isfile(sample_path):
-        filter_list = [307, 417, 443, 444, 452, 464, 617, 627, 738, 747, 802\
-        , 393, 411, 584, 625, 756, 779]
-        filter_list.append(792)
-        filter_list.append(794)
+        filter_list = [792, 794]
         for i, sample in enumerate(stream_jsonl(sample_path)):
             if int(sample["task_id"]) in filter_list:
                 continue
@@ -340,10 +337,7 @@ def get_mbpp_plus() -> Dict[str, Dict]:
     """Get MBPPPlus from Google's Github repo."""
     plus_path = _ready_mbpp_plus_path()
 
-    filter_list = [307, 417, 443, 444, 452, 464, 617, 627, 738, 747, 802\
-        , 393, 411, 584, 625, 756, 779]
-    filter_list.append(792)
-    filter_list.append(794)
+    filter_list = [792, 794]
     plus = {task["task_id"]: task for task in stream_jsonl(plus_path) if int(task["task_id"]) not in filter_list}
     for task_id, task in plus.items():
         task["base_input"] = mbpp_inputs_revert(int(task_id), task["base_input"])
