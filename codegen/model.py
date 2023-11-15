@@ -22,7 +22,7 @@ from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt
 HUMANEVAL_EOS = ["\nclass", "\ndef", "\n#", "\n@", "\nprint", "\nif"]
 NON_CODE_EOS = ["<|endoftext|>", "\n```", "\n</s>", "<|endofmask|>"]
 EOS = HUMANEVAL_EOS + NON_CODE_EOS
-
+MBPP_IGNORE_PREFIX = ["print", "assert"]
 
 # Adopted from https://github.com/huggingface/transformers/pull/14897
 class EndOfFunctionCriteria(StoppingCriteria):
@@ -357,6 +357,13 @@ class ChatGPTDecoder(DecoderBase):
                 min_index = min(min_index, gen.index(eos))
         return gen[:min_index]
 
+    @staticmethod
+    def _remove_lines(gen):
+        lines = gen.split('\n')
+        filtered_lines = [line for line in lines if not any(line.strip().startswith(prefix) for prefix in MBPP_IGNORE_PREFIX)]
+        return '\n'.join(filtered_lines)
+
+
     def _chatgpt_parse(self, ret, prompt):
         outputs = []
         for returns in ret["choices"]:
@@ -369,14 +376,10 @@ class ChatGPTDecoder(DecoderBase):
                     suf = gen.split(prompt.strip())[-1]
                     suf = self._remove_eos(suf)
                     gen = prompt.strip() + suf
-                elif self._find_gen_func_sig(prompt) in gen:
-                    # same function sign is in the prompt
-                    sig = self._find_gen_func_sig(prompt)
-                    pre, suf = gen.split(sig)[0], gen.split(sig)[-1]
-                    suf = self._remove_eos(suf)
-                    gen = pre + sig + suf
                 else:
-                    gen = f"# CANNOT PARSE CODE SNIPPET\n{gen}"
+                    gen = self._remove_lines(gen)
+                    if len(gen) == 0:
+                        gen = f"# CANNOT PARSE CODE SNIPPET\n{gen}"
             else:
                 # cannot really handle parse just dump to file and maybe process later.
                 gen = f"# CANNOT PARSE\n{raw_o}"

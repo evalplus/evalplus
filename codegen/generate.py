@@ -11,12 +11,12 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from evalplus.data import get_human_eval_plus
+from evalplus.data import get_human_eval_plus, get_mbpp_plus
 
 
-def construct_contract_prompt(prompt: str, contract_type: str, contract: str) -> str:
+def construct_contract_prompt(prompt: str, contract_type: str, contract: str, assertion: str) -> str:
     if contract_type == "no":
-        return prompt
+        return prompt[:-1 * len("'''")] + assertion + "'''"
     elif contract_type == "docstring":
         # embed within the docstring
         sep = ""
@@ -47,15 +47,22 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
         TextColumn("•"),
         TimeElapsedColumn(),
     ) as p:
-        for task_id, task in p.track(get_human_eval_plus().items()):
+        if args.dataset == "humaneval":
+            dataset = get_human_eval_plus()
+        elif args.dataset == "mbpp":
+            dataset = get_mbpp_plus()
+            
+        for task_id, task in p.track(dataset.items()):
             if id_range is not None:
-                id_num = int(task_id.split("/")[1])
+                # id_num = int(task_id.split("/")[1])
+                id_num = int(task_id)
                 low, high = id_range
                 if id_num < low or id_num >= high:
                     p.console.print(f"Skipping {task_id} as it is not in {id_range}")
                     continue
 
-            p_name = task_id.replace("/", "_")
+            # p_name = task_id.replace("/", "_")
+            p_name = str(task_id)
             if args.use_contracts != "no" and task["contract"] == "":
                 continue
             os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
@@ -80,7 +87,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
             while sidx < args.n_samples:
                 outputs = model.codegen(
                     construct_contract_prompt(
-                        task["prompt"], args.use_contracts, task["contract"]
+                        task["prompt"], args.use_contracts, task["contract"], task["assertion"]
                     ),
                     do_sample=not args.greedy,
                     num_samples=args.n_samples - sidx,
@@ -120,7 +127,7 @@ def main():
     parser.add_argument("--id-range", default=None, nargs="+", type=int)
     args = parser.parse_args()
 
-    if args.dataset not in ["humaneval"]:
+    if args.dataset not in ["humaneval", "mbpp"]:
         raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
 
     if args.use_contracts not in ["no", "code", "docstring"]:
