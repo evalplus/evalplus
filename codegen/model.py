@@ -7,36 +7,15 @@ from warnings import warn
 os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/JawTitan/huggingface/")
 
 import openai
-
-# ==============================================================
-# # The vicuna-7b weights are at /ColossalTitan/vicuna/vicuna-7b
-# Made by running:
-# ```
-# python3 -m fastchat.model.apply_delta \
-#     --base /ColossalTitan/llama/converted_hf_7B \
-#     --target /ColossalTitan/vicuna/vicuna-7b \
-#     --delta lmsys/vicuna-7b-delta-v1.1
-# ```
-# ==============================================================
-# The vicuna-13b weights are at /ColossalTitan/vicuna/vicuna-13b
-# Made by running:
-# ```
-# python3 -m fastchat.model.apply_delta \
-#     --base /ColossalTitan/llama/converted_hf_13B \
-#     --target /ColossalTitan/vicuna/vicuna-13b \
-#     --delta lmsys/vicuna-13b-delta-v1.1
-# ```
-# ==============================================================
-# Acknoledgement:
-# Modified from https://github.com/lm-sys/FastChat/blob/main/fastchat/serve/huggingface_api.py
 import torch
-from fastchat.serve.inference import load_model
 from transformers import (
     AutoModelForCausalLM,
+    AutoModelForSeq2SeqLM,
     AutoTokenizer,
     StoppingCriteria,
     StoppingCriteriaList,
 )
+from vllm import LLM, SamplingParams
 
 from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine
 
@@ -114,6 +93,56 @@ class DecoderBase(ABC):
         return self.name
 
 
+class VLlmDecoder(DecoderBase):
+    def __init__(
+        self,
+        name: str,
+        batch_size: int = 1,
+        temperature: float = 0.8,
+        max_new_tokens: int = 512,
+    ) -> None:
+        super().__init__(name, batch_size, temperature, max_new_tokens)
+        kwargs = {}
+        if "CodeLlama" in name:
+            kwargs["dtype"] = "bfloat16"
+        elif "CodeBooga" in name:
+            kwargs["dtype"] = "float16"
+        elif "WizardCoder" in name:
+            kwargs["dtype"] = "float16"
+
+        self.llm = LLM(model=name, **kwargs)
+
+
+class WizardCoderDecoder(VLlmDecoder):
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        prompt = f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+
+### Instruction:
+Create a Python script for this problem:
+{prompt}
+
+### Response:"""
+        batch_size = min(self.batch_size, num_samples)
+
+        vllm_outputs = self.llm.generate(
+            [prompt] * batch_size,
+            SamplingParams(
+                temperature=self.temperature,
+                max_tokens=self.max_new_tokens,
+                top_p=0.95 if do_sample else 1.0,
+            ),
+            use_tqdm=False,
+        )
+
+        return [x.outputs[0].text.replace("\t", "    ") for x in vllm_outputs]
+
+
 class OpenAIDecoder(DecoderBase):
     def __init__(
         self, name: str, batch_size: int = 1, temperature: float = 0.8
@@ -165,16 +194,28 @@ class HFTorchDecoder(DecoderBase):
                 "Salesforce/codegen2-16B",
             }
         }
+
         if "codegen-" in name:  # use fp16 for codegen models
             kwargs["torch_dtype"] = torch.float16
         if "codegen2-" in name:  # avoid warning of trust remote code
             kwargs["revision"] = "main"
-            kwargs["torch_dtype"] = torch.float16
             if "16b" in name.lower():
                 kwargs["device_map"] = "auto"
-                # Not working... # int8 acceleration
-                # kwargs["load_in_8bit"] = True
         if "starcoder" in name:
+            kwargs["torch_dtype"] = torch.bfloat16
+        if "CodeLlama" in name:
+            if "34b" in name.lower():
+                kwargs["device_map"] = "auto"
+            kwargs["torch_dtype"] = torch.bfloat16
+            self.skip_special_tokens = True
+        if "CodeBooga" in name:
+            kwargs["torch_dtype"] = torch.float16
+            kwargs["device_map"] = "auto"
+            self.skip_special_tokens = True
+        if "Mistral-7B-codealpaca-lora" == name:
+            kwargs["torch_dtype"] = torch.float16
+            self.skip_special_tokens = True
+        elif "Mistral" in name or "zephyr-7b-beta" in name:
             kwargs["torch_dtype"] = torch.bfloat16
 
         self.tokenizer = AutoTokenizer.from_pretrained(name)
@@ -191,6 +232,58 @@ class HFTorchDecoder(DecoderBase):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
+        prompt = self.tokenizer.apply_chat_template(
+            [
+                {
+                    "role": "system",
+                    "content": "You are a proficient Python developer good at programming fast and robust code",
+                },
+                {
+                    "role": "user",
+                    "content": f"Can you complete the following Python function?\n```python\n{prompt}\n```\n",
+                },
+            ],
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
+            self.device
+        )
+        kwargs = {}
+        if do_sample:
+            kwargs["top_p"] = 0.95
+            kwargs["temperature"] = self.temperature
+
+        raw_outputs = self.model.generate(
+            input_tokens,
+            max_new_tokens=self.max_new_tokens,
+            do_sample=do_sample,
+            output_scores=True,
+            return_dict_in_generate=True,
+            num_return_sequences=min(self.batch_size, num_samples),
+            pad_token_id=self.tokenizer.eos_token_id,
+            **kwargs,
+        )  # remove warning
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
+        return [x.split("```python")[-1].split("```")[0] for x in gen_strs]
+
+
+class ZephyrDecoder(HFTorchDecoder):
+    @torch.inference_mode()
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
         input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
             self.device
         )
@@ -203,18 +296,21 @@ class HFTorchDecoder(DecoderBase):
                 )
             ]
         )
+        kwargs = {}
+        if do_sample:
+            kwargs["top_p"] = 0.95
+            kwargs["temperature"] = self.temperature
+
         raw_outputs = self.model.generate(
             input_tokens,
             max_new_tokens=self.max_new_tokens,
             stopping_criteria=scores,
             do_sample=do_sample,
-            top_p=0.95,
-            top_k=None,
-            temperature=self.temperature,
             output_scores=True,
             return_dict_in_generate=True,
             num_return_sequences=min(self.batch_size, num_samples),
             pad_token_id=self.tokenizer.eos_token_id,
+            **kwargs,
         )  # remove warning
         gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
         gen_strs = self.tokenizer.batch_decode(
@@ -230,21 +326,6 @@ class HFTorchDecoder(DecoderBase):
                     min_index = min(min_index, output.index(eos))
             outputs.append(output[:min_index])
         return outputs
-
-
-class FsChatDecoder(HFTorchDecoder):
-    def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
-        DecoderBase.__init__(
-            self, name=name, batch_size=batch_size, temperature=temperature
-        )
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model, self.tokenizer = load_model(
-            f"/ColossalTitan/vicuna/{name}",
-            device="cuda",
-            num_gpus=1,
-            load_8bit=False,
-            debug=False,
-        )
 
 
 class ChatGPTDecoder(DecoderBase):
@@ -401,6 +482,10 @@ class Codegen2Decoder(HFTorchDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
         input = prompt + self.infill_ph + self.extra_end
         input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
         scores = StoppingCriteriaList(
@@ -453,6 +538,10 @@ class SantaCoder(HFTorchDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
         input = self.prefix_token + prompt + self.suffix_token
         input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
         scores = StoppingCriteriaList(
@@ -494,7 +583,7 @@ class SantaCoder(HFTorchDecoder):
         return outputs
 
 
-class StarCoder(HFTorchDecoder):
+class StarCoderInfill(HFTorchDecoder):
     def __init__(
         self, name: str, batch_size: int = 1, temperature: float = 0.8
     ) -> None:
@@ -505,6 +594,10 @@ class StarCoder(HFTorchDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
         input = self.prefix_token + prompt + self.suffix_token
         input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
         scores = StoppingCriteriaList(
@@ -543,6 +636,94 @@ class StarCoder(HFTorchDecoder):
                 if eos in output:
                     min_index = min(min_index, output.index(eos))
             outputs.append(output[:min_index])
+        return outputs
+
+
+class CodeT5P(DecoderBase):
+    def __init__(self, name: str, batch_size: int = 1, temperature: float = 0.8):
+        super().__init__(name=name, batch_size=batch_size, temperature=temperature)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        assert name in {
+            "Salesforce/codet5p-2b",
+            "Salesforce/codet5p-6b",
+            "Salesforce/codet5p-16b",
+            "Salesforce/instructcodet5p-16b",
+        }
+        self.tokenizer = AutoTokenizer.from_pretrained(name)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(
+            name,
+            trust_remote_code=True,  # False for 220m and 770m models
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+        )
+        self.model.eval()
+        self.model.to(self.device)
+
+        self.skip_special_tokens = True
+
+    @torch.inference_mode()
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
+        prompt = prompt.replace("    ", "\t")
+        input_tokens = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+        scores = StoppingCriteriaList(
+            [
+                EndOfFunctionCriteria(
+                    start_length=len(input_tokens[0]),
+                    eos=self.eos,
+                    tokenizer=self.tokenizer,
+                )
+            ]
+        )
+        max_new_tokens = self.max_new_tokens
+
+        while max_new_tokens > 0:
+            try:
+                raw_outputs = self.model.generate(
+                    **input_tokens,
+                    decoder_input_ids=input_tokens["input_ids"],
+                    max_new_tokens=max_new_tokens,
+                    stopping_criteria=scores,
+                    do_sample=do_sample,
+                    top_p=0.95,
+                    top_k=None,
+                    temperature=self.temperature,
+                    output_scores=True,
+                    return_dict_in_generate=True,
+                    num_return_sequences=min(self.batch_size, num_samples),
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    decoder_start_token_id=self.tokenizer.pad_token_id,
+                )  # remove warning
+            except RuntimeError as e:  # catch torch OOM
+                if "CUDA out of memory" in str(e):
+                    old_max_new_tokens = max_new_tokens
+                    max_new_tokens = int(max_new_tokens * 0.8)
+                    print(
+                        f"OOM, reducing max_new_tokens from {old_max_new_tokens} to {max_new_tokens}"
+                    )
+                    continue
+                else:
+                    raise e
+
+            break
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
+        outputs = []
+        # removes eos tokens.
+        for output in gen_strs:
+            min_index = 10000
+            for eos in self.eos:
+                if eos in output:
+                    # could be multiple eos in outputs, better pick minimum one
+                    min_index = min(min_index, output.index(eos))
+            outputs.append(output[:min_index].replace("\t", "    "))
         return outputs
 
 
@@ -605,8 +786,6 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="NinedayWang/PolyCoder-2.7B",
             temperature=temperature,
         )
-    elif name == "vicuna-7b" or name == "vicuna-13b":
-        return FsChatDecoder(batch_size=batch_size, name=name, temperature=temperature)
     elif name == "santacoder":
         return SantaCoder(
             batch_size=batch_size, name="bigcode/santacoder", temperature=temperature
@@ -649,8 +828,71 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
         )
-    elif name == "starcoder":
-        return StarCoder(
-            batch_size=batch_size, name="bigcode/starcoder", temperature=temperature
+    elif name.startswith("starcoder"):
+        return StarCoderInfill(
+            batch_size=batch_size, name=f"bigcode/{name}", temperature=temperature
         )
+    elif name == "codet5p-2b":
+        return CodeT5P(
+            batch_size=batch_size,
+            name="Salesforce/codet5p-2b",
+            temperature=temperature,
+        )
+    elif name == "codet5p-6b":
+        return CodeT5P(
+            batch_size=batch_size,
+            name="Salesforce/codet5p-6b",
+            temperature=temperature,
+        )
+    elif name == "codet5p-16b":
+        return CodeT5P(
+            batch_size=batch_size,
+            name="Salesforce/codet5p-16b",
+            temperature=temperature,
+        )
+    elif name.startswith("code-llama-"):
+        assert name.endswith("b")
+        nb = name.split("-")[-1]
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name=f"codellama/CodeLlama-{nb}-Python-hf",
+            temperature=temperature,
+        )
+    elif name == "wizardcoder-34b":
+        return WizardCoderDecoder(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-Python-34B-V1.0",
+            temperature=temperature,
+        )
+    elif name == "mistral-7b-codealpaca":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="Nondzu/Mistral-7B-codealpaca-lora",
+            temperature=temperature,
+        )
+    elif name == "zephyr-7b":
+        return ZephyrDecoder(
+            batch_size=batch_size,
+            name="HuggingFaceH4/zephyr-7b-beta",
+            temperature=temperature,
+        )
+    elif name == "codebooga-34b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="oobabooga/CodeBooga-34B-v0.1",
+            temperature=temperature,
+        )
+    elif name == "phind-code-llama-34b-v2":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="Phind/Phind-CodeLlama-34B-v2",
+            temperature=temperature,
+        )
+    elif name == "mistral-7b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="mistralai/Mistral-7B-v0.1",
+            temperature=temperature,
+        )
+
     raise ValueError(f"Invalid model name: {name}")
