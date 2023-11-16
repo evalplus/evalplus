@@ -21,17 +21,20 @@ class SetEncoder(json.JSONEncoder):
 
 def input_generation(args, problems):
     with open(args.output, "w") as file:
-        for problem in problems:
+        for problem in problems.values():
             new_input = {}
             task_id = problem["task_id"]
             print(f"generating inputs for {task_id} ...")
             # by default we do not include constraints in the prompt
             code = problem["prompt"] + problem["canonical_solution"]
-            c_code = (
-                problem["prompt"] + concate_code_and_contract(problem["canonical_solution"], problem["contract"], problem["entry_point"])
-            )
-            problem["base_input"] = mbpp_inputs_revert(int(problem["task_id"]), problem["base_input"])
-
+            if args.dataset == "humaneval":
+                c_code = (
+                    problem["prompt"] + problem["contract"] + problem["canonical_solution"]
+                )
+            elif args.dataset == "mbpp":
+                c_code = (
+                    problem["prompt"] + concate_code_and_contract(problem["canonical_solution"], problem["contract"], problem["entry_point"])
+                )
             # first generate chatgpt
             input_gen = ChatGPTGen(
                 problem["base_input"], problem["entry_point"], c_code, code
@@ -51,7 +54,8 @@ def input_generation(args, problems):
             )
             print(f"generated {len(input_gen)} inputs")
             new_input["task_id"] = task_id
-            new_input["inputs"] = mbpp_inputs_convert(task_id, input_gen)
+            new_input["inputs"] = input_gen if args.dataset == "humaneval" \
+                                else mbpp_inputs_convert(task_id, input_gen)
             file.write(json.dumps(new_input, cls=SetEncoder) + "\n")
 
 
@@ -79,7 +83,7 @@ def main():
 
         problems = get_mbpp_plus()
         if args.output is None:
-            args.output = "/evalplus/MBPPPlusInput.jsonl"
+            args.output = "MbppPlusInput.jsonl"
 
     if problems is None:
         raise NotImplementedError(f"Unsupported dataset: {args.dataset}")

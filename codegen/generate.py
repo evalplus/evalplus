@@ -16,7 +16,7 @@ from evalplus.data import get_human_eval_plus, get_mbpp_plus
 
 def construct_contract_prompt(prompt: str, contract_type: str, contract: str, assertion: str) -> str:
     if contract_type == "no":
-        return prompt[:-1 * len("'''")] + assertion + "'''"
+        return prompt[:-1 * len("'''")] + assertion + "'''" if assertion != "" else prompt
     elif contract_type == "docstring":
         # embed within the docstring
         sep = ""
@@ -54,16 +54,13 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
             
         for task_id, task in p.track(dataset.items()):
             if id_range is not None:
-                # TODO: use mbpp/1
-                # id_num = int(task_id.split("/")[1])
-                id_num = int(task_id)
+                id_num = int(task_id.split("/")[1])
                 low, high = id_range
                 if id_num < low or id_num >= high:
                     p.console.print(f"Skipping {task_id} as it is not in {id_range}")
                     continue
 
-            # p_name = task_id.replace("/", "_")
-            p_name = str(task_id)
+            p_name = task_id.replace("/", "_")
             if args.use_contracts != "no" and task["contract"] == "":
                 continue
             os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
@@ -88,7 +85,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
             while sidx < args.n_samples:
                 outputs = model.codegen(
                     construct_contract_prompt(
-                        task["prompt"], args.use_contracts, task["contract"], task["assertion"]
+                        task["prompt"], args.use_contracts, task["contract"], task["assertion"] if "assertion" in task else ""
                     ),
                     do_sample=not args.greedy,
                     num_samples=args.n_samples - sidx,

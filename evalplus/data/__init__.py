@@ -83,11 +83,8 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
 
     # if it is a file
     if os.path.isfile(sample_path):
-        filter_list = [792, 794]
         for i, sample in enumerate(stream_jsonl(sample_path)):
-            if int(sample["task_id"]) in filter_list:
-                continue
-            sample["_identifier"] = str(sample["task_id"]) + "_" + str(i)
+            sample["_identifier"] = sample["task_id"] + "_" + str(i)
             yield sample
     else:
         # if it is a folder
@@ -101,7 +98,7 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
                             completion = f.read()
                         yield {
                             "_identifier": solution_path,
-                            "task_id": task_id.replace("HumanEval_", "HumanEval/"),
+                            "task_id": task_id.replace("_", "/"),
                             "solution": completion,
                         }
 
@@ -213,7 +210,7 @@ def get_human_eval() -> Dict[str, Dict]:
     if not os.path.exists(human_eval_path):
         # Install HumanEval dataset and parse as jsonl
         # https://github.com/openai/human-eval/blob/master/data/HumanEval.jsonl.gz
-        print("Downloading original HumanEval dataset...")
+        print("Downloading HumanEval dataset...")
         with tempdir.TempDir() as tmpdir:
             human_eval_gz_path = os.path.join(tmpdir, "HumanEval.jsonl.gz")
             wget.download(HUMANEVAL_URL, human_eval_gz_path)
@@ -265,13 +262,14 @@ def get_mbpp() -> Dict[str, Dict]:
     return {str(task["task_id"]): task for task in mbpp}
 
 
-def mbpp_inputs_convert(task_id: int, inputs: list) -> list:
+def mbpp_inputs_convert(task_id: str, inputs: list) -> list:
+    id_ = int(task_id.split("/")[-1])
 
-    if task_id == 115:
+    if id_ == 115:
         modified_inputs = [[[list(item) for item in inp[0]]]for inp in inputs]
-    elif task_id == 124:
+    elif id_ == 124:
         modified_inputs = [(str(inp[0]), str(inp[1]))for inp in inputs]
-    elif task_id == 252:
+    elif id_ == 252:
         modified_inputs = [[str(inp[0])] for inp in inputs]
     else:
         modified_inputs = inputs
@@ -279,47 +277,48 @@ def mbpp_inputs_convert(task_id: int, inputs: list) -> list:
     return modified_inputs
 
 
-def mbpp_inputs_revert(task_id: int, inputs: list) -> list:
-    if task_id in [2, 116, 132, 143, 222, 261, 273, 394, 399, 421, 424, 429, 470, 560\
+def mbpp_inputs_revert(task_id: str, inputs: list) -> list:
+    id_ = int(task_id.split("/")[-1])
+    if id_ in [2, 116, 132, 143, 222, 261, 273, 394, 399, 421, 424, 429, 470, 560\
                     , 579, 596, 616, 630, 726, 740, 744, 809]:
         modified_inputs = [[tuple(lst) for lst in inp] for inp in inputs]
 
-    elif task_id in [63, 64, 70, 94, 120, 237, 272, 299, 400, 409, 417, 438, 473, 614, 780]:
+    elif id_ in [63, 64, 70, 94, 120, 237, 272, 299, 400, 409, 417, 438, 473, 614, 780]:
         modified_inputs = [[[tuple(lst) for lst in lst_lst] for lst_lst in inp] for inp in inputs]
 
-    elif task_id in [75, 413, 444, 753]:
+    elif id_ in [75, 413, 444, 753]:
         modified_inputs = [[[tuple(lst) for lst in inp[0]]] + [inp[1]] for inp in inputs]
 
-    elif task_id == 106 or task_id == 750:
+    elif id_ == 106 or id_ == 750:
         modified_inputs = [[inp[0]] + [tuple(inp[1])] for inp in inputs]
 
-    elif task_id == 115:
+    elif id_ == 115:
         modified_inputs = [[[set(item)if isinstance(item, list) and len(item) else {} for item in inp[0]]]for inp in inputs]
 
-    elif task_id == 124:
+    elif id_ == 124:
         modified_inputs = [(float(inp[0]), complex(inp[1])) for inp in inputs]
 
-    elif task_id in [250, 405, 446, 617, 720, 763, 808]:
+    elif id_ in [250, 405, 446, 617, 720, 763, 808]:
         modified_inputs = [[tuple(inp[0])] + [inp[1]] for inp in inputs]
 
-    elif task_id in [259, 401, 445]:
+    elif id_ in [259, 401, 445]:
         modified_inputs = [[[tuple(lst) for lst in lst_lst] for lst_lst in inp] for inp in inputs]
         modified_inputs = [[tuple(lst) for lst in inp]for inp in modified_inputs]
 
-    elif task_id == 278:
+    elif id_ == 278:
         modified_inputs = [[[tuple(item) if isinstance(item, list) else item for item in inp[0]]]for inp in inputs]
         modified_inputs = [[tuple(lst) for lst in inp] for inp in modified_inputs]
 
-    elif task_id == 307:
+    elif id_ == 307:
         modified_inputs = [[tuple(inp[0])] + [inp[1], inp[2]] for inp in inputs]
 
-    elif task_id == 722:
+    elif id_ == 722:
         modified_inputs = [[{key: tuple(value) for key, value in inp[0].items()}] + inp[1:] for inp in inputs]
 
-    elif task_id == 252:
+    elif id_ == 252:
         modified_inputs = [[complex(inp[0])] for inp in inputs]
     
-    elif task_id in [580, 615, 791]:
+    elif id_ in [580, 615, 791]:
         def turn_all_list_into_tuple(inp):
             if isinstance(inp, list):
                 return tuple([turn_all_list_into_tuple(item) for item in inp])
@@ -343,12 +342,11 @@ def concate_code_and_contract(code, contract, entry_point):
 def get_mbpp_plus() -> Dict[str, Dict]:
     """Get MBPPPlus from Google's Github repo."""
     plus_path = _ready_mbpp_plus_path()
-
-    filter_list = [792, 794]
-    plus = {task["task_id"]: task for task in stream_jsonl(plus_path) if int(task["task_id"]) not in filter_list}
+    plus = {task["task_id"]: task for task in stream_jsonl(plus_path)}
+    
     for task_id, task in plus.items():
-        task["base_input"] = mbpp_inputs_revert(int(task_id), task["base_input"])
-        task["plus_input"] = mbpp_inputs_revert(int(task_id), task["plus_input"])
+        task["base_input"] = mbpp_inputs_revert(task_id, task["base_input"])
+        task["plus_input"] = mbpp_inputs_revert(task_id, task["plus_input"])
         for key in [
             "prompt",
             "contract",

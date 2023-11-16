@@ -78,7 +78,6 @@ class ChatGPTGen(BaseGen):
             for new_input in new_inputs:
                 if hash(str(new_input)) not in self.seed_hash:
                     if trusted_check_exec(self.contract, [new_input], self.entry_point):
-                        print("new input: ", new_input)
                         self.seed_pool.append(new_input)
                         self.seed_hash.add(hash(str(new_input)))
                         self.new_inputs.append(new_input)

@@ -19,7 +19,8 @@ def trusted_exec(code, inputs, entry_point, record_time=False):
         else:
             ret.append(fn(*inp))
 
-    if "check_str" == entry_point or "text_match_three" == entry_point:
+    if "check_str" == entry_point or "text_match_three" == entry_point\
+       or "text_starta_endb" == entry_point:
         ret = [False if i is None else True for i in ret]
 
     if record_time:

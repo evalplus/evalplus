@@ -335,6 +335,7 @@ class ChatGPTDecoder(DecoderBase):
         batch_size: int = 1,
         temperature: float = 0.8,
         model_name: str = "gpt-3.5-turbo",
+        dataset: str = "humaneval"
     ) -> None:
         super().__init__(name, batch_size, temperature)
         self.model_name = model_name
@@ -358,11 +359,10 @@ class ChatGPTDecoder(DecoderBase):
         return gen[:min_index]
 
     @staticmethod
-    def _remove_lines(gen):
+    def _filter_lines(gen):
         lines = gen.split('\n')
         filtered_lines = [line for line in lines if not any(line.strip().startswith(prefix) for prefix in MBPP_IGNORE_PREFIX)]
         return '\n'.join(filtered_lines)
-
 
     def _chatgpt_parse(self, ret, prompt):
         outputs = []
@@ -376,6 +376,12 @@ class ChatGPTDecoder(DecoderBase):
                     suf = gen.split(prompt.strip())[-1]
                     suf = self._remove_eos(suf)
                     gen = prompt.strip() + suf
+                elif self._find_gen_func_sig(prompt) != "" and self._find_gen_func_sig(prompt) in gen:
+                    # same function sign is in the prompt
+                    sig = self._find_gen_func_sig(prompt)
+                    pre, suf = gen.split(sig)[0], gen.split(sig)[-1]
+                    suf = self._remove_eos(suf)
+                    gen = pre + sig + suf
                 else:
                     gen = self._remove_lines(gen)
                     if len(gen) == 0:

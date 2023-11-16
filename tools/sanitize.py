@@ -7,7 +7,7 @@ import os
 
 from tqdm import tqdm
 
-from evalplus.data import get_human_eval
+from evalplus.data import get_human_eval, get_mbpp_plus
 
 INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
 POLYCODER_EXTRA = ["\n//", "\n/*"]
@@ -58,13 +58,17 @@ if __name__ == "__main__":
     parser.add_argument("--folder", type=str, required=True)
     parser.add_argument("--eof", action="store_true")
     parser.add_argument("--inplace", action="store_true")
+    parser.add_argument("--dataset", type=str, default="humaneval")
 
     args = parser.parse_args()
 
     # task_id -> entry_point
     entry_point = {}
     prompts = {}
-    for task_id, problem in get_human_eval().items():
+
+    dataset = get_human_eval() if args.dataset == "humaneval" else get_mbpp_plus()
+
+    for task_id, problem in dataset.items():
         entry_point[task_id] = problem["entry_point"]
         prompts[task_id] = problem["prompt"]
 
@@ -78,15 +82,19 @@ if __name__ == "__main__":
     nsan = 0
     ntotal = 0
     for pyf in tqdm(get_all_python_files(args.folder)):
-        # Get [?] from "[prefix]/HumanEval_[?]/[number].py":
-        task_id = pyf.split("/")[-2].replace("HumanEval_", "HumanEval/")
+        # Get [?] from "[prefix]/{HumanEval, Mbpp}_[?]/[number].py":
+        task_id = pyf.split("/")[-2].replace("_", "/")
 
         ntotal += 1
         old_code = open(pyf).read()
 
         def_left = "def " + entry_point[task_id] + "("
-        imports, def_right = prompts[task_id].split(def_left)
-        new_code = imports + def_left + old_code.split(def_left)[-1]
+        if args.dataset == "humaneval":
+            imports, def_right = prompts[task_id].split(def_left)
+            new_code = imports + def_left + old_code.split(def_left)[-1]
+        elif args.dataset == "mbpp":
+            new_code = old_code
+            
         chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
         if len(chunks) == 2:
             new_code = def_left + chunks[-1]  # fn + impl

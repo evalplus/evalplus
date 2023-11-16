@@ -178,6 +178,8 @@ def unsafe_execute(
                             exact_match = _check_no_164(out, exp)
                         elif "sum_div" == entry_point:
                             exact_match = _check_no_295(out, exp)
+                        elif "find_zero" == entry_point:
+                            assert _poly(*out, inp) <= atol
 
                         if atol == 0 and is_floats(exp):
                             atol = 1e-6  # enforce atol for float comparison
