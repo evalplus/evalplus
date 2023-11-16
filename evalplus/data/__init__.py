@@ -280,7 +280,8 @@ def mbpp_inputs_convert(task_id: int, inputs: list) -> list:
 
 
 def mbpp_inputs_revert(task_id: int, inputs: list) -> list:
-    if task_id in [2, 116, 132, 143, 222, 261, 273, 394, 399, 421, 424, 429, 470, 560, 579, 596, 616, 630, 726, 740, 744, 809]:
+    if task_id in [2, 116, 132, 143, 222, 261, 273, 394, 399, 421, 424, 429, 470, 560\
+                    , 579, 596, 616, 630, 726, 740, 744, 809]:
         modified_inputs = [[tuple(lst) for lst in inp] for inp in inputs]
 
     elif task_id in [63, 64, 70, 94, 120, 237, 272, 299, 400, 409, 417, 438, 473, 614, 780]:
