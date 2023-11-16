@@ -54,6 +54,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
             
         for task_id, task in p.track(dataset.items()):
             if id_range is not None:
+                # TODO: use mbpp/1
                 # id_num = int(task_id.split("/")[1])
                 id_num = int(task_id)
                 low, high = id_range

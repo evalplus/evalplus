@@ -56,6 +56,7 @@ if __name__ == "__main__":
         print(colored(" ::::: All tasks complete?    ", "blue"))
         ndone = 0
         for i in range(ntask):
+            # TODO support mbpp path
             task_folder = os.path.join(args.folder, f"HumanEval_{i}")
             if not os.path.exists(task_folder):
                 print(colored(f" ⚠️ HumanEval_{i} is missing!", "red"))
