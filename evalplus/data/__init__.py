@@ -26,7 +26,7 @@ def get_dataset_metadata(name, version, mini):
     return url, cache_path
 
 def get_mbpp_dataset_metadata():
-    url = "/evalplus/MbppPlus.jsonl"
+    url = "MbppPlus.jsonl"
     cache_path = os.path.join(CACHE_DIR, "MbppPlus.jsonl")
     return url, cache_path
     
