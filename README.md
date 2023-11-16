@@ -1,22 +1,37 @@
 # `EvalPlus(📖) => 📚`
 
 <p align="center">
+    <a href="https://evalplus.github.io/leaderboard.html"><img src="https://img.shields.io/badge/%F0%9F%8F%86-leaderboard-8A2BE2"></a>
+    <a href="https://arxiv.org/abs/2305.01210"><img src="https://img.shields.io/badge/arXiv-2305.01210-b31b1b.svg"></a>
     <a href="https://pypi.org/project/evalplus/"><img src="https://img.shields.io/pypi/v/evalplus?color=g"></a>
-    <a href="https://github.com/evalplus/evalplus/blob/master/LICENSE"><img src="https://img.shields.io/pypi/l/evalplus"></a>
+    <a href="https://pepy.tech/project/evalplus"><img src="https://static.pepy.tech/badge/evalplus"></a>
     <a href="https://hub.docker.com/r/ganler/evalplus" title="Docker"><img src="https://img.shields.io/docker/image-size/ganler/evalplus"></a>
+    <a href="https://github.com/evalplus/evalplus/blob/master/LICENSE"><img src="https://img.shields.io/pypi/l/evalplus"></a>
 </p>
 
 
 <p align="center">
-    <a href="#-Quick-Start">🔥Quick Start</a> •
-    <a href="#-LLM-generated-code">💻LLM code</a> •
-    <a href="#-Papers">📜Papers</a> •
-    <a href="#-Useful-tools">🔨Tools</a> •
-    <a href="#-Development">👷Development</a> •
-    <a href="#-Acknowledgement">🙏Acknowledgement</a>
+    <a href="#-quick-start">🔥Quick Start</a> •
+    <a href="#-llm-generated-code">💻LLM code</a> •
+    <a href="#-useful-tools">🔨Tools</a> •
+    <a href="#-citation">📜Citation</a> •
+    <a href="#-acknowledgement">🙏Acknowledgement</a>
 </p>
 
-> **Warning**
+> [!Important]
+> <div align="center">
+> <b>
+> 📢 Who is the best LLM coder? Take a look at <a href="https://evalplus.github.io/leaderboard.html">the EvalPlus leaderboard 🏆</a>! 📢
+> </b>
+> <br>
+> <b>
+> 🤗 Request for independent model evaluation is <a href="https://github.com/evalplus/evalplus/issues/new/choose">open</a>!
+> </b>
+> </div>
+
+## About
+
+> [!Warning]
 > <div align="center">
 > <b>
 > 🚨 Evaluating LLM-generated code over datasets with "3 test-cases" is **NOT** enough! 🚨
@@ -29,7 +44,7 @@ To address this, we started the EvalPlus project -- a rigourous evaluation frame
 + ✨ crafts a set [utility tools](#useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
 + ✨ accelerates LLM4Code research by open-sourcing [LLM-generated samples](https://github.com/evalplus/evalplus/releases/tag/v0.1.0) for 14+ models -- no need to re-run the expensive benchmarks!
 
-![](./gallary/overview.png)
+Want to know more details? Please read our [**NeurIPS'23 paper**](https://arxiv.org/abs/2305.01210) [![](https://img.shields.io/badge/arXiv-2305.01210-b31b1b.svg)](https://arxiv.org/abs/2305.01210)!
 
 ## 🔥 Quick Start
 
@@ -39,14 +54,17 @@ To get started, please first setup the environment:
 pip install evalplus --upgrade
 ```
 
-...Or you can try out the latest developing version:
-
+<details><summary>⏬ Install nightly version <i>:: click to expand ::</i></summary>
+<div>
 
 ```bash
 pip install "git+https://github.com/evalplus/evalplus.git" --upgrade
 ```
 
-<details><summary>🤔 Want to use local GitHub repo? <i>:: click to expand ::</i></summary>
+</div>
+</details>
+
+<details><summary>⏬ Using EvalPlus as a local repo? <i>:: click to expand ::</i></summary>
 <div>
 
 ```bash
@@ -61,25 +79,21 @@ pip install -r requirements.txt
 
 ### HumanEval+
 
-#### Generate Code Samples
+#### Code generation
 
-The usage is just like the original HumanEval where you just need to implement the `generate_one_completion` function!
+Just like the original HumanEval: implement the `GEN_ONE_COMPLETION` function by calling the LLM to produce the completion (prompt not included)!
 
 ```python
 from evalplus.data import get_human_eval_plus, write_jsonl
 
-problems = get_human_eval_plus()
-
-num_samples_per_task = 200
 samples = [
-    dict(task_id=task_id, completion=generate_one_completion(problems[task_id]["prompt"]))
-    for task_id in problems
-    for _ in range(num_samples_per_task)
+    dict(task_id=task_id, completion=GEN_ONE_COMPLETION(problem["prompt"]))
+    for task_id, problem in get_human_eval_plus().items()
 ]
 write_jsonl("samples.jsonl", samples)
 ```
 
-<details><summary>🤔 What is in a `problem`? <i>:: click to expand ::</i></summary>
+<details><summary>🤔 Structure of `problem`? <i>:: click to expand ::</i></summary>
 <div>
 
 * `task_id` is the identifier string for the task
@@ -92,7 +106,7 @@ write_jsonl("samples.jsonl", samples)
 </div>
 </details>
 
-#### Evaluate Code Samples with HumanEval+
+#### Code evaluation
 
 You are strongly recommended to use a sandbox such as [docker](https://docs.docker.com/get-docker/):
 
@@ -106,19 +120,20 @@ docker run -v $(pwd):/app ganler/evalplus:latest --dataset humaneval --samples s
 evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
 
-> **Warning** ⚠️ Do you use a very slow machine?
->
-> LLM solutions are regarded as **failed** on timeout (and OOM etc.).
-> Specifically, we set the timeout $T=\max(T_{base}, T_{gt}\times k)$, where:
->
-> - $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 0.2s);
-> - $T_{gt}$ is the runtime of the ground-truth solutions (achieved via profiling);
-> - $k$ is a configurable factor `--gt-time-limit-factor` (default to 4);
->
-> If your machine is too slow and you are getting high-variance results, try to use larger $k$ and $T_{base}$.
->
-> Additionally, you are **NOT** encouraged to make your test-bed over stressed while running evaluation.
-> For example, using `--parallel 64` on a 4-core machine or doing something else during evaluation are bad ideas...
+- > [!Warning]
+  > Do you use a very slow machine?
+  >
+  > LLM solutions are regarded as **failed** on timeout (and OOM etc.).
+  > Specifically, we set the timeout $T=\max(T_{base}, T_{gt}\times k)$, where:
+  >
+  > - $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 0.2s);
+  > - $T_{gt}$ is the runtime of the ground-truth solutions (achieved via profiling);
+  > - $k$ is a configurable factor `--gt-time-limit-factor` (default to 4);
+  >
+  > If your machine is too slow and you are getting high-variance results, try to use larger $k$ and $T_{base}$.
+  >
+  > Additionally, you are **NOT** encouraged to make your test-bed over stressed while running evaluation.
+  > For example, using `--parallel 64` on a 4-core machine or doing something else during evaluation are bad ideas...
 
 <details><summary>🤔 Evaluate with local GitHub repo? <i>:: click to expand ::</i></summary>
 <div>
@@ -175,6 +190,8 @@ Here are some tips to speed up the evaluation:
 </div>
 </details>
 
+> [!Note]
+>
 > 🚀 **Try out `HumanEvalPlus-Mini`!** which selects a *minimal* set of additional tests with the highest quality, achieving almost the same effectiveness of the full version. Just add a **`--mini`** flag, it can run 23+% faster! (even faster if you evaluate all tests without fail-stop with `--test-details`).
 >
 > ```bash
@@ -188,25 +205,12 @@ Here are some tips to speed up the evaluation:
 
 ## 💻 LLM-generated code
 
-Please kindly find the LLM-pre-generated code samples [in the attachment of our v0.1.0 release](https://github.com/evalplus/evalplus/releases/tag/v0.1.0).
+We also share pre-generated code samples from LLMs we have [evaluated](https://evalplus.github.io/leaderboard.html) in the attachment of our [v0.1.0 release](https://github.com/evalplus/evalplus/releases/tag/v0.1.0).
 Each sample file is packaged in a zip file named like `${model_name}_temp_${temperature}.zip`.
 You can unzip them to a folder named like `${model_name}_temp_${temperature}` and run the evaluation from scratch with:
 
 ```bash
 evalplus.evaluate --dataset humaneval --samples ${model_name}_temp_${temperature}
-```
-
-## 📜 Papers
-
-Read our [**paper**](https://arxiv.org/abs/2305.01210) for more detailed findings!
-
-```bibtex
-@article{evalplus,
-  title={Is Your Code Generated by ChatGPT Really Correct? Rigorous Evaluation of Large Language Models for Code Generation},
-  author={Jiawei Liu and Chunqiu Steven Xia and Yuyao Wang and Lingming Zhang},
-  journal={arXiv preprint arXiv:2305.01210},
-  year={2023},
-}
 ```
 
 ## 🔨 Useful tools
@@ -252,21 +256,21 @@ python tools/render.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
 ### Perform test input generation from scratch (TBD)
 
 
-## 👷 Development
-
-Before you start:
-
-```bash
-pip install pre-commit
-pre-commit install
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-```
-
 ### Name convention
 
 - `evalplus` is the package name.
 - `${DATASET}_plus` is the name of dataset applied with `evalplus`.
 
+## 📜 Citation
+
+```bibtex
+@article{evalplus,
+  title={Is Your Code Generated by ChatGPT Really Correct? Rigorous Evaluation of Large Language Models for Code Generation},
+  author={Jiawei Liu and Chunqiu Steven Xia and Yuyao Wang and Lingming Zhang},
+  journal={arXiv preprint arXiv:2305.01210},
+  year={2023},
+}
+```
 
 ## 🙏 Acknowledgement
 

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
+from evalplus.data import get_human_eval_plus
 from evalplus.eval import estimate_pass_at_k
 
 SMALL_SIZE = 10
@@ -70,13 +71,16 @@ def passk_rel_drop(task2bvs_old, task2bvs_new):
         drops = []
         for k in [1, 10, 100]:
             if k in do:
-                pko = np.array(do[k]).mean()
-                pkn = np.array(dn[k]).mean()
+                pko = np.array(do[k])
+                pkn = np.array(dn[k])
                 drop = 100 * (pko - pkn) / pko
                 drops.append(drop)
-                print(f"pass@{k}: \t{pko:.1f}% -> {pkn:.1f}% (drop {drop:.1f}%)")
+                print(
+                    f"pass@{k}: \t{pko.mean():.1f}% -> {pkn.mean():.1f}% (drop {drop.mean():.1f}%)"
+                )
         drops = np.array(drops)
         print(f"+++ {drops.mean() = :.1f}%")
+        print(f"+++ {drops.max() = :.1f}%")
         print("=====================================")
 
 
@@ -139,6 +143,10 @@ if __name__ == "__main__":
     rate_old = 100 * np.array(rate_old).mean(axis=1)
     rate_new = 100 * np.array(rate_new).mean(axis=1)
 
+    print(
+        f"{(rate_new != rate_old).sum()} out of {len(rate_new)} tasks have dropped pass rate"
+    )
+
     ntask = len(rate_old)
 
     # sort by old pass rate
@@ -150,9 +158,11 @@ if __name__ == "__main__":
     # sort indices according to the differences between rate_old and rate_new
     diff = np.array(rate_old) - np.array(rate_new)
     diff_indices = diff.argsort()
-    for i in reversed(diff_indices[-10:]):
+
+    tasks = get_human_eval_plus()
+    for i in reversed(diff_indices[-15:]):
         print(
-            f"#{i} drops {diff[i] :.1f} ~ {100 * diff[i] / rate_old[i]:.1f}%:"
+            f"#{i} {tasks[f'HumanEval/{i}']['entry_point']} drops {diff[i] :.1f} ~ {100 * diff[i] / rate_old[i]:.1f}%:"
             f" {rate_old[i]:.1f} -> {rate_new[i]:.1f}"
         )
 

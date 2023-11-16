@@ -1,0 +1,48 @@
+name: "🐛 Report Bad Contract"
+description: Report to us that certain program contract should be repaired.
+title: "🐛 [TestRemoval] - <TASK_ID> <WHY>"
+labels: ["program contract"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: "EvalPlus version"
+      description: What is the version of EvalPlus? You can find it by running `pip show evalplus`.
+      placeholder: For example, 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: cache
+    attributes:
+      label: "Output of running `ls ~/.cache/evalplus`"
+    validations:
+      required: true
+  - type: input
+    id: task_id
+    attributes:
+      label: "Task ID of the programming task"
+      placeholder: HumanEval/[??]
+    validations:
+      required: true
+  - type: textarea
+    id: original
+    attributes:
+      label: "The original wrong contract"
+      description: You can run `python -c "from evalplus.data import get_human_eval_plus; print(get_human_eval_plus()['HumanEval/❓']['contract'])"`
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: new
+    attributes:
+      label: "Your proposed new contract"
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: "Other context"
+      description: (Optional) Anything else the maintainer should notice?
+    validations:
+      required: false

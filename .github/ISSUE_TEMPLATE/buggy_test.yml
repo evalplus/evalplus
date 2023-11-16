@@ -1,0 +1,49 @@
+name: "🐛 Report Bad Test Inputs"
+description: Report to us that certain test inputs should be removed.
+title: "🐛 [TestRemoval] - <TASK_ID> <WHY>"
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: "EvalPlus version"
+      description: What is the version of EvalPlus? You can find it by running `pip show evalplus`.
+      placeholder: For example, 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: cache
+    attributes:
+      label: "Output of running `ls ~/.cache/evalplus`"
+    validations:
+      required: true
+  - type: input
+    id: task_id
+    attributes:
+      label: "Task ID of the programming task"
+      placeholder: HumanEval/[??]
+    validations:
+      required: true
+  - type: textarea
+    id: test_input
+    attributes:
+      label: "Test input"
+      description: The text form of the test input that you think should be removed
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: An explicit description of why you think this test should be removed
+      placeholder: Here is a correct solution but it is incorrectly falsified by the test because ...
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: "Other context"
+      description: (Optional) Anything else the maintainer should notice?
+    validations:
+      required: false
