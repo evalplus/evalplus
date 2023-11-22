@@ -41,7 +41,7 @@
 To address this, we started the EvalPlus project -- a rigourous evaluation framework for LLM4Code that:
 
 + ✨ improves code benchmarks by adding up to thousands of new tests! (81x new tests for HumanEval!)
-+ ✨ crafts a set [utility tools](#useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
++ ✨ crafts a set [utility tools](#-useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
 + ✨ accelerates LLM4Code research by open-sourcing [LLM-generated samples](https://github.com/evalplus/evalplus/releases/tag/v0.1.0) for 14+ models -- no need to re-run the expensive benchmarks!
 
 Want to know more details? Please read our [**NeurIPS'23 paper**](https://arxiv.org/abs/2305.01210) [![](https://img.shields.io/badge/arXiv-2305.01210-b31b1b.svg)](https://arxiv.org/abs/2305.01210)!
@@ -76,6 +76,7 @@ pip install -r requirements.txt
 
 </div>
 </details>
+
 
 ### HumanEval+
 
@@ -120,20 +121,27 @@ docker run -v $(pwd):/app ganler/evalplus:latest --dataset humaneval --samples s
 evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
 
-- > [!Warning]
-  > Do you use a very slow machine?
-  >
-  > LLM solutions are regarded as **failed** on timeout (and OOM etc.).
-  > Specifically, we set the timeout $T=\max(T_{base}, T_{gt}\times k)$, where:
-  >
-  > - $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 0.2s);
-  > - $T_{gt}$ is the runtime of the ground-truth solutions (achieved via profiling);
-  > - $k$ is a configurable factor `--gt-time-limit-factor` (default to 4);
-  >
-  > If your machine is too slow and you are getting high-variance results, try to use larger $k$ and $T_{base}$.
-  >
-  > Additionally, you are **NOT** encouraged to make your test-bed over stressed while running evaluation.
-  > For example, using `--parallel 64` on a 4-core machine or doing something else during evaluation are bad ideas...
+> [!Note]
+> 
+> The input to the evaluation engine (i.e., `samples.jsonl`) must comply with the [HumanEval format]().
+> In other words, each line of the `.jsonl` file is a json dictionary like `{"task_id": "HumanEval/0", "completion": "    return 1"}`.
+> The `task_id` field points to the HumanEval problem and `completion` field includes the LLM completed code.
+
+> [!Warning]
+> 
+> Do you use a very slow machine?
+>
+> LLM solutions are regarded as **failed** on timeout (and OOM etc.).
+> Specifically, we set the timeout $T=\max(T_{base}, T_{gt}\times k)$, where:
+>
+> - $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 0.2s);
+> - $T_{gt}$ is the runtime of the ground-truth solutions (achieved via profiling);
+> - $k$ is a configurable factor `--gt-time-limit-factor` (default to 4);
+>
+> If your machine is too slow and you are getting high-variance results, try to use larger $k$ and $T_{base}$.
+>
+> Additionally, you are **NOT** encouraged to make your test-bed over stressed while running evaluation.
+> For example, using `--parallel 64` on a 4-core machine or doing something else during evaluation are bad ideas...
 
 <details><summary>🤔 Evaluate with local GitHub repo? <i>:: click to expand ::</i></summary>
 <div>

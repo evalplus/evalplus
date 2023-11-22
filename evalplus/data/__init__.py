@@ -15,7 +15,7 @@ CACHE_DIR = user_cache_dir("evalplus")
 HUMANEVAL_URL = (
     "https://github.com/openai/human-eval/raw/master/data/HumanEval.jsonl.gz"
 )
-HUMANEVAL_PLUS_VERSION = "v0.1.8"
+HUMANEVAL_PLUS_VERSION = "v0.1.9"
 
 
 def get_dataset_metadata(name, version, mini):
@@ -231,7 +231,7 @@ def get_human_eval() -> Dict[str, Dict]:
     human_eval = [json.loads(line) for line in human_eval if line]
 
     # Handle 115_max_fill.py to make its docstring well-formed
-    human_eval[114]["prompt"] = "import math\n" + human_eval[114]["prompt"].replace(
+    human_eval[115]["prompt"] = "import math\n" + human_eval[115]["prompt"].replace(
         "import math\n", ""
     )
 
