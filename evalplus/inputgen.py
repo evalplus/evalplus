@@ -7,9 +7,9 @@ import argparse
 import json
 import os
 
+from evalplus.data.mbpp import concate_code_and_contract, mbpp_serialize_inputs
 from evalplus.gen.chatgpt_gen import ChatGPTGen
 from evalplus.gen.type_mut import TypedMutGen
-from evalplus.data import mbpp_inputs_revert, concate_code_and_contract, mbpp_inputs_convert
 
 
 class SetEncoder(json.JSONEncoder):
@@ -25,22 +25,27 @@ def input_generation(args, problems):
             new_input = {}
             task_id = problem["task_id"]
             print(f"generating inputs for {task_id} ...")
-            # by default we do not include constraints in the prompt
+            # by default we do not include constraints in the prompt (code)
             code = problem["prompt"] + problem["canonical_solution"]
+            # but we use c_code to include contract which checks input validity at execution time
             if args.dataset == "humaneval":
                 c_code = (
-                    problem["prompt"] + problem["contract"] + problem["canonical_solution"]
+                    problem["prompt"]
+                    + problem["contract"]
+                    + problem["canonical_solution"]
                 )
             elif args.dataset == "mbpp":
-                c_code = (
-                    problem["prompt"] + concate_code_and_contract(problem["canonical_solution"], problem["contract"], problem["entry_point"])
+                c_code = problem["prompt"] + concate_code_and_contract(
+                    problem["canonical_solution"],
+                    problem["contract"],
+                    problem["entry_point"],
                 )
             # first generate chatgpt
             input_gen = ChatGPTGen(
                 problem["base_input"], problem["entry_point"], c_code, code
             ).generate(args.chatgpt_len)
             # generate mutation next
-            
+
             if input_gen is None or len(input_gen) == 0:
                 new_input["task_id"] = task_id
                 new_input["inputs"] = {}
@@ -54,8 +59,9 @@ def input_generation(args, problems):
             )
             print(f"generated {len(input_gen)} inputs")
             new_input["task_id"] = task_id
-            new_input["inputs"] = input_gen if args.dataset == "humaneval" \
-                                else mbpp_inputs_convert(task_id, input_gen)
+            if args.dataset == "mbpp":
+                new_input["inputs"] = mbpp_serialize_inputs(task_id, input_gen)
+            new_input["inputs"] = input_gen
             file.write(json.dumps(new_input, cls=SetEncoder) + "\n")
 
 

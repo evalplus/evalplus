@@ -7,7 +7,7 @@ import os
 
 from tqdm import tqdm
 
-from evalplus.data import get_human_eval, get_mbpp_plus
+from evalplus.data import get_human_eval_plus, get_mbpp_plus
 
 INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
 POLYCODER_EXTRA = ["\n//", "\n/*"]
@@ -66,7 +66,9 @@ if __name__ == "__main__":
     entry_point = {}
     prompts = {}
 
-    dataset = get_human_eval() if args.dataset == "humaneval" else get_mbpp_plus()
+    dataset = {"humaneval": get_human_eval_plus(), "mbpp": get_mbpp_plus()}[
+        args.dataset
+    ]
 
     for task_id, problem in dataset.items():
         entry_point[task_id] = problem["entry_point"]
@@ -94,7 +96,7 @@ if __name__ == "__main__":
             new_code = imports + def_left + old_code.split(def_left)[-1]
         elif args.dataset == "mbpp":
             new_code = old_code
-            
+
         chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
         if len(chunks) == 2:
             new_code = def_left + chunks[-1]  # fn + impl

@@ -98,6 +98,7 @@ if __name__ == "__main__":
     elif args.dataset == "mbpp":
 
         from evalplus.data import get_mbpp_plus
+
         mbpp = get_mbpp_plus()
         mbpp_ids = [int(x.split("/")[-1]) for x in mbpp.keys()]
         ntask = len(mbpp_ids)
@@ -146,6 +147,6 @@ if __name__ == "__main__":
                     npass += 1
         if ncode != npass:
             print(colored(f" ::::: ⚠️ {npass}/{ncode} code are not compilable!", "red"))
-    
+
     else:
         raise NotImplementedError

@@ -122,13 +122,13 @@ evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
 
 > [!Note]
-> 
+>
 > The input to the evaluation engine (i.e., `samples.jsonl`) must comply with the [HumanEval format]().
 > In other words, each line of the `.jsonl` file is a json dictionary like `{"task_id": "HumanEval/0", "completion": "    return 1"}`.
 > The `task_id` field points to the HumanEval problem and `completion` field includes the LLM completed code.
 
 > [!Warning]
-> 
+>
 > Do you use a very slow machine?
 >
 > LLM solutions are regarded as **failed** on timeout (and OOM etc.).

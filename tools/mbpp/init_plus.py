@@ -1,19 +1,16 @@
+import json
 import os
 import pathlib
-import copy
-import json
 import shutil
+from importlib import util
+from inspect import getmembers, isfunction
+from typing import Tuple
+
 from tempdir import TempDir
-from importlib import import_module, util
-from inspect import getsource, isfunction, getmembers
-from typing import Tuple, List
 
-from evalplus.data import get_mbpp, mbpp_inputs_convert
+from evalplus.data.mbpp import get_mbpp, mbpp_serialize_inputs
 
-
-MBPP_PLUS_PATH = (
-    pathlib.Path(__file__).parent.parent.parent / "MbppBase.jsonl"
-)
+MBPP_PLUS_PATH = pathlib.Path(__file__).parent.parent.parent / "MbppBase.jsonl"
 
 GROUNDTRUTH_MBPP_PATH = pathlib.Path(__file__).parent.parent.parent / "groundtruth/mbpp"
 
@@ -23,8 +20,15 @@ def _ret(entry_point) -> str:
     This is a hacky function to return some garbages so that we can
     successfully run the function .
     """
-    set_assertion_func = ["similar_elements", "find_char_long", "common_in_nested_lists",\
-        "extract_singly", "larg_nnum", "intersection_array", "k_smallest_pairs"]
+    set_assertion_func = [
+        "similar_elements",
+        "find_char_long",
+        "common_in_nested_lists",
+        "extract_singly",
+        "larg_nnum",
+        "intersection_array",
+        "k_smallest_pairs",
+    ]
     if entry_point in set_assertion_func:
         return "()"
     return "1"
@@ -53,9 +57,9 @@ def get_code_and_contract_and_assertion(task: id) -> Tuple[str, str, str]:
         start_index = text.find('"""')
         end_index = text.find('"""', start_index + 3)
         if start_index != -1 and end_index != -1:
-            text = text[:start_index] + text[end_index + 3:]
+            text = text[:start_index] + text[end_index + 3 :]
 
-        lines = text.splitlines()  
+        lines = text.splitlines()
         assertion = ""
         contract = ""
 
@@ -65,17 +69,21 @@ def get_code_and_contract_and_assertion(task: id) -> Tuple[str, str, str]:
             elif lines[i].startswith("assert"):
                 assertion += lines[i] + "\n"
 
-        for i in range(len(lines)-1, -1, -1):
-            if "$_CONTRACT_$" in lines[i] or lines[i].startswith("assert") or lines[i] == "":
+        for i in range(len(lines) - 1, -1, -1):
+            if (
+                "$_CONTRACT_$" in lines[i]
+                or lines[i].startswith("assert")
+                or lines[i] == ""
+            ):
                 del lines[i]
 
-        for i in range(len(lines)-1, -1, -1):
+        for i in range(len(lines) - 1, -1, -1):
             if lines[i].startswith("import"):
                 del lines[i]
             else:
                 break
 
-        code = '\n'.join(lines) 
+        code = "\n".join(lines)
         return "\n" + code + "\n", "\n" + contract, "\n" + assertion
 
 
@@ -94,8 +102,27 @@ def {entry_point}(*args):
 
 
 def get_atol(task_id: int) -> float:
-    float_ans_list = [82, 85, 98, 120, 124, 137, 139, 163, 233, 246, 248, 276\
-                        , 293, 300, 312, 442, 574, 742, 746]
+    float_ans_list = [
+        82,
+        85,
+        98,
+        120,
+        124,
+        137,
+        139,
+        163,
+        233,
+        246,
+        248,
+        276,
+        293,
+        300,
+        312,
+        442,
+        574,
+        742,
+        746,
+    ]
     if task_id in float_ans_list:
         return 1e-4
     return 0
@@ -112,17 +139,45 @@ if __name__ == "__main__":
             for task in mbpp.values():
                 task_id = int(task["task_id"])
 
-                if task_id in [163, 228, 304, 408, 776, 307, 417, 443, 444, 452\
-                    , 464, 617, 627, 738, 747, 802, 393, 411, 584, 625, 756, 779]:
+                if task_id in [
+                    163,
+                    228,
+                    304,
+                    408,
+                    776,
+                    307,
+                    417,
+                    443,
+                    444,
+                    452,
+                    464,
+                    617,
+                    627,
+                    738,
+                    747,
+                    802,
+                    393,
+                    411,
+                    584,
+                    625,
+                    756,
+                    779,
+                ]:
                     continue
 
                 task["task_id"] = "Mbpp/" + str(task_id)
 
                 task["entry_point"] = get_entry_point(task_id, task["test_list"][0])
 
-                task["canonical_solution"], task["contract"], task["assertion"] = get_code_and_contract_and_assertion(task_id)
+                (
+                    task["canonical_solution"],
+                    task["contract"],
+                    task["assertion"],
+                ) = get_code_and_contract_and_assertion(task_id)
                 if len(task["test_imports"]):
-                    task["assertion"] = "\n".join(task["test_imports"]) + "\n" + task["assertion"]
+                    task["assertion"] = (
+                        "\n".join(task["test_imports"]) + "\n" + task["assertion"]
+                    )
 
                 task["base_input"] = instrument_inputs(
                     task["canonical_solution"], task["entry_point"], task["assertion"]
@@ -135,7 +190,7 @@ if __name__ == "__main__":
                 del task["source_file"]
                 del task["code"]
 
-                task["base_input"] = mbpp_inputs_convert(task_id, task["base_input"])
+                task["base_input"] = mbpp_serialize_inputs(task_id, task["base_input"])
 
                 writer.write(json.dumps(task) + "\n")
         # move tmp_file to HUMANEVAL_PLUS_PATH

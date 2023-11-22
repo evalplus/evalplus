@@ -1,9 +1,9 @@
 """Quickly checks the correctness of
 """
 
-import multiprocess as mp
 import pathlib
 
+import multiprocess as mp
 from rich.progress import track
 
 if __name__ == "__main__":

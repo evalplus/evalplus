@@ -94,6 +94,7 @@ def _poly(xs: list, x: float):
     """
     return sum([coeff * math.pow(x, i) for i, coeff in enumerate(xs)])
 
+
 # oracle for 164
 def _check_164():
     always_return_true = True
@@ -104,13 +105,15 @@ def _check_164():
         if origial_correctness:
             if out != expect:
                 origial_correctness = False
-        
+
         if always_return_true:
             if out != True:
                 always_return_true = False
 
         return origial_correctness or always_return_true
+
     return are_the_same_or_always_be_true
+
 
 _check_no_164 = _check_164()
 
@@ -125,13 +128,15 @@ def _check_295():
         if origial_correctness:
             if out != expect:
                 origial_correctness = False
-        
+
         if always_return_zero:
             if out != 0:
                 always_return_zero = False
 
         return origial_correctness or always_return_zero
+
     return are_the_same_or_always_zero
+
 
 _check_no_295 = _check_295()
 

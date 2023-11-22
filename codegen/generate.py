@@ -14,9 +14,13 @@ from rich.progress import (
 from evalplus.data import get_human_eval_plus, get_mbpp_plus
 
 
-def construct_contract_prompt(prompt: str, contract_type: str, contract: str, assertion: str) -> str:
+def construct_contract_prompt(
+    prompt: str, contract_type: str, contract: str, assertion: str
+) -> str:
     if contract_type == "no":
-        return prompt[:-1 * len("'''")] + assertion + "'''" if assertion != "" else prompt
+        return (
+            prompt[: -1 * len("'''")] + assertion + "'''" if assertion != "" else prompt
+        )
     elif contract_type == "docstring":
         # embed within the docstring
         sep = ""
@@ -51,7 +55,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
             dataset = get_human_eval_plus()
         elif args.dataset == "mbpp":
             dataset = get_mbpp_plus()
-            
+
         for task_id, task in p.track(dataset.items()):
             if id_range is not None:
                 id_num = int(task_id.split("/")[1])
@@ -85,7 +89,10 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
             while sidx < args.n_samples:
                 outputs = model.codegen(
                     construct_contract_prompt(
-                        task["prompt"], args.use_contracts, task["contract"], task["assertion"] if "assertion" in task else ""
+                        task["prompt"],
+                        args.use_contracts,
+                        task["contract"],
+                        task["assertion"] if "assertion" in task else "",
                     ),
                     do_sample=not args.greedy,
                     num_samples=args.n_samples - sidx,

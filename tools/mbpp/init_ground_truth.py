@@ -5,7 +5,7 @@ Based on this we will add our contract and modified ground-truth.
 import os
 import pathlib
 
-from evalplus.data import get_mbpp
+from evalplus.data.mbpp import get_mbpp
 
 if __name__ == "__main__":
     # check existance of ground truth folder
