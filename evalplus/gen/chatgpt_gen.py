@@ -41,18 +41,6 @@ class ChatGPTGen(BaseGen):
                 except:  # something wrong.
                     continue
                 rets.append(input)
-        elif "`" in output:
-            is_input = False
-            for x in output.split("`"):
-                if is_input:
-                    try:
-                        # remove comments
-                        is_input = False
-                        input = ast.literal_eval(f"[{x.split('#')[0].strip()}]")
-                    except:  # something wrong.
-                        continue
-                else:
-                    is_input = True
         return rets
 
     def chatgpt_generate(self, selected_inputs: List) -> List:
