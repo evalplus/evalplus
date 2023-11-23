@@ -5,6 +5,7 @@
 
 import ast
 import os
+import re
 import traceback
 
 from termcolor import colored
@@ -44,7 +45,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.nsample is None:
-        if "temp_0.0" in args.folder:
+        temp = re.findall("temp_(?:\d*\.?\d+)", args.folder)
+        if temp and float(temp[0].split("_")[-1]) == 0.0:
             print(colored("Setting nsample = 1 for 0 temp.", "yellow"))
             args.nsample = 1
         else:
@@ -52,18 +54,18 @@ if __name__ == "__main__":
             args.nsample = 200
 
     if args.dataset == "humaneval":
-        task_no = [i for i in range(164)]
-        ntask = 164
+        from evalplus.data import get_human_eval_plus
+
+        task_no = [int(x.split("/")[-1]) for x in get_human_eval_plus().keys()]
         dataset_name = "HumanEval"
     elif args.dataset == "mbpp":
         from evalplus.data import get_mbpp_plus
-        mbpp = get_mbpp_plus()
-        task_no = [int(x.split("/")[-1]) for x in mbpp.keys()]
-        ntask = len(task_no)
+
+        task_no = [int(x.split("/")[-1]) for x in get_mbpp_plus().keys()]
         dataset_name = "Mbpp"
-    else:
-        raise NotImplementedError
-    
+
+    ntask = len(task_no)
+
     print(colored("==============================", "blue"))
     print(colored(" ::: Checking completeness... ", "blue"))
     print(colored(" ::::: All tasks complete?    ", "blue"))
@@ -109,4 +111,3 @@ if __name__ == "__main__":
                 npass += 1
     if ncode != npass:
         print(colored(f" ::::: ⚠️ {npass}/{ncode} code are not compilable!", "red"))
-
