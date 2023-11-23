@@ -4,6 +4,7 @@
 """
 
 import os
+from warnings import warn
 
 from tqdm import tqdm
 
@@ -25,19 +26,18 @@ def get_all_python_files(folder):
 
 
 def remove_unindented_lines(code, ok_starts):
-    new_code = ""
-    for line in code.splitlines():
+    lines = code.splitlines()
+    cut_idx = None
+    for i, line in enumerate(lines):
         if any([line.startswith(t) for t in ok_starts]) or line.strip() == "":
-            new_code += line + "\n"
             continue
 
         lspace = len(line) - len(line.lstrip())
         if lspace == 0:
-            continue
+            cut_idx = i
+            break
 
-        new_code += line + "\n"
-
-    return new_code
+    return "\n".join(lines[:cut_idx])
 
 
 def to_four_space_indents(old_code):
@@ -61,6 +61,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
     )
+    parser.add_argument(
+        "--debug-task", type=str, help="Enter the task ID to only sanitize that task."
+    )
 
     args = parser.parse_args()
 
@@ -72,8 +75,6 @@ if __name__ == "__main__":
         dataset = get_human_eval_plus()
     elif args.dataset == "mbpp":
         dataset = get_mbpp_plus()
-    else:
-        raise NotImplementedError
 
     for task_id, problem in dataset.items():
         entry_point[task_id] = problem["entry_point"]
@@ -91,11 +92,16 @@ if __name__ == "__main__":
     for pyf in tqdm(get_all_python_files(args.folder)):
         # Get [?] from "[prefix]/{HumanEval, Mbpp}_[?]/[number].py":
         task_id = pyf.split("/")[-2].replace("_", "/")
+        if args.debug_task is not None and task_id != args.debug_task:
+            continue
 
         ntotal += 1
         old_code = open(pyf).read()
 
         def_left = "def " + entry_point[task_id] + "("
+        if def_left not in old_code:
+            warn(f"Cannot find {def_left} in {pyf}. Skipping.")
+
         if args.dataset == "humaneval":
             imports, def_right = prompts[task_id].split(def_left)
             new_code = imports + def_left + old_code.split(def_left)[-1]
@@ -103,8 +109,7 @@ if __name__ == "__main__":
             new_code = old_code
 
         chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
-        if len(chunks) == 2:
-            new_code = def_left + chunks[-1]  # fn + impl
+        new_code = def_left + def_left.join(chunks[1:])  # fn + impl
 
         if "chatgpt" in args.folder or "deepseek" in args.folder:
             tmp = ""
@@ -128,7 +133,7 @@ if __name__ == "__main__":
                 new_code = new_code.split(eof)[0]
 
         # remove lines that are not indented
-        ok_starts=[def_left]
+        ok_starts = [def_left]
 
         # some helper functions need to be kept
         if args.dataset == "mbpp":
@@ -137,9 +142,7 @@ if __name__ == "__main__":
             elif def_left == "def heap_sort(":
                 ok_starts.append("def heapify(")
         new_code = remove_unindented_lines(new_code, ok_starts)
-
-        if len(chunks) == 2:
-            new_code = chunks[0] + new_code
+        new_code = chunks[0] + new_code
 
         # write to new folder
         new_pyf = pyf.replace(str(old_folder), str(new_folder))
