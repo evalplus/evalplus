@@ -120,3 +120,7 @@ def completeness_check(name, plus):
             "atol",
         ]:
             assert key in task, f"{key} not found in {name} #{task_id}!"
+
+
+def to_raw(string):
+    return string.encode("unicode-escape").decode().replace("\\\\", "\\")

@@ -10,8 +10,18 @@ from typing import Any, Callable, List, Union
 import coverage
 
 from evalplus.data import get_human_eval_plus
-from evalplus.eval import construct_inputs_sig
+from evalplus.data.utils import to_raw
 from evalplus.eval.utils import reliability_guard, swallow_io, time_limit
+
+
+def construct_inputs_sig(inputs: list) -> str:
+    str_builder = ""
+    for x in inputs:
+        if type(x) == str:
+            str_builder += f"'{to_raw(x)}',"
+        else:
+            str_builder += f"{x},"
+    return str_builder[:-1]
 
 
 class Capturing(list):

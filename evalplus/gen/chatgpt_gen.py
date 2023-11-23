@@ -5,7 +5,7 @@ from typing import Dict, List
 
 import openai
 
-from evalplus.data import to_raw
+from evalplus.data.utils import to_raw
 from evalplus.gen import BaseGen
 from evalplus.gen.util import trusted_check_exec
 from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine

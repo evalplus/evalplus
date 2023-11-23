@@ -21,7 +21,6 @@
 # THE SOFTWARE.
 
 import itertools
-import math
 import multiprocessing
 import time
 from multiprocessing import Array, Value
@@ -29,7 +28,7 @@ from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 
-from evalplus.data import to_raw
+from evalplus.eval._special_oracle import _poly
 from evalplus.eval.utils import (
     create_tempdir,
     reliability_guard,
@@ -74,71 +73,6 @@ def estimate_pass_at_k(
     return np.array(
         [estimator(int(n), int(c), k) for n, c in zip(num_samples_it, num_correct)]
     )
-
-
-def construct_inputs_sig(inputs: list) -> str:
-    str_builder = ""
-    for x in inputs:
-        if type(x) == str:
-            str_builder += f"'{to_raw(x)}',"
-        else:
-            str_builder += f"{x},"
-    return str_builder[:-1]
-
-
-# oracle for 032
-def _poly(xs: list, x: float):
-    """
-    Evaluates polynomial with coefficients xs at point x.
-    return xs[0] + xs[1] * x + xs[1] * x^2 + .... xs[n] * x^n
-    """
-    return sum([coeff * math.pow(x, i) for i, coeff in enumerate(xs)])
-
-
-# oracle for 164
-def _check_164():
-    always_return_true = True
-    origial_correctness = True
-
-    def are_the_same_or_always_be_true(out, expect):
-        nonlocal always_return_true, origial_correctness
-        if origial_correctness:
-            if out != expect:
-                origial_correctness = False
-
-        if always_return_true:
-            if out != True:
-                always_return_true = False
-
-        return origial_correctness or always_return_true
-
-    return are_the_same_or_always_be_true
-
-
-_check_no_164 = _check_164()
-
-
-# oracle for 295
-def _check_295():
-    always_return_zero = True
-    origial_correctness = True
-
-    def are_the_same_or_always_zero(out, expect):
-        nonlocal always_return_zero, origial_correctness
-        if origial_correctness:
-            if out != expect:
-                origial_correctness = False
-
-        if always_return_zero:
-            if out != 0:
-                always_return_zero = False
-
-        return origial_correctness or always_return_zero
-
-    return are_the_same_or_always_zero
-
-
-_check_no_295 = _check_295()
 
 
 SUCCESS = "success"
@@ -201,10 +135,10 @@ def unsafe_execute(
                         exp = expected[i]
                         exact_match = out == exp
 
-                        if "are_equivalent" == entry_point:
-                            exact_match = _check_no_164(out, exp)
-                        elif "sum_div" == entry_point:
-                            exact_match = _check_no_295(out, exp)
+                        if "are_equivalent" == entry_point:  # Mbpp/164 special oracle
+                            exact_match = exact_match or True
+                        elif "sum_div" == entry_point:  # Mbpp/295 special oracle
+                            exact_match = exact_match or out == 0
                         elif "find_zero" == entry_point:
                             assert _poly(*out, inp) <= atol
 
