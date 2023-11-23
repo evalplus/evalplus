@@ -7,7 +7,7 @@ import argparse
 import json
 import os
 
-from evalplus.data.mbpp import concate_code_and_contract, mbpp_serialize_inputs
+from evalplus.data.mbpp import mbpp_serialize_inputs
 from evalplus.gen.chatgpt_gen import ChatGPTGen
 from evalplus.gen.type_mut import TypedMutGen
 
@@ -17,6 +17,16 @@ class SetEncoder(json.JSONEncoder):
         if isinstance(obj, set):
             return list(obj)
         return json.JSONEncoder.default(self, obj)
+
+
+# Used for MBPP as MBPP's prompt is not a formal function signature
+def insert_contract_into_code(entry_point, code, contract):
+    lines = code.split("\n")
+    index = lines.index(
+        next(line for line in lines if line.startswith(f"def {entry_point}"))
+    )
+    lines.insert(index + 1, contract)
+    return "\n".join(lines)
 
 
 def input_generation(args, problems):
@@ -35,11 +45,12 @@ def input_generation(args, problems):
                     + problem["canonical_solution"]
                 )
             elif args.dataset == "mbpp":
-                c_code = problem["prompt"] + concate_code_and_contract(
-                    problem["canonical_solution"],
-                    problem["contract"],
-                    problem["entry_point"],
+                c_code = problem["prompt"] + insert_contract_into_code(
+                    entry_point=problem["entry_point"],
+                    code=problem["canonical_solution"],
+                    contract=problem["contract"],
                 )
+
             # first generate chatgpt
             input_gen = ChatGPTGen(
                 problem["base_input"], problem["entry_point"], c_code, code
@@ -67,12 +78,12 @@ def input_generation(args, problems):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", required=True, type=str)
+    parser.add_argument(
+        "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
+    )
     parser.add_argument("--chatgpt_len", required=True, type=int)
     parser.add_argument("--mut_len", required=True, type=int)
-    parser.add_argument(
-        "--output", default=None, type=int, help="Output .jsonl file name."
-    )
+    parser.add_argument("--output", type=int, help="Output .jsonl path")
     args = parser.parse_args()
 
     problems = None
@@ -81,18 +92,13 @@ def main():
 
         # Allow it to be incomplete
         problems = get_human_eval_plus(err_incomplete=False)
-        if args.output is None:
-            args.output = "HumanEvalPlusInputs.jsonl"
+        args.output = args.output or "HumanEvalPlusInputs.jsonl"
 
     if args.dataset == "mbpp":
         from evalplus.data import get_mbpp_plus
 
-        problems = get_mbpp_plus()
-        if args.output is None:
-            args.output = "MbppPlusInput.jsonl"
-
-    if problems is None:
-        raise NotImplementedError(f"Unsupported dataset: {args.dataset}")
+        problems = get_mbpp_plus(err_incomplete=False)
+        args.output = args.output or "MbppPlusInput.jsonl"
 
     assert os.path.isfile(args.output), f"{args.output} already exists!"
     input_generation(args, problems)

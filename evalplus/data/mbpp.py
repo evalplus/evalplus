@@ -156,20 +156,6 @@ def mbpp_deserialize_inputs(task_id: str, inputs: list) -> list:
     return modified_inputs
 
 
-def concate_code_and_contract(code, contract, entry_point):
-    lines = code.split("\n")
-    index = lines.index(
-        next(
-            line
-            for line in lines
-            if line.startswith(f"def {entry_point}(")
-            or line.startswith(f"def {entry_point} (")
-        )
-    )
-    lines.insert(index + 1, contract)
-    return "\n".join(lines)
-
-
 def get_mbpp() -> Dict[str, Dict]:
     """Get sanitized MBPP from Google's Github repo."""
     mbpp_path = os.path.join(CACHE_DIR, "sanitized-mbpp.json")
