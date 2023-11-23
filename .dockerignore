@@ -1,5 +1,3 @@
-# Synced with .gitignore
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -170,4 +168,7 @@ passrate.p*
 min_cov_dir/
 HumanEvalPlus*.jsonl
 HumanEvalPlus*.gz
+MbppPlus*.jsonl
+MbppPlus*.gz
 evalplus/_version.py
+*mbpp.json
