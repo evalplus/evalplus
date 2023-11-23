@@ -1,5 +1,4 @@
-"""Quickly checks the correctness of
-"""
+"""Test through all ground truth files in groundtruth/mbpp."""
 
 import pathlib
 
