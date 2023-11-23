@@ -247,7 +247,7 @@ Check LLM-produced code and answer the following questions:
 2. Are LLM-generated code compilable? (if no, something could be wrong and you'd better check)
 
 ```shell
-python tools/checker.py --folder /path/to/[model]-[??]b_temp_[??] --dataset humaneval
+python tools/checker.py --folder /path/to/[model]-[??]b_temp_[??] --dataset [humaneval|mbpp]
 ```
 
 ### Post code sanitizer
@@ -257,7 +257,7 @@ But some of them can be easily fixable by doing simple post-processing.
 This tool will make the LLM-generated code more clean/compilable by doing certain post-processing such as trimming with more magical EOFs and some garbage non-code tokens.
 
 ```shell
-python tools/sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??]
+python tools/sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval|mbpp]
 # Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
 ```
 
