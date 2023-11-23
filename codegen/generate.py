@@ -11,16 +11,10 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from evalplus.data import get_human_eval_plus, get_mbpp_plus
 
-
-def construct_contract_prompt(
-    prompt: str, contract_type: str, contract: str, assertion: str
-) -> str:
+def construct_contract_prompt(prompt: str, contract_type: str, contract: str) -> str:
     if contract_type == "no":
-        return (
-            prompt[: -1 * len("'''")] + assertion + "'''" if assertion != "" else prompt
-        )
+        return prompt
     elif contract_type == "docstring":
         # embed within the docstring
         sep = ""
@@ -52,8 +46,12 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
         TimeElapsedColumn(),
     ) as p:
         if args.dataset == "humaneval":
+            from evalplus.data import get_human_eval_plus
+
             dataset = get_human_eval_plus()
         elif args.dataset == "mbpp":
+            from evalplus.data import get_mbpp_plus
+
             dataset = get_mbpp_plus()
 
         for task_id, task in p.track(dataset.items()):
@@ -89,10 +87,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
             while sidx < args.n_samples:
                 outputs = model.codegen(
                     construct_contract_prompt(
-                        task["prompt"],
-                        args.use_contracts,
-                        task["contract"],
-                        task["assertion"] if "assertion" in task else "",
+                        task["prompt"], args.use_contracts, task["contract"]
                     ),
                     do_sample=not args.greedy,
                     num_samples=args.n_samples - sidx,
@@ -119,7 +114,9 @@ def main():
     parser.add_argument("--model", required=True, type=str)
     parser.add_argument("--bs", required=True, type=int)
     parser.add_argument("--temperature", required=True, type=float)
-    parser.add_argument("--dataset", default="humaneval", type=str)
+    parser.add_argument(
+        "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
+    )
     parser.add_argument("--root", type=str, required=True)
     parser.add_argument("--n_samples", default=200, type=int)
     parser.add_argument("--resume", action="store_true")
@@ -128,9 +125,6 @@ def main():
     # id_range is list
     parser.add_argument("--id-range", default=None, nargs="+", type=int)
     args = parser.parse_args()
-
-    if args.dataset not in ["humaneval", "mbpp"]:
-        raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
 
     if args.use_contracts not in ["no", "code", "docstring"]:
         raise NotImplementedError(
