@@ -3,7 +3,7 @@ import time
 from evalplus.eval.utils import time_limit
 
 
-def trusted_exec(code, inputs, entry_point, record_time=False):
+def trusted_exec(code, inputs, entry_point, record_time=False, output_not_none=False):
     """Execute trusted code in place."""
     exec_globals = {}
     exec(code, exec_globals)
@@ -19,12 +19,8 @@ def trusted_exec(code, inputs, entry_point, record_time=False):
         else:
             ret.append(fn(*inp))
 
-    if (
-        "check_str" == entry_point
-        or "text_match_three" == entry_point
-        or "text_starta_endb" == entry_point
-    ):
-        ret = [False if i is None else True for i in ret]
+    if output_not_none:
+        ret = [i is not None for i in ret]
 
     if record_time:
         return ret, rtime

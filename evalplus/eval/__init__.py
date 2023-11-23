@@ -28,7 +28,7 @@ from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 
-from evalplus.eval._special_oracle import _poly
+from evalplus.eval._special_oracle import MBPP_OUTPUT_NOT_NONE_TASKS, _poly
 from evalplus.eval.utils import (
     create_tempdir,
     reliability_guard,
@@ -99,6 +99,7 @@ def is_floats(x) -> bool:
 
 
 def unsafe_execute(
+    dataset: str,
     entry_point: str,
     code: str,
     inputs,
@@ -135,12 +136,25 @@ def unsafe_execute(
                         exp = expected[i]
                         exact_match = out == exp
 
-                        if "are_equivalent" == entry_point:  # Mbpp/164 special oracle
-                            exact_match = exact_match or True
-                        elif "sum_div" == entry_point:  # Mbpp/295 special oracle
-                            exact_match = exact_match or out == 0
-                        elif "find_zero" == entry_point:
-                            assert _poly(*out, inp) <= atol
+                        # ================================================ #
+                        # ============== special oracles ================= #
+                        if dataset == "mbpp":
+                            if (
+                                "are_equivalent" == entry_point
+                            ):  # Mbpp/164 special oracle
+                                exact_match = exact_match or True
+                            elif "sum_div" == entry_point:  # Mbpp/295 special oracle
+                                exact_match = exact_match or out == 0
+                            elif entry_point in MBPP_OUTPUT_NOT_NONE_TASKS:
+                                # exp is True  if not None
+                                #        False if None
+                                exact_match = exp == (out is not None)
+
+                        if dataset == "humaneval":
+                            if "find_zero" == entry_point:
+                                assert _poly(*out, inp) <= atol
+                        # ============== special oracles ================= #
+                        # ================================================ #
 
                         if atol == 0 and is_floats(exp):
                             atol = 1e-6  # enforce atol for float comparison
@@ -168,6 +182,7 @@ def unsafe_execute(
 
 
 def untrusted_check(
+    dataset: str,
     code: str,
     inputs: List[Any],
     entry_point: str,
@@ -191,6 +206,7 @@ def untrusted_check(
     p = multiprocessing.Process(
         target=unsafe_execute,
         args=(
+            dataset,
             entry_point,
             code,
             inputs,
@@ -227,6 +243,7 @@ def untrusted_check(
 
 
 def evaluate_files(
+    dataset: str,
     files: List[str],
     inputs: List,
     expected: List,
@@ -243,6 +260,7 @@ def evaluate_files(
     for file in files:
         code = open(file, "r").read()
         stat, det = untrusted_check(
+            dataset,
             code,
             inputs,
             entry_point,
