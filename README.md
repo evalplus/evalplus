@@ -40,7 +40,7 @@
 
 To address this, we started the EvalPlus project -- a rigourous evaluation framework for LLM4Code that:
 
-+ ✨ improves code benchmarks by adding up to thousands of new tests! (**80x** new tests for **HumanEval** and **35x** new tests for **MBPP**!)
++ ✨ improves code benchmarks by adding up to thousands of new tests! (**80x** for **HumanEval** and **35x** for **MBPP**!)
 + ✨ crafts a set [utility tools](#-useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
 + ✨ accelerates LLM4Code research by open-sourcing [LLM-generated samples](#-LLM-generated-code) for 20+ models -- no need to re-run the expensive benchmarks!
 
