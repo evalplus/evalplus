@@ -112,13 +112,13 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True, type=str)
-    parser.add_argument("--bs", required=True, type=int)
-    parser.add_argument("--temperature", required=True, type=float)
+    parser.add_argument("--bs", default=1, type=int)
+    parser.add_argument("--temperature", default=0, type=float)
     parser.add_argument(
         "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
     )
     parser.add_argument("--root", type=str, required=True)
-    parser.add_argument("--n_samples", default=200, type=int)
+    parser.add_argument("--n_samples", default=1, type=int)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument(
         "--contract-type",
@@ -132,10 +132,10 @@ def main():
     args = parser.parse_args()
 
     if args.greedy and (args.temperature != 0 or args.bs != 1 or args.n_samples != 1):
-        raise ValueError(
-            f"Greedy decoding is only supported with temperature({args.temperature}) = 0, batch_size({args.bs}) = 1"
-            f" and n_samples({args.n_samples}) = 1"
-        )
+        args.temperature = 0
+        args.bs = 1
+        args.n_samples = 1
+        print("Greedy decoding ON (--greedy): setting bs=1, n_samples=1, temperature=0")
 
     if args.id_range is not None:
         assert len(args.id_range) == 2, "id_range must be a list of length 2"

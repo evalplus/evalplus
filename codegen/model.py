@@ -183,12 +183,7 @@ class OpenAIDecoder(DecoderBase):
     ) -> None:
         super().__init__(name, batch_size, temperature)
         openai.api_key = os.environ.get("OPENAI_API_KEY", "dummy")
-        FAUXIPILOT_ADDR = None
-        if name == "codegen-16b":
-            FAUXIPILOT_ADDR = "http://127.0.0.1:5000/v1"
-        elif name == "codegen-6b":
-            FAUXIPILOT_ADDR = "http://127.0.0.1:5010/v1"
-        openai.api_base = os.environ.get("OPENAI_API_BASE", FAUXIPILOT_ADDR)
+        openai.api_base = os.getenv("OPENAI_API_BASE")
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -710,22 +705,16 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name == "codegen-6b":
-        warn(
-            "Using fauxipilot backend for codegen-6b by default. "
-            "If you wish to use huggingface backend go `codegen-6b-hf`"
-        )
-        return OpenAIDecoder(
-            batch_size=batch_size, name="codegen-6b", temperature=temperature
-        )
-    elif name == "codegen-6b-hf":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Salesforce/codegen-6B-mono",
             temperature=temperature,
         )
     elif name == "codegen-16b":
-        return OpenAIDecoder(
-            batch_size=batch_size, name="codegen-16b", temperature=temperature
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen-6B-mono",
+            temperature=temperature,
         )
     elif name == "codegen2-1b":
         return Codegen2Decoder(
