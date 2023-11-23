@@ -80,7 +80,7 @@ pip install -r requirements.txt
 
 ### Code generation
 
-Just like the original HumanEval: implement the `GEN_SOLUTION` function by calling the LLM to produce the complete solution (include the code).
+Implement the `GEN_SOLUTION` function by calling the LLM to produce the complete solution (include the code) and save the samples to `samples.jsonl`:
 
 ```python
 from evalplus.data import get_[human_eval|mbpp]_plus, write_jsonl
@@ -105,6 +105,19 @@ write_jsonl("samples.jsonl", samples)
 </div>
 </details>
 
+> [!Note]
+>
+> **Expected Schema of `samples.jsonl`**
+>
+> 1. `task_id`: Task ID, which are the keys of `get_[human_eval|mbpp]_plus()`
+> 2. `solution` (optional): Self-contained solution (usually including the prompt)
+>    * Example: `{"task_id": "HumanEval/?", "solution": "def f():\n    return 1"}`
+> 3. `completion` (optional): Function body without prompt
+>    * Example: `{"task_id": "HumanEval/?", "completion": "    return 1"}`
+>
+> Only one of `solution` and `completion` is required. If both are provided, `solution` will be used.
+> We also accept solutions in the form of directory, i.e., `--samples ${SAMPLE_DIR}` where `${SAMPLE_DIR}` is organized as: `${SAMPLE_DIR}/${TASK_ID}/{SAMPLE_ID}.py` (`${TASK_ID} = task_id.replace("/", "_")`).
+
 ### Code evaluation
 
 You are strongly recommended to use a sandbox such as [docker](https://docs.docker.com/get-docker/):
@@ -118,19 +131,6 @@ docker run -v $(pwd):/app ganler/evalplus:latest --dataset [humaneval|mbpp] --sa
 ```bash
 evalplus.evaluate --dataset [humaneval|mbpp] --samples samples.jsonl
 ```
-
-> [!Note]
->
-> **Expected Schema of `samples.jsonl`**
->
-> 1. `task_id`: Task ID, which are the keys of `get_[human_eval|mbpp]_plus()`
-> 2. `solution` (optional): Self-contained solution (usually including the prompt)
->    * Example: `{"task_id": "HumanEval/?", "solution": "def f():\n    return 1"}`
-> 3. `completion` (optional): Function body without prompt
->    * Example: `{"task_id": "HumanEval/?", "completion": "    return 1"}`
->
-> Only one of `solution` and `completion` is required. If both are provided, `solution` will be used.
-> We also accept solutions in the form of directory, i.e., `--samples ${SAMPLE_DIR}` where `${SAMPLE_DIR}` is organized as: `${SAMPLE_DIR}/${TASK_ID}/{SAMPLE_ID}.py` (`${TASK_ID} = task_id.replace("/", "_")`).
 
 > [!Warning]
 >
