@@ -97,7 +97,7 @@ if __name__ == "__main__":
     print(colored(" ::: Checking compilation...  ", "blue"))
     print(colored(" ::::: All code compilable?   ", "blue"))
     ncode = 0
-    npass = 0
+    nwrong = 0
     for i in task_no:
         task_folder = os.path.join(args.folder, f"{dataset_name}_{i}")
         # folder must exist
@@ -106,8 +106,12 @@ if __name__ == "__main__":
 
         for pyf in get_all_python_files(task_folder):
             ncode += 1
-            if not syntax_check(open(pyf).read(), args.verbose):
+            code = open(pyf).read()
+            if code.strip() == "":
+                print(colored(f" ⚠️ {pyf} is empty!", "red"))
+                nwrong += 1
+            elif not syntax_check(code, args.verbose):
                 print(colored(f" ⚠️ {pyf} is not compilable!", "red"))
-                npass += 1
-    if ncode != npass:
-        print(colored(f" ::::: ⚠️ {npass}/{ncode} code are not compilable!", "red"))
+                nwrong += 1
+    if ncode != nwrong:
+        print(colored(f" ::::: ⚠️ {nwrong}/{ncode} code are not compilable!", "red"))
