@@ -123,9 +123,11 @@ evalplus.evaluate --dataset [humaneval|mbpp] --samples samples.jsonl
 >
 > **Expected Schema of `samples.jsonl`**
 >
-> 1. `task_id`: Task ID specified as the keys to `get_[human_eval|mbpp]_plus()`
-> 2. `solution` (optional): Self-contained solution (usually including the prompt). Example: `{"task_id": "HumanEval/?", "solution": "def f():\n    return 1"}`
-> 3. `completion` (optional): Function body without prompt. Example: `{"task_id": "HumanEval/?", "completion": "    return 1"}`
+> 1. `task_id`: Task ID, which are the keys of `get_[human_eval|mbpp]_plus()`
+> 2. `solution` (optional): Self-contained solution (usually including the prompt)
+>    * Example: `{"task_id": "HumanEval/?", "solution": "def f():\n    return 1"}`
+> 3. `completion` (optional): Function body without prompt
+>    * Example: `{"task_id": "HumanEval/?", "completion": "    return 1"}`
 >
 > Only one of `solution` and `completion` is required. If both are provided, `solution` will be used.
 > We also accept solutions in the form of directory, i.e., `--samples ${SAMPLE_DIR}` where `${SAMPLE_DIR}` is organized as: `${SAMPLE_DIR}/${TASK_ID}/{SAMPLE_ID}.py` (`${TASK_ID} = task_id.replace("/", "_")`).
