@@ -23,7 +23,7 @@ def make_cache(gzip_url, cache_path):
     # Check if human eval file exists in CACHE_DIR
     if not os.path.exists(cache_path):
         # Install HumanEval dataset and parse as jsonl
-        print("Downloading HumanEval+ dataset...")
+        print(f"Downloading dataset from {gzip_url}")
         with tempdir.TempDir() as tmpdir:
             plus_gz_path = os.path.join(tmpdir, f"data.jsonl.gz")
             wget.download(gzip_url, plus_gz_path)

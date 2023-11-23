@@ -49,7 +49,7 @@ def get_entry_point(task_id: int, assertion: str) -> str:
     return functions[0] if len(functions) > 0 else None
 
 
-def get_code_and_contract_and_assertion(task: id) -> Tuple[str, str, str]:
+def get_code_and_contract_and_assertion(task_id: id) -> Tuple[str, str, str]:
     py_file_path = str(GROUNDTRUTH_MBPP_PATH) + f"/{str(task_id).zfill(3)}.py"
     with open(py_file_path) as reader:
         text = reader.read()
@@ -165,9 +165,9 @@ if __name__ == "__main__":
                 ]:
                     continue
 
-                task["task_id"] = "Mbpp/" + str(task_id)
-
+                task["task_id"] = f"Mbpp/{task_id}"
                 task["entry_point"] = get_entry_point(task_id, task["test_list"][0])
+                task["prompt"] = f'"""\n{task["prompt"]}\n{task["test_list"][0]}\n"""\n'
 
                 (
                     task["canonical_solution"],
@@ -185,13 +185,14 @@ if __name__ == "__main__":
 
                 task["atol"] = get_atol(task_id)
 
-                task["prompt"] = "'''\n" + task["prompt"] + "\n'''"
-
                 del task["source_file"]
                 del task["code"]
+                del task["test_list"]
+                del task["test_imports"]
+                del task["assertion"]
 
                 task["base_input"] = mbpp_serialize_inputs(task_id, task["base_input"])
 
                 writer.write(json.dumps(task) + "\n")
-        # move tmp_file to HUMANEVAL_PLUS_PATH
+
         shutil.copy2(tmp_file, MBPP_PLUS_PATH)
