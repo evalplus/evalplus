@@ -19,7 +19,7 @@ from vllm import LLM, SamplingParams
 
 from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine
 
-EOS = ["<|endoftext|>", "<|endofmask|>"]
+EOS = ["<|endoftext|>", "<|endofmask|>", "</s>"]
 
 
 # Adopted from https://github.com/huggingface/transformers/pull/14897

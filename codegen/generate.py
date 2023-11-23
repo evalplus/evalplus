@@ -113,7 +113,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True, type=str)
     parser.add_argument("--bs", default=1, type=int)
-    parser.add_argument("--temperature", default=0, type=float)
+    parser.add_argument("--temperature", default=0.0, type=float)
     parser.add_argument(
         "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
     )
