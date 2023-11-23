@@ -97,14 +97,9 @@ class DecoderBase(ABC):
 
 
 class VLlmDecoder(DecoderBase):
-    def __init__(
-        self,
-        name: str,
-        batch_size: int = 1,
-        temperature: float = 0.8,
-        max_new_tokens: int = 512,
-    ) -> None:
-        super().__init__(name, batch_size, temperature, max_new_tokens)
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+
         kwargs = {}
         if "CodeLlama" in name:
             kwargs["dtype"] = "bfloat16"
