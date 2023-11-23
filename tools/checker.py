@@ -35,7 +35,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", type=str, required=True)
-    parser.add_argument("--dataset", type=str, default="humaneval")
+    parser.add_argument(
+        "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
+    )
     parser.add_argument("--nsample", type=int)
     parser.add_argument("--verbose", action="store_true")
 
@@ -50,103 +52,61 @@ if __name__ == "__main__":
             args.nsample = 200
 
     if args.dataset == "humaneval":
+        task_no = [i for i in range(164)]
         ntask = 164
-        print(colored("==============================", "blue"))
-        print(colored(" ::: Checking completeness... ", "blue"))
-        print(colored(" ::::: All tasks complete?    ", "blue"))
-        ndone = 0
-        for i in range(ntask):
-            task_folder = os.path.join(args.folder, f"HumanEval_{i}")
-            if not os.path.exists(task_folder):
-                print(colored(f" ⚠️ HumanEval_{i} is missing!", "red"))
-                continue
-            # get the # of .py files under task_folder
-            nfiles = len(get_all_python_files(task_folder))
-            if nfiles != args.nsample:
-                print(
-                    colored(
-                        f" ⚠️ HumanEval_{i} only has {nfiles} samples! But {args.nsample} are expected.",
-                        "red",
-                    )
-                )
-                continue
-            ndone += 1
-        if ntask != ndone:
-            ntbd = ntask - ndone
-            print(colored(f" ::::: ⚠️ {ntbd}/{ntask} tasks incomplete!", "red"))
-        else:
-            print(colored(f" ::::: All {ntask} tasks complete!", "green"))
-
-        print(colored("==============================", "blue"))
-        print(colored(" ::: Checking compilation...  ", "blue"))
-        print(colored(" ::::: All code compilable?   ", "blue"))
-        ncode = 0
-        npass = 0
-        for i in range(ntask):
-            task_folder = os.path.join(args.folder, f"HumanEval_{i}")
-            # folder must exist
-            if not os.path.exists(task_folder):
-                continue
-
-            for pyf in get_all_python_files(task_folder):
-                ncode += 1
-                if not syntax_check(open(pyf).read(), args.verbose):
-                    print(colored(f" ⚠️ {pyf} is not compilable!", "red"))
-                    npass += 1
-        if ncode != npass:
-            print(colored(f" ::::: ⚠️ {npass}/{ncode} code are not compilable!", "red"))
+        dataset_name = "HumanEval"
     elif args.dataset == "mbpp":
-
         from evalplus.data import get_mbpp_plus
-
         mbpp = get_mbpp_plus()
-        mbpp_ids = [int(x.split("/")[-1]) for x in mbpp.keys()]
-        ntask = len(mbpp_ids)
-
-        print(colored("==============================", "blue"))
-        print(colored(" ::: Checking completeness... ", "blue"))
-        print(colored(" ::::: All tasks complete?    ", "blue"))
-        ndone = 0
-        for i in mbpp_ids:
-            task_folder = os.path.join(args.folder, f"Mbpp_{i}")
-            if not os.path.exists(task_folder):
-                print(colored(f" ⚠️ Mbpp_{i} is missing!", "red"))
-                continue
-            # get the # of .py files under task_folder
-            nfiles = len(get_all_python_files(task_folder))
-            if nfiles != args.nsample:
-                print(
-                    colored(
-                        f" ⚠️ Mbpp_{i} only has {nfiles} samples! But {args.nsample} are expected.",
-                        "red",
-                    )
-                )
-                continue
-            ndone += 1
-        if ntask != ndone:
-            ntbd = ntask - ndone
-            print(colored(f" ::::: ⚠️ {ntbd}/{ntask} tasks incomplete!", "red"))
-        else:
-            print(colored(f" ::::: All {ntask} tasks complete!", "green"))
-
-        print(colored("==============================", "blue"))
-        print(colored(" ::: Checking compilation...  ", "blue"))
-        print(colored(" ::::: All code compilable?   ", "blue"))
-        ncode = 0
-        npass = 0
-        for i in range(ntask):
-            task_folder = os.path.join(args.folder, f"Mbpp_{i}")
-            # folder must exist
-            if not os.path.exists(task_folder):
-                continue
-
-            for pyf in get_all_python_files(task_folder):
-                ncode += 1
-                if not syntax_check(open(pyf).read(), args.verbose):
-                    print(colored(f" ⚠️ {pyf} is not compilable!", "red"))
-                    npass += 1
-        if ncode != npass:
-            print(colored(f" ::::: ⚠️ {npass}/{ncode} code are not compilable!", "red"))
-
+        task_no = [int(x.split("/")[-1]) for x in mbpp.keys()]
+        ntask = len(task_no)
+        dataset_name = "Mbpp"
     else:
         raise NotImplementedError
+    
+    print(colored("==============================", "blue"))
+    print(colored(" ::: Checking completeness... ", "blue"))
+    print(colored(" ::::: All tasks complete?    ", "blue"))
+    ndone = 0
+
+    for i in task_no:
+        task_folder = os.path.join(args.folder, f"{dataset_name}_{i}")
+        if not os.path.exists(task_folder):
+            print(colored(f" ⚠️ {dataset_name}_{i} is missing!", "red"))
+            continue
+        # get the # of .py files under task_folder
+        nfiles = len(get_all_python_files(task_folder))
+        if nfiles != args.nsample:
+            print(
+                colored(
+                    f" ⚠️ {dataset_name}_{i} only has {nfiles} samples! But {args.nsample} are expected.",
+                    "red",
+                )
+            )
+            continue
+        ndone += 1
+    if ntask != ndone:
+        ntbd = ntask - ndone
+        print(colored(f" ::::: ⚠️ {ntbd}/{ntask} tasks incomplete!", "red"))
+    else:
+        print(colored(f" ::::: All {ntask} tasks complete!", "green"))
+
+    print(colored("==============================", "blue"))
+    print(colored(" ::: Checking compilation...  ", "blue"))
+    print(colored(" ::::: All code compilable?   ", "blue"))
+    ncode = 0
+    npass = 0
+    for i in task_no:
+        task_folder = os.path.join(args.folder, f"{dataset_name}_{i}")
+        # folder must exist
+        if not os.path.exists(task_folder):
+            continue
+
+        for pyf in get_all_python_files(task_folder):
+            ncode += 1
+            if not syntax_check(open(pyf).read(), args.verbose):
+                print(colored(f" ⚠️ {pyf} is not compilable!", "red"))
+                npass += 1
+    if ncode != npass:
+        print(colored(f" ::::: ⚠️ {npass}/{ncode} code are not compilable!", "red"))
+

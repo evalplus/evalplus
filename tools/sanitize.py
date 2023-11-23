@@ -58,7 +58,9 @@ if __name__ == "__main__":
     parser.add_argument("--folder", type=str, required=True)
     parser.add_argument("--eof", action="store_true")
     parser.add_argument("--inplace", action="store_true")
-    parser.add_argument("--dataset", type=str, default="humaneval")
+    parser.add_argument(
+        "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
+    )
 
     args = parser.parse_args()
 
@@ -66,9 +68,12 @@ if __name__ == "__main__":
     entry_point = {}
     prompts = {}
 
-    dataset = {"humaneval": get_human_eval_plus(), "mbpp": get_mbpp_plus()}[
-        args.dataset
-    ]
+    if args.dataset == "humaneval":
+        dataset = get_human_eval_plus()
+    elif args.dataset == "mbpp":
+        dataset = get_mbpp_plus()
+    else:
+        raise NotImplementedError
 
     for task_id, problem in dataset.items():
         entry_point[task_id] = problem["entry_point"]
@@ -101,7 +106,7 @@ if __name__ == "__main__":
         if len(chunks) == 2:
             new_code = def_left + chunks[-1]  # fn + impl
 
-        if "chatgpt" in args.folder:
+        if "chatgpt" in args.folder or "deepseek" in args.folder:
             tmp = ""
             for line in new_code.splitlines():
                 if line.strip() == "python":
@@ -123,7 +128,15 @@ if __name__ == "__main__":
                 new_code = new_code.split(eof)[0]
 
         # remove lines that are not indented
-        new_code = remove_unindented_lines(new_code, ok_starts=[def_left])
+        ok_starts=[def_left]
+
+        # some helper functions need to be kept
+        if args.dataset == "mbpp":
+            if def_left == "def count_Primes_nums(":
+                ok_starts.append("def is_Prime(")
+            elif def_left == "def heap_sort(":
+                ok_starts.append("def heapify(")
+        new_code = remove_unindented_lines(new_code, ok_starts)
 
         if len(chunks) == 2:
             new_code = chunks[0] + new_code
