@@ -99,6 +99,12 @@ if __name__ == "__main__":
         ntotal += 1
         old_code = open(pyf).read()
 
+        old_code = "\n" + old_code
+        # basic handling of chat output
+        for blk in ["\n```python\n", "\n```\n"]:
+            old_code = old_code.split(blk, maxsplit=1)[-1].split("\n```", maxsplit=1)[0]
+            old_code = "\n" + old_code
+
         def_left = "def " + entry_point[task_id]
         if def_left not in old_code:
             warn(f"Cannot find {def_left} in {pyf}. Skipping.")
@@ -110,6 +116,7 @@ if __name__ == "__main__":
             new_code = old_code
 
         chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
+
         new_code = def_left + def_left.join(chunks[1:])  # fn + impl
 
         if "chatgpt" in args.folder or "deepseek" in args.folder:
