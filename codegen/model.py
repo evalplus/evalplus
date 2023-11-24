@@ -100,7 +100,7 @@ class VLlmDecoder(DecoderBase):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
 
-        kwargs = {}
+        kwargs = {"tensor_parallel_size": int(os.getenv("VLLM_N_GPUS", "1"))}
         if "CodeLlama" in name:
             kwargs["dtype"] = "bfloat16"
         elif "CodeBooga" in name:
