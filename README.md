@@ -40,9 +40,9 @@
 
 To address this, we started the EvalPlus project -- a rigourous evaluation framework for LLM4Code that:
 
-+ ✨ improves code benchmarks by adding up to thousands of new tests! (81x new tests for HumanEval!)
++ ✨ improves code benchmarks by adding up to thousands of new tests! (**80x** for **HumanEval** and **35x** for **MBPP**!)
 + ✨ crafts a set [utility tools](#-useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
-+ ✨ accelerates LLM4Code research by open-sourcing [LLM-generated samples](https://github.com/evalplus/evalplus/releases/tag/v0.1.0) for 14+ models -- no need to re-run the expensive benchmarks!
++ ✨ accelerates LLM4Code research by open-sourcing [LLM-generated samples](#-LLM-generated-code) for 20+ models -- no need to re-run the expensive benchmarks!
 
 Want to know more details? Please read our [**NeurIPS'23 paper**](https://arxiv.org/abs/2305.01210) [![](https://img.shields.io/badge/arXiv-2305.01210-b31b1b.svg)](https://arxiv.org/abs/2305.01210)!
 
@@ -78,18 +78,16 @@ pip install -r requirements.txt
 </details>
 
 
-### HumanEval+
+### Code generation
 
-#### Code generation
-
-Just like the original HumanEval: implement the `GEN_ONE_COMPLETION` function by calling the LLM to produce the completion (prompt not included)!
+Implement the `GEN_SOLUTION` function by calling the LLM to produce the complete solution (include the code) and save the samples to `samples.jsonl`:
 
 ```python
-from evalplus.data import get_human_eval_plus, write_jsonl
+from evalplus.data import get_[human_eval|mbpp]_plus, write_jsonl
 
 samples = [
-    dict(task_id=task_id, completion=GEN_ONE_COMPLETION(problem["prompt"]))
-    for task_id, problem in get_human_eval_plus().items()
+    dict(task_id=task_id, solution=GEN_SOLUTION(problem["prompt"]))
+    for task_id, problem in get_[human_eval|mbpp]_plus().items()
 ]
 write_jsonl("samples.jsonl", samples)
 ```
@@ -107,28 +105,35 @@ write_jsonl("samples.jsonl", samples)
 </div>
 </details>
 
-#### Code evaluation
+> [!Note]
+>
+> **Expected Schema of `samples.jsonl`**
+>
+> 1. `task_id`: Task ID, which are the keys of `get_[human_eval|mbpp]_plus()`
+> 2. `solution` (optional): Self-contained solution (usually including the prompt)
+>    * Example: `{"task_id": "HumanEval/?", "solution": "def f():\n    return 1"}`
+> 3. `completion` (optional): Function body without prompt
+>    * Example: `{"task_id": "HumanEval/?", "completion": "    return 1"}`
+>
+> Only one of `solution` and `completion` is required. If both are provided, `solution` will be used.
+> We also accept solutions in the form of directory, i.e., `--samples ${SAMPLE_DIR}` where `${SAMPLE_DIR}` is organized as: `${SAMPLE_DIR}/${TASK_ID}/{SAMPLE_ID}.py` (`${TASK_ID} = task_id.replace("/", "_")`).
+
+### Code evaluation
 
 You are strongly recommended to use a sandbox such as [docker](https://docs.docker.com/get-docker/):
 
 ```bash
-docker run -v $(pwd):/app ganler/evalplus:latest --dataset humaneval --samples samples.jsonl
+docker run -v $(pwd):/app ganler/evalplus:latest --dataset [humaneval|mbpp] --samples samples.jsonl
 ```
 
 ...Or if you want to try it locally regardless of the risks ⚠️:
 
 ```bash
-evalplus.evaluate --dataset humaneval --samples samples.jsonl
+evalplus.evaluate --dataset [humaneval|mbpp] --samples samples.jsonl
 ```
 
-> [!Note]
-> 
-> The input to the evaluation engine (i.e., `samples.jsonl`) must comply with the [HumanEval format]().
-> In other words, each line of the `.jsonl` file is a json dictionary like `{"task_id": "HumanEval/0", "completion": "    return 1"}`.
-> The `task_id` field points to the HumanEval problem and `completion` field includes the LLM completed code.
-
 > [!Warning]
-> 
+>
 > Do you use a very slow machine?
 >
 > LLM solutions are regarded as **failed** on timeout (and OOM etc.).
@@ -176,7 +181,7 @@ Evaluating samples...
 Base
 {'pass@1': 0.8841463414634146}
 Base + Extra
-{'pass@1': 0.75}
+{'pass@1': 0.768}
 ```
 
 - `Base` is the `pass@k` for the original HumanEval
@@ -187,6 +192,7 @@ Base + Extra
 <details><summary>🤔 How long it would take? <i>:: click to expand ::</i></summary>
 <div>
 
+If you do greedy decoding where there is only one sample for each task, the evaluation should take just a few seconds.
 When running 200 samples x 164 tasks x ~700+ tests, it can take around 2-10 minute by using `--parallel 64` and `--test-details`.
 Here are some tips to speed up the evaluation:
 
@@ -208,12 +214,14 @@ Here are some tips to speed up the evaluation:
 > # evalplus.evaluate --dataset humaneval --samples samples.jsonl --mini
 > ```
 
-### MBPP+ (TBD)
-
 
 ## 💻 LLM-generated code
 
-We also share pre-generated code samples from LLMs we have [evaluated](https://evalplus.github.io/leaderboard.html) in the attachment of our [v0.1.0 release](https://github.com/evalplus/evalplus/releases/tag/v0.1.0).
+We also share pre-generated code samples from LLMs we have [evaluated](https://evalplus.github.io/leaderboard.html):
+
+* **HumanEval+**: See the attachment of our [v0.1.0 release](https://github.com/evalplus/evalplus/releases/tag/v0.1.0).
+* **MBPP+**: See the attachment of our v0.2.0 release (TBD).
+
 Each sample file is packaged in a zip file named like `${model_name}_temp_${temperature}.zip`.
 You can unzip them to a folder named like `${model_name}_temp_${temperature}` and run the evaluation from scratch with:
 
@@ -239,7 +247,7 @@ Check LLM-produced code and answer the following questions:
 2. Are LLM-generated code compilable? (if no, something could be wrong and you'd better check)
 
 ```shell
-python tools/checker.py --folder /path/to/[model]-[??]b_temp_[??] --dataset humaneval
+python tools/checker.py --folder /path/to/[model]-[??]b_temp_[??] --dataset [humaneval|mbpp]
 ```
 
 ### Post code sanitizer
@@ -249,7 +257,7 @@ But some of them can be easily fixable by doing simple post-processing.
 This tool will make the LLM-generated code more clean/compilable by doing certain post-processing such as trimming with more magical EOFs and some garbage non-code tokens.
 
 ```shell
-python tools/sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??]
+python tools/sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval|mbpp]
 # Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
 ```
 
@@ -283,3 +291,4 @@ python tools/render.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
 ## 🙏 Acknowledgement
 
 - [HumanEval](https://github.com/openai/human-eval)
+- [MBPP](https://github.com/google-research/google-research/tree/master/mbpp)

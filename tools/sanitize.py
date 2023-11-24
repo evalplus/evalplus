@@ -4,10 +4,12 @@
 """
 
 import os
+from warnings import warn
 
 from tqdm import tqdm
 
-from evalplus.data import get_human_eval
+from evalplus.data import get_human_eval_plus, get_mbpp_plus
+from tools.checker import syntax_check
 
 INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
 POLYCODER_EXTRA = ["\n//", "\n/*"]
@@ -25,19 +27,18 @@ def get_all_python_files(folder):
 
 
 def remove_unindented_lines(code, ok_starts):
-    new_code = ""
-    for line in code.splitlines():
+    lines = code.splitlines()
+    cut_idx = None
+    for i, line in enumerate(lines):
         if any([line.startswith(t) for t in ok_starts]) or line.strip() == "":
-            new_code += line + "\n"
             continue
 
         lspace = len(line) - len(line.lstrip())
         if lspace == 0:
-            continue
+            cut_idx = i
+            break
 
-        new_code += line + "\n"
-
-    return new_code
+    return "\n".join(lines[:cut_idx])
 
 
 def to_four_space_indents(old_code):
@@ -58,13 +59,28 @@ if __name__ == "__main__":
     parser.add_argument("--folder", type=str, required=True)
     parser.add_argument("--eof", action="store_true")
     parser.add_argument("--inplace", action="store_true")
+    parser.add_argument(
+        "--rm-prefix-lines", type=str, help="Remove lines starting with this"
+    )
+    parser.add_argument(
+        "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
+    )
+    parser.add_argument(
+        "--debug-task", type=str, help="Enter the task ID to only sanitize that task."
+    )
 
     args = parser.parse_args()
 
     # task_id -> entry_point
     entry_point = {}
     prompts = {}
-    for task_id, problem in get_human_eval().items():
+
+    if args.dataset == "humaneval":
+        dataset = get_human_eval_plus()
+    elif args.dataset == "mbpp":
+        dataset = get_mbpp_plus()
+
+    for task_id, problem in dataset.items():
         entry_point[task_id] = problem["entry_point"]
         prompts[task_id] = problem["prompt"]
 
@@ -78,20 +94,44 @@ if __name__ == "__main__":
     nsan = 0
     ntotal = 0
     for pyf in tqdm(get_all_python_files(args.folder)):
-        # Get [?] from "[prefix]/HumanEval_[?]/[number].py":
-        task_id = pyf.split("/")[-2].replace("HumanEval_", "HumanEval/")
+        # Get [?] from "[prefix]/{HumanEval, Mbpp}_[?]/[number].py":
+        task_id = pyf.split("/")[-2].replace("_", "/")
+        if args.debug_task is not None and task_id != args.debug_task:
+            continue
 
         ntotal += 1
         old_code = open(pyf).read()
 
-        def_left = "def " + entry_point[task_id] + "("
-        imports, def_right = prompts[task_id].split(def_left)
-        new_code = imports + def_left + old_code.split(def_left)[-1]
-        chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
-        if len(chunks) == 2:
-            new_code = def_left + chunks[-1]  # fn + impl
+        if args.rm_prefix_lines is not None:
+            old_code = "\n".join(
+                [
+                    line
+                    for line in old_code.splitlines()
+                    if not line.startswith(args.rm_prefix_lines)
+                ]
+            )
 
-        if "chatgpt" in args.folder:
+        old_code = "\n" + old_code
+        # basic handling of chat output
+        for blk in ["\n```python\n", "\n```\n"]:
+            old_code = old_code.split(blk, maxsplit=1)[-1].split("\n```", maxsplit=1)[0]
+            old_code = "\n" + old_code
+
+        def_left = "def " + entry_point[task_id]
+        if def_left not in old_code:
+            warn(f"Cannot find {def_left} in {pyf}. Skipping.")
+
+        if args.dataset == "humaneval":
+            imports, def_right = prompts[task_id].split(def_left)
+            new_code = imports + def_left + old_code.split(def_left)[-1]
+        elif args.dataset == "mbpp":
+            new_code = old_code
+
+        chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
+
+        new_code = def_left + def_left.join(chunks[1:])  # fn + impl
+
+        if "chatgpt" in args.folder or "deepseek" in args.folder:
             tmp = ""
             for line in new_code.splitlines():
                 if line.strip() == "python":
@@ -113,10 +153,13 @@ if __name__ == "__main__":
                 new_code = new_code.split(eof)[0]
 
         # remove lines that are not indented
-        new_code = remove_unindented_lines(new_code, ok_starts=[def_left])
+        new_code = remove_unindented_lines(new_code, ["def "])
+        new_code = chunks[0] + new_code
 
-        if len(chunks) == 2:
-            new_code = chunks[0] + new_code
+        # cut off the last function if it is incomplete
+        last_fn = "def " + new_code.split("\ndef ")[-1]
+        if not syntax_check(last_fn):
+            new_code = "\ndef ".join(new_code.split("\ndef ")[:-1])
 
         # write to new folder
         new_pyf = pyf.replace(str(old_folder), str(new_folder))

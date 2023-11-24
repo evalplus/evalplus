@@ -13,7 +13,7 @@ from typing import Tuple
 
 from tempdir import TempDir
 
-from evalplus.data import get_human_eval
+from evalplus.data.humaneval import get_human_eval
 
 HUMANEVAL_PLUS_PATH = (
     pathlib.Path(__file__).parent.parent.parent / "HumanEvalPlus.jsonl"

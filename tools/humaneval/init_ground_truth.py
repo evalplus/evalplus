@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-from evalplus.data import get_human_eval
+from evalplus.data.humaneval import get_human_eval
 
 if __name__ == "__main__":
     # check existance of ground truth folder

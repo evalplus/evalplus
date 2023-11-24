@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 from rich.progress import track
 
 from evalplus.eval.utils import swallow_io
-from evalplus.evaluate import evaluate_humaneval
+from evalplus.evaluate import evaluate
 from evalplus.tsr.utils import (
     clean,
     execute_cmd,
@@ -73,7 +73,7 @@ def mutants_eval(mutation_dir: str):
     )
     print("Evaluating mutants... ", end="")
     with swallow_io():
-        evaluate_humaneval(args)
+        evaluate(args)
     print("Done")
 
 

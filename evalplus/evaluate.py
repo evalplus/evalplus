@@ -15,17 +15,20 @@ import numpy as np
 from tqdm import tqdm
 
 from evalplus.data import (
-    CACHE_DIR,
     get_human_eval_plus,
     get_human_eval_plus_hash,
+    get_mbpp_plus,
+    get_mbpp_plus_hash,
     load_solutions,
 )
+from evalplus.data.utils import CACHE_DIR
 from evalplus.eval import (
     SUCCESS,
     compatible_eval_result,
     estimate_pass_at_k,
     untrusted_check,
 )
+from evalplus.eval._special_oracle import MBPP_OUTPUT_NOT_NONE_TASKS
 from evalplus.gen.util import trusted_exec
 
 # 1st item: the status
@@ -33,7 +36,7 @@ from evalplus.gen.util import trusted_exec
 Result = Tuple[str, List[bool]]
 
 
-def get_groundtruth(problems, hashcode):
+def get_groundtruth(problems, hashcode, tasks_only_output_not_none):
     cache_file = os.path.join(CACHE_DIR, f"{hashcode}.pkl")
     if os.path.exists(cache_file):
         print(f"Load from ground-truth from {cache_file}")
@@ -50,6 +53,7 @@ def get_groundtruth(problems, hashcode):
             problem["base_input"],
             problem["entry_point"],
             record_time=True,
+            output_not_none=problem["entry_point"] in tasks_only_output_not_none,
         )
 
         oracle["plus"], oracle["plus_time"] = trusted_exec(
@@ -57,6 +61,7 @@ def get_groundtruth(problems, hashcode):
             problem["plus_input"],
             problem["entry_point"],
             record_time=True,
+            output_not_none=problem["entry_point"] in tasks_only_output_not_none,
         )
         expected_output[task_id] = oracle
     print(f"Expected outputs computed in {time.time() - tbegin:.2f}s")
@@ -68,6 +73,7 @@ def get_groundtruth(problems, hashcode):
 
 
 def check_correctness(
+    dataset: str,
     completion_id: int,
     problem: Dict[str, Any],
     solution: str,
@@ -84,6 +90,7 @@ def check_correctness(
         "_identifier": identifier,
     }
     ret["base"] = untrusted_check(
+        dataset,
         solution,
         problem["base_input"],
         problem["entry_point"],
@@ -97,6 +104,7 @@ def check_correctness(
 
     if not base_only:
         ret["plus"] = untrusted_check(
+            dataset,
             solution,
             problem["plus_input"],
             problem["entry_point"],
@@ -111,7 +119,7 @@ def check_correctness(
     return ret
 
 
-def evaluate_humaneval(flags):
+def evaluate(flags):
     if flags.parallel is None:
         n_workers = max(1, multiprocessing.cpu_count() // 2)
     else:
@@ -130,10 +138,18 @@ def evaluate_humaneval(flags):
 
         results = compatible_eval_result(results)
     else:
-        problems = get_human_eval_plus(mini=flags.mini)
-
-        dataset_hash = get_human_eval_plus_hash()
-        expected_output = get_groundtruth(problems, dataset_hash)
+        if flags.dataset == "humaneval":
+            problems = get_human_eval_plus(mini=flags.mini)
+            dataset_hash = get_human_eval_plus_hash()
+            expected_output = get_groundtruth(problems, dataset_hash, [])
+        elif flags.dataset == "mbpp":
+            problems = get_mbpp_plus(mini=flags.mini)
+            dataset_hash = get_mbpp_plus_hash()
+            expected_output = get_groundtruth(
+                problems,
+                dataset_hash,
+                MBPP_OUTPUT_NOT_NONE_TASKS,
+            )
 
         results = {
             "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -158,6 +174,7 @@ def evaluate_humaneval(flags):
                 )
                 remainings.add(sample["_identifier"])
                 args = (
+                    flags.dataset,
                     completion_id[task_id],
                     problems[task_id],
                     solution,
@@ -260,7 +277,9 @@ def evaluate_humaneval(flags):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", required=True, type=str)
+    parser.add_argument(
+        "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
+    )
     parser.add_argument("--samples", required=True, type=str)
     parser.add_argument("--base-only", action="store_true")
     parser.add_argument("--parallel", default=None, type=int)
@@ -271,10 +290,7 @@ def main():
     parser.add_argument("--mini", action="store_true")
     args = parser.parse_args()
 
-    if args.dataset == "humaneval":
-        evaluate_humaneval(args)
-    else:
-        raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
+    evaluate(args)
 
 
 if __name__ == "__main__":

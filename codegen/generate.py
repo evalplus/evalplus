@@ -11,11 +11,9 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from evalplus.data import get_human_eval_plus
-
 
 def construct_contract_prompt(prompt: str, contract_type: str, contract: str) -> str:
-    if contract_type == "no":
+    if contract_type == "none":
         return prompt
     elif contract_type == "docstring":
         # embed within the docstring
@@ -47,7 +45,16 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
         TextColumn("•"),
         TimeElapsedColumn(),
     ) as p:
-        for task_id, task in p.track(get_human_eval_plus().items()):
+        if args.dataset == "humaneval":
+            from evalplus.data import get_human_eval_plus
+
+            dataset = get_human_eval_plus()
+        elif args.dataset == "mbpp":
+            from evalplus.data import get_mbpp_plus
+
+            dataset = get_mbpp_plus()
+
+        for task_id, task in p.track(dataset.items()):
             if id_range is not None:
                 id_num = int(task_id.split("/")[1])
                 low, high = id_range
@@ -56,7 +63,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
                     continue
 
             p_name = task_id.replace("/", "_")
-            if args.use_contracts != "no" and task["contract"] == "":
+            if args.contract_type != "none" and task["contract"] == "":
                 continue
             os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
             log = f"Codegen: {p_name} @ {model}"
@@ -80,7 +87,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
             while sidx < args.n_samples:
                 outputs = model.codegen(
                     construct_contract_prompt(
-                        task["prompt"], args.use_contracts, task["contract"]
+                        task["prompt"], args.contract_type, task["contract"]
                     ),
                     do_sample=not args.greedy,
                     num_samples=args.n_samples - sidx,
@@ -105,30 +112,30 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True, type=str)
-    parser.add_argument("--bs", required=True, type=int)
-    parser.add_argument("--temperature", required=True, type=float)
-    parser.add_argument("--dataset", default="humaneval", type=str)
+    parser.add_argument("--bs", default=1, type=int)
+    parser.add_argument("--temperature", default=0.0, type=float)
+    parser.add_argument(
+        "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
+    )
     parser.add_argument("--root", type=str, required=True)
-    parser.add_argument("--n_samples", default=200, type=int)
+    parser.add_argument("--n_samples", default=1, type=int)
     parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--use_contracts", default="no", type=str)
+    parser.add_argument(
+        "--contract-type",
+        default="none",
+        type=str,
+        choices=["none", "code", "docstring"],
+    )
     parser.add_argument("--greedy", action="store_true")
     # id_range is list
     parser.add_argument("--id-range", default=None, nargs="+", type=int)
     args = parser.parse_args()
 
-    if args.dataset not in ["humaneval"]:
-        raise NotImplementedError("Unsupported dataset: {}".format(args.dataset))
-
-    if args.use_contracts not in ["no", "code", "docstring"]:
-        raise NotImplementedError(
-            "Unsupported contract usage: {}".format(args.use_contracts)
-        )
     if args.greedy and (args.temperature != 0 or args.bs != 1 or args.n_samples != 1):
-        raise ValueError(
-            f"Greedy decoding is only supported with temperature({args.temperature}) = 0, batch_size({args.bs}) = 1"
-            f" and n_samples({args.n_samples}) = 1"
-        )
+        args.temperature = 0
+        args.bs = 1
+        args.n_samples = 1
+        print("Greedy decoding ON (--greedy): setting bs=1, n_samples=1, temperature=0")
 
     if args.id_range is not None:
         assert len(args.id_range) == 2, "id_range must be a list of length 2"
@@ -149,7 +156,7 @@ def main():
         args.dataset,
         args.model
         + f"_temp_{args.temperature}"
-        + ("" if args.use_contracts == "no" else f"-contract-{args.use_contracts}"),
+        + ("" if args.contract_type == "none" else f"-contract-{args.contract_type}"),
     )
     os.makedirs(workdir, exist_ok=True)
 
