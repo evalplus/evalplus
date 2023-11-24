@@ -574,15 +574,17 @@ class StarCoderInfill(HFTorchDecoder):
                 )
             ]
         )
-        temperature = max(self.temperature, 1e-2)
+
+        kwargs = {}
+        if do_sample:
+            kwargs["top_p"] = 0.95
+            kwargs["temperature"] = max(self.temperature, 1e-2)
+
         raw_outputs = self.model.generate(
             input_tokens,
             max_new_tokens=self.max_new_tokens,
             stopping_criteria=scores,
             do_sample=do_sample,
-            top_p=0.95,
-            top_k=None,
-            temperature=temperature,
             num_return_sequences=min(self.batch_size, num_samples),
             output_scores=True,
             return_dict_in_generate=True,
@@ -708,7 +710,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     elif name == "codegen-16b":
         return HFTorchDecoder(
             batch_size=batch_size,
-            name="Salesforce/codegen-6B-mono",
+            name="Salesforce/codegen-16B-mono",
             temperature=temperature,
         )
     elif name == "codegen2-1b":
