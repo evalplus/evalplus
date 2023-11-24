@@ -9,6 +9,7 @@ from warnings import warn
 from tqdm import tqdm
 
 from evalplus.data import get_human_eval_plus, get_mbpp_plus
+from tools.checker import syntax_check
 
 INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
 POLYCODER_EXTRA = ["\n//", "\n/*"]
@@ -98,7 +99,7 @@ if __name__ == "__main__":
         ntotal += 1
         old_code = open(pyf).read()
 
-        def_left = "def " + entry_point[task_id] + "("
+        def_left = "def " + entry_point[task_id]
         if def_left not in old_code:
             warn(f"Cannot find {def_left} in {pyf}. Skipping.")
 
@@ -135,6 +136,11 @@ if __name__ == "__main__":
         # remove lines that are not indented
         new_code = remove_unindented_lines(new_code, ["def "])
         new_code = chunks[0] + new_code
+
+        # cut off the last function if it is incomplete
+        last_fn = "def " + new_code.split("\ndef ")[-1]
+        if not syntax_check(last_fn):
+            new_code = "\ndef ".join(new_code.split("\ndef ")[:-1])
 
         # write to new folder
         new_pyf = pyf.replace(str(old_folder), str(new_folder))
