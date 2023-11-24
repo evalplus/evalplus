@@ -60,6 +60,9 @@ if __name__ == "__main__":
     parser.add_argument("--eof", action="store_true")
     parser.add_argument("--inplace", action="store_true")
     parser.add_argument(
+        "--rm-prefix-lines", type=str, help="Remove lines starting with this"
+    )
+    parser.add_argument(
         "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
     )
     parser.add_argument(
@@ -98,6 +101,15 @@ if __name__ == "__main__":
 
         ntotal += 1
         old_code = open(pyf).read()
+
+        if args.rm_prefix_lines is not None:
+            old_code = "\n".join(
+                [
+                    line
+                    for line in old_code.splitlines()
+                    if not line.startswith(args.rm_prefix_lines)
+                ]
+            )
 
         old_code = "\n" + old_code
         # basic handling of chat output
