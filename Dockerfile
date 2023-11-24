@@ -11,6 +11,9 @@ COPY . /evalplus
 
 RUN cd /evalplus && pip install .
 
+# Pre-install the dataset
+RUN python3 -c "from evalplus.data import get_human_eval_plus, get_mbpp_plus; get_human_eval_plus(); get_mbpp_plus()"
+
 WORKDIR /app
 
 ENTRYPOINT ["python3", "-m", "evalplus.evaluate"]
