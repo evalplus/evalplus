@@ -133,15 +133,7 @@ if __name__ == "__main__":
                 new_code = new_code.split(eof)[0]
 
         # remove lines that are not indented
-        ok_starts = [def_left]
-
-        # some helper functions need to be kept
-        if args.dataset == "mbpp":
-            if def_left == "def count_Primes_nums(":
-                ok_starts.append("def is_Prime(")
-            elif def_left == "def heap_sort(":
-                ok_starts.append("def heapify(")
-        new_code = remove_unindented_lines(new_code, ok_starts)
+        new_code = remove_unindented_lines(new_code, ["def "])
         new_code = chunks[0] + new_code
 
         # write to new folder
