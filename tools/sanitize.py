@@ -104,8 +104,11 @@ if __name__ == "__main__":
             assert "completion" in solution
             old_code = dataset[task_id] + "\n" + solution["completion"]
 
+        # start to modify old_code | old_code should not be re-defined
+
+        new_code = old_code
         if args.rm_prefix_lines is not None:
-            old_code = "\n".join(
+            new_code = "\n".join(
                 [
                     line
                     for line in old_code.splitlines()
@@ -113,21 +116,19 @@ if __name__ == "__main__":
                 ]
             )
 
-        old_code = "\n" + old_code
+        new_code = "\n" + new_code
         # basic handling of chat output
         for blk in ["\n```python\n", "\n```\n"]:
-            old_code = old_code.split(blk, maxsplit=1)[-1].split("\n```", maxsplit=1)[0]
-            old_code = "\n" + old_code
+            new_code = new_code.split(blk, maxsplit=1)[-1].split("\n```", maxsplit=1)[0]
+            new_code = "\n" + new_code
 
         def_left = "def " + entry_point[task_id]
-        if def_left not in old_code:
+        if def_left not in new_code:
             warn(f"Cannot find {def_left} in {dbg_identifier}. Skipping.")
 
         if args.dataset == "humaneval":
             imports, def_right = prompts[task_id].split(def_left)
-            new_code = imports + def_left + old_code.split(def_left)[-1]
-        elif args.dataset == "mbpp":
-            new_code = old_code
+            new_code = imports + def_left + new_code.split(def_left)[-1]
 
         chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
         new_code = def_left + def_left.join(chunks[1:])  # fn + impl
@@ -140,7 +141,7 @@ if __name__ == "__main__":
         new_code = remove_unindented_lines(new_code, ["def "])
         new_code = chunks[0] + new_code
 
-        # cut all functions that are not syntactically correct
+        # cut all functions that are not syntactically correct && not the entry point
         parts = new_code.split("\ndef ")
         includes = [parts[0]]
         for fn in new_code.split("\ndef ")[1:]:
