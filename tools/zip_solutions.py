@@ -8,7 +8,9 @@ if __name__ == "__main__":
         description="Package and zip LLM provided solutions"
     )
     parser.add_argument("--root", type=str, help="Root directory of solutions")
-    parser.add_argument("--output", type=str, help="Output directory of zip files")
+    parser.add_argument(
+        "--output", type=str, required=True, help="Output directory of zip files"
+    )
     args = parser.parse_args()
 
     # [model_name]_temp_[temp] (without -sanitized)
