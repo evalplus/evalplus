@@ -851,6 +851,20 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
             conversational=True,
         )
+    elif name == "wizardcoder-15b":
+        return WizardCoderDecoder(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-15B-V1.0",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "wizardcoder-7b":
+        return WizardCoderDecoder(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-Python-7B-V1.0",
+            temperature=temperature,
+            conversational=True,
+        )
     elif name == "mistral-7b-codealpaca":
         return HFTorchDecoder(
             batch_size=batch_size,
