@@ -220,7 +220,7 @@ Here are some tips to speed up the evaluation:
 We also share pre-generated code samples from LLMs we have [evaluated](https://evalplus.github.io/leaderboard.html):
 
 * **HumanEval+**: See the attachment of our [v0.1.0 release](https://github.com/evalplus/evalplus/releases/tag/v0.1.0).
-* **MBPP+**: See the attachment of our v0.2.0 release (TBD).
+* **MBPP+**: See the attachment of our [v0.2.0 release](https://github.com/evalplus/evalplus/releases/tag/v0.2.0).
 
 Each sample file is packaged in a zip file named like `${model_name}_temp_${temperature}.zip`.
 You can unzip them to a folder named like `${model_name}_temp_${temperature}` and run the evaluation from scratch with:
