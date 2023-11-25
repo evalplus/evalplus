@@ -140,10 +140,17 @@ if __name__ == "__main__":
         new_code = remove_unindented_lines(new_code, ["def "])
         new_code = chunks[0] + new_code
 
-        # cut off the last function if it is incomplete
-        last_fn = "def " + new_code.split("\ndef ")[-1]
-        if not syntax_check(last_fn):
-            new_code = "\ndef ".join(new_code.split("\ndef ")[:-1])
+        # cut all functions that are not syntactically correct
+        parts = new_code.split("\ndef ")
+        includes = [parts[0]]
+        for fn in new_code.split("\ndef ")[1:]:
+            if (
+                fn.strip().startswith(entry_point[task_id] + " ")
+                or fn.strip().startswith(entry_point[task_id] + "(")
+                or syntax_check("\ndef " + fn)
+            ):
+                includes.append(fn)
+        new_code = "\ndef ".join(includes)
 
         # if changed, print the message
         if new_code.strip() != old_code.strip():
