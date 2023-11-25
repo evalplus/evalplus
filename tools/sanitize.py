@@ -102,7 +102,7 @@ if __name__ == "__main__":
             old_code = solution["solution"]
         else:
             assert "completion" in solution
-            old_code = dataset[task_id] + "\n" + solution["completion"]
+            old_code = dataset[task_id]["prompt"] + "\n" + solution["completion"]
 
         # start to modify old_code | old_code should not be re-defined
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
         if args.dataset == "humaneval":
             imports, def_right = prompts[task_id].split(def_left)
-            new_code = imports + def_left + new_code.split(def_left)[-1]
+            new_code = imports + def_left + new_code.split(def_left, maxsplit=1)[-1]
 
         chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
         new_code = def_left + def_left.join(chunks[1:])  # fn + impl
