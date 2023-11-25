@@ -1,14 +1,14 @@
 import ast
-import os
 import random
-from typing import Dict, List
+from typing import List
 
 import openai
+from openai.types.chat import ChatCompletion
 
 from evalplus.data.utils import to_raw
 from evalplus.gen import BaseGen
 from evalplus.gen.util import trusted_check_exec
-from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine
+from evalplus.gen.util.api_request import make_auto_request
 
 
 class ChatGPTGen(BaseGen):
@@ -21,16 +21,16 @@ class ChatGPTGen(BaseGen):
             "Please generate difficult inputs to test the function.",
         ]
         self.iteration = 20
-        openai.api_key = os.environ.get("OPENAI_API_KEY", "dummy")
+        self.client = openai.Client()
 
     def seed_selection(self) -> List:
         # get 5 for now.
         return random.sample(self.seed_pool, k=min(len(self.seed_pool), 5))
 
     @staticmethod
-    def _parse_ret(ret: Dict) -> List:
+    def _parse_ret(ret: ChatCompletion) -> List:
         rets = []
-        output = ret["choices"][0]["message"]["content"]
+        output = ret.choices[0].message.content
         if "```" in output:
             for x in output.split("```")[1].splitlines():
                 if x.strip() == "":
@@ -55,8 +55,13 @@ class ChatGPTGen(BaseGen):
         )
         message += f"\nThese are some example inputs used to test the function:\n```\n{str_inputs}\n```"
         message += f"\n{random.choice(self.prompt_messages)}"
-        config = create_chatgpt_config(message, 256)
-        ret = request_chatgpt_engine(config)
+        ret = make_auto_request(
+            self.client,
+            message=message,
+            model="gpt-3.5-turbo",
+            max_tokens=256,
+            response_format={"type": "text"},
+        )
         return self._parse_ret(ret)
 
     def generate(self, num: int):

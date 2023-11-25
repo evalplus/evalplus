@@ -1,3 +1,4 @@
+import json
 import os
 from abc import ABC, abstractmethod
 from typing import List
@@ -17,7 +18,7 @@ from transformers import (
 )
 from vllm import LLM, SamplingParams
 
-from evalplus.gen.util.api_request import create_chatgpt_config, request_chatgpt_engine
+from evalplus.gen.util.api_request import make_auto_request
 
 EOS = ["<|endoftext|>", "<|endofmask|>", "</s>"]
 
@@ -172,38 +173,6 @@ Create a Python script for this problem:
         return [x.outputs[0].text.replace("\t", "    ") for x in vllm_outputs]
 
 
-class OpenAIDecoder(DecoderBase):
-    def __init__(
-        self, name: str, batch_size: int = 1, temperature: float = 0.8
-    ) -> None:
-        super().__init__(name, batch_size, temperature)
-        openai.api_key = os.environ.get("OPENAI_API_KEY", "dummy")
-        openai.api_base = os.getenv("OPENAI_API_BASE")
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if do_sample:
-            assert self.temperature > 0, "Temperature must be greater than 0!"
-        batch_size = min(self.batch_size, num_samples)
-
-        ret = openai.Completion.create(
-            model="fastertransformer",
-            prompt=prompt,
-            max_tokens=self.max_new_tokens,
-            temperature=self.temperature,
-            n=batch_size,
-            top_p=0.95,
-            stop=EOS,
-        )
-
-        # assert the ret are not empty
-        assert len(ret["choices"]) > 0, "OpenAI API returns empty results!"
-
-        # process the output and return
-        return [x["text"] for x in ret["choices"]]
-
-
 class HFTorchDecoder(DecoderBase):
     def __init__(self, name: str, **kwargs):
         super().__init__(name=name, **kwargs)
@@ -352,10 +321,9 @@ class DeepSeekInstruct(HFTorchDecoder):
 
 
 class OpenAIChatDecoder(DecoderBase):
-    def __init__(self, name: str, model_name: str = "gpt-3.5-turbo", **kwargs) -> None:
+    def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
-        self.model_name = model_name
-        openai.api_key = os.environ.get("OPENAI_API_KEY", "dummy")
+        self.client = openai.OpenAI()
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -368,17 +336,36 @@ class OpenAIChatDecoder(DecoderBase):
 
         # construct prompt
         message = (
-            f"Please complete the following code snippet.\n```\n{prompt.strip()}\n```"
+            r'Please complete the following code snippet by generating JSON like {"code": ""}'
+            + f"\n```python\n{prompt.strip()}\n```"
         )
-        config = create_chatgpt_config(
+
+        ret = make_auto_request(
+            self.client,
             message=message,
+            model=self.name,
             max_tokens=self.max_new_tokens,
             temperature=self.temperature,
-            batch_size=batch_size,
-            model=self.model_name,
+            n=batch_size,
+            response_format={"type": "json_object"},
         )
-        ret = request_chatgpt_engine(config)
-        return [item["message"]["content"] for item in ret["choices"]]
+
+        outputs = []
+        for item in ret.choices:
+            content = item.message.content
+            # if json serializable
+            try:
+                json_data = json.loads(content)
+                if json_data.get("code", None) is not None:
+                    outputs.append(prompt + "\n" + json_data["code"])
+                    continue
+
+                print(f"'code' field not found in: {json_data}")
+            except Exception as e:
+                print(e)
+            outputs.append(content)
+
+        return outputs
 
 
 class IncoderDecoder(HFTorchDecoder):
@@ -765,20 +752,11 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="StabilityAI/stablelm-base-alpha-7b",
             temperature=temperature,
         )
-    elif name == "chatgpt":
+    elif name.startswith("gpt-3.5-") or name.startswith("gpt-4-"):
         return OpenAIChatDecoder(
             batch_size=batch_size,
-            name="ChatGPT",
+            name=name,
             temperature=temperature,
-            model_name="gpt-3.5-turbo",
-            conversational=True,
-        )
-    elif name == "gpt-4":
-        return OpenAIChatDecoder(
-            batch_size=batch_size,
-            name="GPT4",
-            temperature=temperature,
-            model_name="gpt-4",
             conversational=True,
         )
     elif name == "gptneo-2b":

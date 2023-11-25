@@ -3,29 +3,32 @@ import time
 from typing import Dict
 
 import openai
+from openai.types.chat import ChatCompletion
 
-# TODO Codex request if we need it.
 
-
-def create_chatgpt_config(
+def make_request(
+    client: openai.Client,
     message: str,
-    max_tokens: int,
+    model: str,
+    max_tokens: int = 512,
     temperature: float = 1,
-    batch_size: int = 1,
-    system_message: str = "You are a helpful assistant.",
-    model: str = "gpt-3.5-turbo",
-) -> Dict:
-    config = {
-        "model": model,
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-        "n": batch_size,
-        "messages": [
-            {"role": "system", "content": system_message},
+    n: int = 1,
+    **kwargs
+) -> ChatCompletion:
+    return client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant designed to output JSON.",
+            },
             {"role": "user", "content": message},
         ],
-    }
-    return config
+        max_tokens=max_tokens,
+        temperature=temperature,
+        n=n,
+        **kwargs
+    )
 
 
 def handler(signum, frame):
@@ -33,25 +36,25 @@ def handler(signum, frame):
     raise Exception("end of time")
 
 
-def request_chatgpt_engine(config) -> Dict:
+def make_auto_request(*args, **kwargs) -> ChatCompletion:
     ret = None
     while ret is None:
         try:
             signal.signal(signal.SIGALRM, handler)
             signal.alarm(100)
-            ret = openai.ChatCompletion.create(**config)
+            ret = make_request(*args, **kwargs)
             signal.alarm(0)
-        except openai.error.InvalidRequestError as e:
-            print(e)
-            signal.alarm(0)
-        except openai.error.RateLimitError as e:
+        except openai.RateLimitError:
             print("Rate limit exceeded. Waiting...")
             signal.alarm(0)
             time.sleep(5)
-        except openai.error.APIConnectionError as e:
+        except openai.APIConnectionError:
             print("API connection error. Waiting...")
             signal.alarm(0)
             time.sleep(5)
+        except openai.APIError as e:
+            print(e)
+            signal.alarm(0)
         except Exception as e:
             print("Unknown error. Waiting...")
             print(e)
