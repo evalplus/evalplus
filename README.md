@@ -257,9 +257,18 @@ But some of them can be easily fixable by doing simple post-processing.
 This tool will make the LLM-generated code more clean/compilable by doing certain post-processing such as trimming with more magical EOFs and some garbage non-code tokens.
 
 ```shell
-python tools/sanitize.py --eof --folder /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval|mbpp]
+# 💡 If you are storing codes in directories:
+python tools/sanitize.py --samples samples.jsonl --dataset [humaneval|mbpp]
+# Sanitized code will be produced to `samples-sanitized.jsonl`
+
+# 💡 If you are storing codes in directories:
+python tools/sanitize.py --samples /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval|mbpp]
 # Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
 ```
+
+You should now further check the validity of sanitized code with `tools/checker.py`.
+Sometimes (e.g., Chat models) there might be some natural language lines that impact the compilation.
+You might use `--rm-prefix-lines` to cut those NL lines with a prefix (e.g., `--rm-prefix-lines "Here's"`).
 
 ### Render `pass@k` results to `rich` and LaTeX tables
 

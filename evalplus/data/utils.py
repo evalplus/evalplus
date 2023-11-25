@@ -40,7 +40,9 @@ def make_cache(gzip_url, cache_path):
             f.write(plus)
 
 
-def write_jsonl(filename: str, data: Iterable[Dict], append: bool = False):
+def write_jsonl(
+    filename: str, data: Iterable[Dict], append: bool = False, drop_builtin: bool = True
+):
     """
     Writes an iterable of dictionaries to jsonl
     """
@@ -53,10 +55,14 @@ def write_jsonl(filename: str, data: Iterable[Dict], append: bool = False):
         with open(filename, mode) as fp:
             with gzip.GzipFile(fileobj=fp, mode="wb") as gzfp:
                 for x in data:
+                    if drop_builtin:
+                        x = {k: v for k, v in x.items() if not k.startswith("_")}
                     gzfp.write((json.dumps(x) + "\n").encode("utf-8"))
     else:
         with open(filename, mode) as fp:
             for x in data:
+                if drop_builtin:
+                    x = {k: v for k, v in x.items() if not k.startswith("_")}
                 fp.write((json.dumps(x) + "\n").encode("utf-8"))
 
 
@@ -104,9 +110,26 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
                         completion = f.read()
                     yield {
                         "_identifier": solution_path,
+                        "_path": solution_path,
                         "task_id": task_id.replace("_", "/"),
                         "solution": completion,
                     }
+
+
+def write_directory(directory: PathLike, data: Iterable[Dict]):
+    os.makedirs(directory, exist_ok=True)
+    counters = {}
+    for sample in data:
+        assert "solution" in sample, "Samples must come with `solution` field!"
+        task_id = sample["task_id"].replace("/", "_")
+        task_dir = os.path.join(directory, task_id)
+        os.makedirs(task_dir, exist_ok=True)
+        if task_id not in counters:
+            counters[task_id] = 0
+        sample_id = counters[task_id]
+        with open(os.path.join(task_dir, f"{sample_id}.py"), "w") as f:
+            f.write(sample["solution"])
+        counters[task_id] += 1
 
 
 def completeness_check(name, plus):

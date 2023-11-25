@@ -8,22 +8,14 @@ from warnings import warn
 
 from tqdm import tqdm
 
-from evalplus.data import get_human_eval_plus, get_mbpp_plus
+from evalplus.data import (
+    get_human_eval_plus,
+    get_mbpp_plus,
+    load_solutions,
+    write_directory,
+    write_jsonl,
+)
 from tools.checker import syntax_check
-
-INCODER_EXTRA = ["</code>", "<|", "</CODE>"]
-POLYCODER_EXTRA = ["\n//", "\n/*"]
-NON_CODE_EOFS = ["<|endoftext|>", "\n```", "\n</s>", "\n#"]
-
-
-def get_all_python_files(folder):
-    # return a list of full-path python files
-    py_files = []
-    for root, _, files in os.walk(folder):
-        for file in files:
-            if file.endswith(".py"):
-                py_files.append(os.path.join(root, file))
-    return py_files
 
 
 def remove_unindented_lines(code, ok_starts):
@@ -56,8 +48,8 @@ if __name__ == "__main__":
     import pathlib
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--folder", type=str, required=True)
-    parser.add_argument("--eof", action="store_true")
+    parser.add_argument("--samples", type=str, required=True)
+    parser.add_argument("--eofs", nargs="+", type=str, default=[])
     parser.add_argument("--inplace", action="store_true")
     parser.add_argument(
         "--rm-prefix-lines", type=str, help="Remove lines starting with this"
@@ -68,7 +60,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--debug-task", type=str, help="Enter the task ID to only sanitize that task."
     )
-
     args = parser.parse_args()
 
     # task_id -> entry_point
@@ -85,22 +76,33 @@ if __name__ == "__main__":
         prompts[task_id] = problem["prompt"]
 
     # make a new folder with "-sanitized" suffix
-    old_folder = pathlib.Path(args.folder)
-    if args.inplace:
-        new_folder = old_folder
-    else:
-        new_folder = old_folder.parent / (old_folder.name + "-sanitized")
+    is_folder = os.path.isdir(args.samples)
+    target_path = pathlib.Path(args.samples)
+    if not args.inplace:
+        if is_folder:
+            new_name = target_path.name + "-sanitized"
+        else:
+            new_name = target_path.name.replace(".jsonl", "-sanitized.jsonl")
+        target_path = target_path.parent / new_name
+    target_path = str(target_path)
 
     nsan = 0
     ntotal = 0
-    for pyf in tqdm(get_all_python_files(args.folder)):
-        # Get [?] from "[prefix]/{HumanEval, Mbpp}_[?]/[number].py":
-        task_id = pyf.split("/")[-2].replace("_", "/")
+
+    new_solutions = []
+
+    for solution in tqdm(load_solutions(args.samples)):
+        task_id = solution["task_id"]
+        dbg_identifier = solution["_identifier"]
         if args.debug_task is not None and task_id != args.debug_task:
             continue
 
         ntotal += 1
-        old_code = open(pyf).read()
+        if "solution" in solution:
+            old_code = solution["solution"]
+        else:
+            assert "completion" in solution
+            old_code = dataset[task_id] + "\n" + solution["completion"]
 
         if args.rm_prefix_lines is not None:
             old_code = "\n".join(
@@ -119,7 +121,7 @@ if __name__ == "__main__":
 
         def_left = "def " + entry_point[task_id]
         if def_left not in old_code:
-            warn(f"Cannot find {def_left} in {pyf}. Skipping.")
+            warn(f"Cannot find {def_left} in {dbg_identifier}. Skipping.")
 
         if args.dataset == "humaneval":
             imports, def_right = prompts[task_id].split(def_left)
@@ -128,29 +130,11 @@ if __name__ == "__main__":
             new_code = old_code
 
         chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
-
         new_code = def_left + def_left.join(chunks[1:])  # fn + impl
-
-        if "chatgpt" in args.folder or "deepseek" in args.folder:
-            tmp = ""
-            for line in new_code.splitlines():
-                if line.strip() == "python":
-                    continue
-                tmp += line + "\n"
-            new_code = tmp
-
         new_code = to_four_space_indents(new_code)
 
-        if args.eof:
-            eof_strs = NON_CODE_EOFS
-            if "incoder" in args.folder:
-                eof_strs = eof_strs + INCODER_EXTRA
-            if "polycoder" in args.folder:
-                eof_strs = eof_strs + POLYCODER_EXTRA
-            if "mistral" in args.folder:
-                eof_strs = eof_strs + [r"</s>"]
-            for eof in eof_strs:
-                new_code = new_code.split(eof)[0]
+        for eof in args.eofs:
+            new_code = new_code.split(eof)[0]
 
         # remove lines that are not indented
         new_code = remove_unindented_lines(new_code, ["def "])
@@ -161,15 +145,24 @@ if __name__ == "__main__":
         if not syntax_check(last_fn):
             new_code = "\ndef ".join(new_code.split("\ndef ")[:-1])
 
-        # write to new folder
-        new_pyf = pyf.replace(str(old_folder), str(new_folder))
-
+        # if changed, print the message
         if new_code.strip() != old_code.strip():
-            print("Sanitized: ", pyf, "->", new_pyf)
+            msg = "Sanitized: " + dbg_identifier
+            if is_folder:
+                msg += " -> " + dbg_identifier.replace(args.samples, target_path)
+            print(msg)
             nsan += 1
 
-        pathlib.Path(new_pyf).parent.mkdir(parents=True, exist_ok=True)
-        with open(new_pyf, "w") as f:
-            f.write(new_code)
+        new_solutions.append(
+            {
+                "task_id": solution["task_id"],
+                "solution": new_code.strip(),
+            }
+        )
+
+    if is_folder:
+        write_directory(target_path, new_solutions)
+    else:
+        write_jsonl(target_path, new_solutions)
 
     print(f"Sanitized {nsan} out of {ntotal} files.")
