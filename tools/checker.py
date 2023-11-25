@@ -4,21 +4,11 @@
 """
 
 import ast
-import os
-import re
 import traceback
 
 from termcolor import colored
 
-
-def get_all_python_files(folder):
-    # return a list of full-path python files
-    py_files = []
-    for root, _, files in os.walk(folder):
-        for file in files:
-            if file.endswith(".py"):
-                py_files.append(os.path.join(root, file))
-    return py_files
+from evalplus.data import load_solutions
 
 
 def syntax_check(code, verbose=False):
@@ -35,58 +25,63 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--folder", type=str, required=True)
+    parser.add_argument("--samples", type=str, required=True)
     parser.add_argument(
         "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
     )
-    parser.add_argument("--nsample", type=int)
+    parser.add_argument("--nsample", type=int, default=1)
     parser.add_argument("--verbose", action="store_true")
 
     args = parser.parse_args()
 
-    if args.nsample is None:
-        temp = re.findall("temp_(?:\d*\.?\d+)", args.folder)
-        if temp and float(temp[0].split("_")[-1]) == 0.0:
-            print(colored("Setting nsample = 1 for 0 temp.", "yellow"))
-            args.nsample = 1
-        else:
-            print(colored("Setting nsample = 200 for non-0 temp.", "yellow"))
-            args.nsample = 200
+    # List[Dict{"task_id", "solution"}]
+    solutions = load_solutions(args.samples)
 
     if args.dataset == "humaneval":
         from evalplus.data import get_human_eval_plus
 
-        task_no = [int(x.split("/")[-1]) for x in get_human_eval_plus().keys()]
+        dataset = get_human_eval_plus()
         dataset_name = "HumanEval"
     elif args.dataset == "mbpp":
         from evalplus.data import get_mbpp_plus
 
-        task_no = [int(x.split("/")[-1]) for x in get_mbpp_plus().keys()]
+        dataset = get_mbpp_plus()
         dataset_name = "Mbpp"
 
-    ntask = len(task_no)
+    id2solutions = {}
+    for solution in solutions:
+        task_id = solution["task_id"]
+        if task_id not in id2solutions:
+            id2solutions[task_id] = []
+        if "solution" not in solution:
+            assert "completion" in solution, "solution or completion must exist!"
+            solution["solution"] = dataset[task_id]["prompt"] + solution["completion"]
+        id2solutions[task_id].append(solution)
 
+    nsample = max(args.nsample, max(len(v) for v in id2solutions.values()))
     print(colored("==============================", "blue"))
     print(colored(" ::: Checking completeness... ", "blue"))
     print(colored(" ::::: All tasks complete?    ", "blue"))
     ndone = 0
 
-    for i in task_no:
-        task_folder = os.path.join(args.folder, f"{dataset_name}_{i}")
-        if not os.path.exists(task_folder):
-            print(colored(f" ⚠️ {dataset_name}_{i} is missing!", "red"))
+    task_ids = dataset.keys()
+    ntask = len(task_ids)
+    for task_id in task_ids:
+        if task_id not in id2solutions:
+            print(colored(f" ⚠️ {task_id} is missing!", "red"))
             continue
-        # get the # of .py files under task_folder
-        nfiles = len(get_all_python_files(task_folder))
-        if nfiles != args.nsample:
-            print(
-                colored(
-                    f" ⚠️ {dataset_name}_{i} only has {nfiles} samples! But {args.nsample} are expected.",
-                    "red",
-                )
+        nfiles = len(id2solutions[task_id])
+        if nfiles == nsample:
+            ndone += 1
+            continue
+
+        print(
+            colored(
+                f" ⚠️ {task_id} only has {nfiles} samples! But {nsample} are expected.",
+                "red",
             )
-            continue
-        ndone += 1
+        )
+
     if ntask != ndone:
         ntbd = ntask - ndone
         print(colored(f" ::::: ⚠️ {ntbd}/{ntask} tasks incomplete!", "red"))
@@ -98,20 +93,22 @@ if __name__ == "__main__":
     print(colored(" ::::: All code compilable?   ", "blue"))
     ncode = 0
     nwrong = 0
-    for i in task_no:
-        task_folder = os.path.join(args.folder, f"{dataset_name}_{i}")
-        # folder must exist
-        if not os.path.exists(task_folder):
+    for task_id in task_ids:
+        # task_id must exist
+        if task_id not in id2solutions:
             continue
 
-        for pyf in get_all_python_files(task_folder):
+        for solution in id2solutions[task_id]:
             ncode += 1
-            code = open(pyf).read()
+            code = solution["solution"]
+            dbg_identifier = solution["_identifier"]
             if code.strip() == "":
-                print(colored(f" ⚠️ {pyf} is empty!", "red"))
+                print(colored(f" ⚠️ {dbg_identifier} is empty!", "red"))
                 nwrong += 1
             elif not syntax_check(code, args.verbose):
-                print(colored(f" ⚠️ {pyf} is not compilable!", "red"))
+                print(colored(f" ⚠️ {dbg_identifier} is not compilable!", "red"))
                 nwrong += 1
-    if ncode != nwrong:
+    if 0 != nwrong:
         print(colored(f" ::::: ⚠️ {nwrong}/{ncode} code are not compilable!", "red"))
+    else:
+        print(colored(f" ::::: All {ncode} code are compilable!", "green"))

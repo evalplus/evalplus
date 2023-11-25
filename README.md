@@ -247,7 +247,8 @@ Check LLM-produced code and answer the following questions:
 2. Are LLM-generated code compilable? (if no, something could be wrong and you'd better check)
 
 ```shell
-python tools/checker.py --folder /path/to/[model]-[??]b_temp_[??] --dataset [humaneval|mbpp]
+python tools/checker.py --samples samples.jsonl --dataset [humaneval|mbpp]
+# --samples can also be a directory organized as: ${SAMPLE_DIR}/${TASK_ID}/{SAMPLE_ID}.py
 ```
 
 ### Post code sanitizer
