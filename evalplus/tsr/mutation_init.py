@@ -36,30 +36,26 @@ def prepare_mutants(mutation_dir: str):
         with open(os.path.join(task_dir, "test_dummy.py"), "w") as f:
             f.write("def test_dummy():\n    pass")
         # Use mutmut to generate mutants
+        os.chdir(task_dir)
+        clean(".mutmut-cache")
+        execute_cmd(["mutmut run", "--paths-to-mutate=gt.py", "1>/dev/null"])
         try:
-            os.chdir(task_dir)
-            clean(".mutmut-cache")
-            execute_cmd(["mutmut run", "--paths-to-mutate=gt.py", "1>/dev/null"])
             # Collect metainfo
-            try:
-                total_mutants = int(
-                    get_cmd_output(["mutmut", "results"]).split("\n")[-2].split("-")[-1]
-                )
-            except:
-                total_mutants = 0
-            # Dump mutants
-            for i in range(1, total_mutants + 1):
-                execute_cmd(["cp", "gt.py", "gt_copy.py"])
-                execute_cmd(["mutmut", "apply", str(i)])
-                execute_cmd(["mv", "gt.py", f"m{i}.py"])
-                execute_cmd(["mv", "gt_copy.py", "gt.py"])
-            # Remove gt and dummy pytest
-            execute_cmd(["rm", "gt.py"])
-            execute_cmd(["rm", "test_dummy.py"])
+            total_mutants = int(
+                get_cmd_output(["mutmut", "results"]).split("\n")[-2].split("-")[-1]
+            )
         except:
-            assert 0
-
-    os.chdir(pwd)
+            total_mutants = 0
+        # Dump mutants
+        for i in range(1, total_mutants + 1):
+            execute_cmd(["cp", "gt.py", "gt_copy.py"])
+            execute_cmd(["mutmut", "apply", str(i)])
+            execute_cmd(["mv", "gt.py", f"m{i}.py"])
+            execute_cmd(["mv", "gt_copy.py", "gt.py"])
+        # Remove gt and dummy pytest
+        execute_cmd(["rm", "gt.py"])
+        execute_cmd(["rm", "test_dummy.py"])
+        os.chdir(pwd)
 
 
 def mutants_eval(mutation_dir: str):
@@ -68,8 +64,11 @@ def mutants_eval(mutation_dir: str):
         samples=mutation_dir,
         base_only=False,
         parallel=None,
-        full=True,
         i_just_wanna_run=False,
+        test_details=True,
+        min_time_limit=0.2,
+        gt_time_limit_factor=4.0,
+        mini=False,
     )
     print("Evaluating mutants... ", end="")
     with swallow_io():
