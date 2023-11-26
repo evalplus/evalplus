@@ -178,10 +178,14 @@ def main(flags):
     sample_dir = os.path.join(flags.report_dir, "sample_cache")
     os.makedirs(flags.report_dir, exist_ok=True)
 
-    coverage_set_cover = get_coverage_set_cover(coverage_dir, flags.model)  # ~25min
-    mutation_set_cover = get_mutation_set_cover(mutation_dir, flags.model)
+    exclude_model: str = flags.model
+    if exclude_model.endswith("b"):  # format: model_name + parameter size
+        exclude_model = "".join(exclude_model.split("-")[:-1])
+
+    coverage_set_cover = get_coverage_set_cover(coverage_dir, exclude_model)
+    mutation_set_cover = get_mutation_set_cover(mutation_dir, exclude_model)
     sample_set_cover = get_sample_set_cover(
-        sample_dir, flags.sample_eval_dir, flags.model
+        sample_dir, flags.sample_eval_dir, exclude_model
     )
     merged_set_cover = merge_set_cover(
         coverage_set_cover, mutation_set_cover, sample_set_cover
