@@ -57,6 +57,7 @@ def prepare_mutants(mutation_dir: str, dataset: str):
         # Remove gt and dummy pytest
         execute_cmd(["rm", "gt.py"])
         execute_cmd(["rm", "test_dummy.py"])
+        clean(".mutmut-cache")
         os.chdir(pwd)
 
 
@@ -72,7 +73,7 @@ def mutants_eval(mutation_dir: str, dataset: str):
         gt_time_limit_factor=4.0,
         mini=False,
     )
-    print("Evaluating mutants... ", end="")
+    print("Evaluating mutants... ", end="", flush=True)
     with swallow_io():
         evaluate(args)
     print("Done")
