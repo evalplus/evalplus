@@ -4,14 +4,14 @@ import pickle
 
 from rich.progress import track
 
-from evalplus.tsr.utils import task_ids, to_path
+from tools.tsr.utils import get_task_ids, to_path
 
 
-def collect_sample_info(sample_dir: str, sample_eval_dir: str):
+def collect_sample_info(sample_dir: str, sample_eval_dir: str, dataset: str):
     if os.path.exists(sample_dir) and len(os.listdir(sample_dir)) > 0:
         # cache file exists
         return
-
+    task_ids = get_task_ids(dataset)
     assert os.path.exists(sample_eval_dir), "sample evaluation files missing"
     os.makedirs(sample_dir, exist_ok=True)
     kill_info = {task_id: {} for task_id in task_ids}
@@ -49,8 +49,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--report_dir", required=True, type=str)
+    parser.add_argument("--dataset", type=str, choices=["humaneval", "mbpp"])
     parser.add_argument("--sample_eval_dir", required=True, type=str)
     args = parser.parse_args()
 
     sample_dir = os.path.join(args.report_dir, "sample_cache")
-    collect_sample_info(sample_dir, args.sample_eval_dir)
+    collect_sample_info(sample_dir, args.sample_eval_dir, args.dataset)

@@ -9,10 +9,20 @@ from typing import Any, Dict, List, Optional, Tuple
 from rich.progress import track
 
 from evalplus.data import write_jsonl
-from evalplus.tsr.coverage_init import collect_coverage_info
-from evalplus.tsr.mutation_init import collect_mutation_info
-from evalplus.tsr.sample_init import collect_sample_info
-from evalplus.tsr.utils import HUMANEVAL_COUNT, problems, task_ids, to_path
+from tools.tsr.coverage_init import collect_coverage_info
+from tools.tsr.mutation_init import collect_mutation_info
+from tools.tsr.sample_init import collect_sample_info
+from tools.tsr.utils import get_problems, get_task_ids, to_path
+
+
+def global_util_init(dataset: str):
+    global problems
+    global task_ids
+    global problem_count
+    problems = get_problems(dataset)
+    task_ids = get_task_ids(dataset)
+    problem_count = len(problems)
+
 
 ###########################
 # Greedy Min Set Covering #
@@ -92,25 +102,25 @@ def parallel_greedy_cover(
 
 
 def get_coverage_set_cover(
-    coverage_dir: str, exclude_model: str
+    coverage_dir: str, exclude_model: str, dataset: str
 ) -> Dict[str, List[str]]:
-    coverage_info_dict = collect_coverage_info(coverage_dir)
+    coverage_info_dict = collect_coverage_info(coverage_dir, dataset)
     return parallel_greedy_cover(coverage_info_dict, exclude_model, "coverage")
 
 
 def get_mutation_set_cover(
-    mutation_dir: str, exclude_model: str
+    mutation_dir: str, exclude_model: str, dataset: str
 ) -> Dict[str, List[str]]:
     mutation_info_dict = collect_mutation_info(
-        os.path.join(mutation_dir, "eval_results.json")
+        os.path.join(mutation_dir, "eval_results.json"), dataset
     )
     return parallel_greedy_cover(mutation_info_dict, exclude_model, "mutation")
 
 
 def get_sample_set_cover(
-    sample_dir: str, sample_eval_dir: str, exclude_model: str
+    sample_dir: str, sample_eval_dir: str, exclude_model: str, dataset: str
 ) -> Dict[str, List[str]]:
-    collect_sample_info(sample_dir, sample_eval_dir)
+    collect_sample_info(sample_dir, sample_eval_dir, dataset)
     return parallel_greedy_cover(None, exclude_model, "sample", sample_dir=sample_dir)
 
 
@@ -124,7 +134,7 @@ def compute_avg_test(set_cover_info: Dict[str, List[str]]) -> float:
         len(problems[task_id]["base_input"]) + len(set_cover_info[task_id])
         for task_id in task_ids
     )
-    return sum_tests / HUMANEVAL_COUNT
+    return sum_tests / problem_count
 
 
 def gen_report(set_cover_info: Dict[str, List[str]], sample_eval_dir: str, model: str):
@@ -147,7 +157,7 @@ def gen_report(set_cover_info: Dict[str, List[str]], sample_eval_dir: str, model
                 break
         if correct:
             correct_cnt += 1
-    tsr_dict["pass@1"] = correct_cnt / HUMANEVAL_COUNT
+    tsr_dict["pass@1"] = correct_cnt / problem_count
     return tsr_dict
 
 
@@ -178,10 +188,18 @@ def main(flags):
     sample_dir = os.path.join(flags.report_dir, "sample_cache")
     os.makedirs(flags.report_dir, exist_ok=True)
 
-    coverage_set_cover = get_coverage_set_cover(coverage_dir, flags.model)  # ~25min
-    mutation_set_cover = get_mutation_set_cover(mutation_dir, flags.model)
+    exclude_model: str = flags.model
+    if exclude_model.endswith("b"):  # format: model_name + parameter size
+        exclude_model = "".join(exclude_model.split("-")[:-1])
+
+    coverage_set_cover = get_coverage_set_cover(
+        coverage_dir, exclude_model, flags.dataset
+    )
+    mutation_set_cover = get_mutation_set_cover(
+        mutation_dir, exclude_model, flags.dataset
+    )
     sample_set_cover = get_sample_set_cover(
-        sample_dir, flags.sample_eval_dir, flags.model
+        sample_dir, flags.sample_eval_dir, exclude_model, flags.dataset
     )
     merged_set_cover = merge_set_cover(
         coverage_set_cover, mutation_set_cover, sample_set_cover
@@ -216,6 +234,7 @@ def main(flags):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True, type=str, help="Model for testing")
+    parser.add_argument("--dataset", type=str, choices=["humaneval", "mbpp"])
     parser.add_argument(
         "--report_dir", type=str, help="Path to JSON report and cache files"
     )
@@ -225,4 +244,5 @@ if __name__ == "__main__":
     parser.add_argument("--mini_path", type=str, help="Path to Mini Dataset")
     args = parser.parse_args()
 
+    global_util_init(args.dataset)
     main(args)
