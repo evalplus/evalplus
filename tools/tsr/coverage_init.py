@@ -9,7 +9,7 @@ import coverage
 from rich.progress import track
 
 from evalplus.eval.utils import swallow_io
-from evalplus.tsr.utils import problems, task_ids, to_path
+from tools.tsr.utils import get_problems, get_task_ids, to_path
 
 
 class Capturing(list):
@@ -73,8 +73,10 @@ def test_code_coverage(
     return ret
 
 
-def collect_coverage_info(coverage_dir: str) -> Dict[str, Dict[str, Any]]:
+def collect_coverage_info(coverage_dir: str, dataset: str) -> Dict[str, Dict[str, Any]]:
     os.makedirs(coverage_dir, exist_ok=True)
+    problems = get_problems(dataset)
+    task_ids = get_task_ids(dataset)
     coverage_info = {task_id: {} for task_id in task_ids}
     for task_id in track(task_ids, description="Testing gt coverage..."):
         coverage_cache_path = os.path.join(coverage_dir, f"{to_path(task_id)}.pkl")
@@ -105,8 +107,9 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=str, choices=["humaneval", "mbpp"])
     parser.add_argument("--report_dir", required=True, type=str)
     args = parser.parse_args()
 
     coverage_dir = os.path.join(args.report_dir, "coverage_cache")
-    collect_coverage_info(coverage_dir)
+    collect_coverage_info(coverage_dir, args.dataset)

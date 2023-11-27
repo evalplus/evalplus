@@ -1,13 +1,14 @@
 import os
 
-from evalplus.tsr import tsr_base_dir
-from evalplus.tsr.utils import execute_cmd
+from tools.tsr import tsr_base_dir
+from tools.tsr.utils import execute_cmd
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, help="Model for testing")
+    parser.add_argument("--dataset", type=str, choices=["humaneval", "mbpp"])
     parser.add_argument(
         "--report_dir",
         type=str,
@@ -27,6 +28,8 @@ if __name__ == "__main__":
         [
             "python3",
             os.path.join(tsr_base_dir, "mutation_init.py"),
+            "--dataset",
+            args.dataset,
             "--report_dir",
             args.report_dir,
         ]
@@ -35,6 +38,8 @@ if __name__ == "__main__":
         [
             "python3",
             os.path.join(tsr_base_dir, "coverage_init.py"),
+            "--dataset",
+            args.dataset,
             "--report_dir",
             args.report_dir,
         ]
@@ -53,6 +58,8 @@ if __name__ == "__main__":
         [
             "python3",
             os.path.join(tsr_base_dir, "minimization.py"),
+            "--dataset",
+            args.dataset,
             "--model",
             args.model,
             "--report_dir",

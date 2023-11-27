@@ -7,18 +7,20 @@ from rich.progress import track
 
 from evalplus.eval.utils import swallow_io
 from evalplus.evaluate import evaluate
-from evalplus.tsr.utils import (
+from tools.tsr.utils import (
     clean,
     execute_cmd,
     get_cmd_output,
-    problems,
-    task_ids,
+    get_problems,
+    get_task_ids,
     to_path,
 )
 
 
-def prepare_mutants(mutation_dir: str):
+def prepare_mutants(mutation_dir: str, dataset: str):
     pwd = os.getcwd()
+    task_ids = get_task_ids(dataset)
+    problems = get_problems(dataset)
     os.makedirs(mutation_dir, exist_ok=True)
     for task_id in track(task_ids, "Generating mutants"):
         task_dir = os.path.join(mutation_dir, to_path(task_id))
@@ -58,9 +60,9 @@ def prepare_mutants(mutation_dir: str):
         os.chdir(pwd)
 
 
-def mutants_eval(mutation_dir: str):
+def mutants_eval(mutation_dir: str, dataset: str):
     args = argparse.Namespace(
-        dataset="humaneval",
+        dataset=dataset,
         samples=mutation_dir,
         base_only=False,
         parallel=None,
@@ -76,8 +78,10 @@ def mutants_eval(mutation_dir: str):
     print("Done")
 
 
-def collect_mutation_info(eval_path: str) -> Dict[str, Dict[str, List[Any]]]:
-    mutation_info = {task_id: {} for task_id in task_ids}
+def collect_mutation_info(
+    eval_path: str, dataset: str
+) -> Dict[str, Dict[str, List[Any]]]:
+    mutation_info = {task_id: {} for task_id in get_task_ids(dataset)}
     assert os.path.isfile(
         eval_path
     ), f"mutation testing result file {eval_path} missing!"
@@ -97,10 +101,11 @@ def collect_mutation_info(eval_path: str) -> Dict[str, Dict[str, List[Any]]]:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=str, choices=["humaneval", "mbpp"])
     parser.add_argument("--report_dir", required=True, type=str)
     args = parser.parse_args()
 
     mutation_dir = os.path.join(args.report_dir, "mutation_cache")
-    prepare_mutants(mutation_dir)
-    mutants_eval(mutation_dir)
-    collect_mutation_info(os.path.join(mutation_dir, "eval_results.json"))
+    prepare_mutants(mutation_dir, args.dataset)
+    mutants_eval(mutation_dir, args.dataset)
+    collect_mutation_info(os.path.join(mutation_dir, "eval_results.json"), args.dataset)
