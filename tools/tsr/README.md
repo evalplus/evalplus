@@ -15,15 +15,17 @@ pip install -r requirements-tsr.txt
 
 ```bash
 python3 run.py \
+  --dataset DATASET \
   --sample_eval_dir SAMPLE_DIR \
   --model MODEL \
   [--report_dir REPORT_DIR]
 
 # Example
-python3 run.py --sample_eval_dir $HOME/HumanEval --model ALL
+python3 run.py --dataset humaneval --sample_eval_dir $HOME/HumanEval --model ALL
 ```
 
 Parameter descriptions:
+* `--dataset`: currently, `humaneval` and `mbpp` are supported.
 * `--sample_eval_dir` is the directory containing all the LLM evaluation results. We require the directory be structured as
     ```bash
     SAMPLE_EVAL_DIR
@@ -36,3 +38,10 @@ Parameter descriptions:
     ```
 * `--report_dir` is the directory where we store intermediate files, pass@k results, and reduced dataset. If not specified, `REPORT_DIR=./tsr_info` by default.
 * If `MODEL` is a specific LLM name, the cross-validation results will be generated in `REPORT_DIR`; if `MODEL == ALL`, a reduced dataset will be generated in `REPORT_DIR`.
+
+## Known Issues
+
+If you find the program stuck at the mutant generation step, try removing the line
+```python
+assert len(completion_id) == len(problems), "Missing problems in samples"
+```
