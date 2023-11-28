@@ -45,3 +45,4 @@ If you find the program stuck at the mutant generation step, try removing the li
 ```python
 assert len(completion_id) == len(problems), "Missing problems in samples"
 ```
+in `evalplus/evaluate.py`.
