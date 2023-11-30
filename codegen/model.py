@@ -335,10 +335,13 @@ class OpenAIChatDecoder(DecoderBase):
         assert batch_size <= 20, "Use larger batch size could blow up the memory!"
 
         # construct prompt
-        message = (
-            r'Please complete the following code snippet by generating JSON like {"code": ""}'
-            + f"\n```python\n{prompt.strip()}\n```"
-        )
+        fmt = "json_object" if self.name == "gpt-4-1106-preview" else "text"
+        if fmt == "json_object":
+            message = r'Please complete the following code snippet by generating JSON like {"code": ""}'
+        else:
+            message = r"Please generate code to complete the following problem:"
+
+        message += f"\n```python\n{prompt.strip()}\n```"
 
         ret = make_auto_request(
             self.client,
@@ -347,22 +350,23 @@ class OpenAIChatDecoder(DecoderBase):
             max_tokens=self.max_new_tokens,
             temperature=self.temperature,
             n=batch_size,
-            response_format={"type": "json_object"},
+            response_format={"type": fmt},
         )
 
         outputs = []
         for item in ret.choices:
             content = item.message.content
             # if json serializable
-            try:
-                json_data = json.loads(content)
-                if json_data.get("code", None) is not None:
-                    outputs.append(prompt + "\n" + json_data["code"])
-                    continue
+            if fmt == "json_object":
+                try:
+                    json_data = json.loads(content)
+                    if json_data.get("code", None) is not None:
+                        outputs.append(prompt + "\n" + json_data["code"])
+                        continue
 
-                print(f"'code' field not found in: {json_data}")
-            except Exception as e:
-                print(e)
+                    print(f"'code' field not found in: {json_data}")
+                except Exception as e:
+                    print(e)
             outputs.append(content)
 
         return outputs
