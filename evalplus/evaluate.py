@@ -44,6 +44,7 @@ def get_groundtruth(problems, hashcode, tasks_only_output_not_none):
         with open(cache_file, "rb") as f:
             return pickle.load(f)
 
+    os.makedirs(CACHE_DIR, exist_ok=True)
     print("Computing expected output...")
     tbegin = time.time()
     expected_output = {}
