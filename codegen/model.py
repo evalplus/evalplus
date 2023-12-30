@@ -116,6 +116,9 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "float16"
         elif "mistral" in name.lower():
             kwargs["dtype"] = "bfloat16"
+        elif "phi" in name.lower():
+            kwargs["dtype"] = "float16"
+            kwargs["trust_remote_code"] = True
 
         self.llm = LLM(model=name, **kwargs)
 
@@ -936,7 +939,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             max_new_tokens=512 + 256,
         )
     elif name == "phi-2":
-        return HFTorchDecoder(
+        return VLlmDecoder(
             batch_size=batch_size,
             name="microsoft/phi-2",
             temperature=temperature,
