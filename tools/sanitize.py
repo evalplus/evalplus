@@ -18,11 +18,15 @@ from evalplus.data import (
 from tools.checker import syntax_check
 
 
-def remove_unindented_lines(code, ok_starts):
+def remove_unindented_lines(code, cut_after):
     lines = code.splitlines()
     cut_idx = None
+    met_cut_after = False
     for i, line in enumerate(lines):
-        if any([line.startswith(t) for t in ok_starts]) or line.strip() == "":
+        if not met_cut_after and line.startswith(cut_after):
+            met_cut_after = True
+            continue
+        if line.strip() == "":
             continue
 
         lspace = len(line) - len(line.lstrip())
@@ -117,16 +121,15 @@ if __name__ == "__main__":
             )
 
         new_code = "\n" + new_code
+        def_left = "def " + entry_point[task_id]
 
         # basic handling of chat output
-        for blk in ["\n```python\n", "\n```\n"]:
-            chunks = new_code.split(blk, maxsplit=1)
-            if len(chunks) == 1:
-                continue
-            new_code = chunks[-1].split("\n```", maxsplit=1)[0]
-            new_code = "\n" + new_code
+        new_code = new_code.replace("\n```python\n", "\n```\n")
+        for chunk in new_code.split("\n```\n"):
+            if def_left in chunk:
+                new_code = chunk
+                break
 
-        def_left = "def " + entry_point[task_id]
         if def_left not in new_code:
             warn(f"Cannot find {def_left} in {dbg_identifier}. Skipping.")
 
@@ -141,8 +144,8 @@ if __name__ == "__main__":
         for eof in args.eofs:
             new_code = new_code.split(eof)[0]
 
-        # remove lines that are not indented
-        new_code = remove_unindented_lines(new_code, ["def "])
+        # remove lines starting from the first unindented line after def_left
+        new_code = remove_unindented_lines(new_code, cut_after=def_left)
         new_code = chunks[0] + new_code
 
         # cut all functions that are not syntactically correct && not the entry point
