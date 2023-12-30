@@ -147,6 +147,7 @@ class VLlmDecoder(DecoderBase):
 # chatml format
 class ChatML(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -930,6 +931,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="upstage/SOLAR-10.7B-Instruct-v1.0",
             temperature=temperature,
+            conversational=True,
         )
     elif name == "mistral-hermes-codepro-7b":
         return ChatML(
