@@ -137,8 +137,11 @@ if __name__ == "__main__":
             imports, def_right = prompts[task_id].split(def_left)
             new_code = imports + def_left + new_code.split(def_left, maxsplit=1)[-1]
 
-        chunks = new_code.split(def_left)  # imports + def_left + {def_right + impl}
-        new_code = def_left + def_left.join(chunks[1:])  # fn + impl
+        chunks = [chunk for chunk in new_code.split(def_left)]
+        bodies = [
+            chunk for chunk in chunks[1:] if "    return " in chunk.split("\ndef")[0]
+        ]
+        new_code = def_left + def_left.join(bodies)  # fn + impl
         new_code = to_four_space_indents(new_code)
 
         for eof in args.eofs:
