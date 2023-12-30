@@ -110,10 +110,12 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "float16"
         elif "deepseek" in name:
             kwargs["dtype"] = "bfloat16"
-        elif "mixtral" in name:
+        elif "mixtral" in name.lower():
             kwargs["dtype"] = "bfloat16"
         elif "solar" in name:
             kwargs["dtype"] = "float16"
+        elif "mistral" in name.lower():
+            kwargs["dtype"] = "bfloat16"
 
         self.llm = LLM(model=name, **kwargs)
 
@@ -139,7 +141,8 @@ class VLlmDecoder(DecoderBase):
         return gen_strs
 
 
-class Dolphin(VLlmDecoder):
+# chatml format
+class ChatML(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
@@ -245,6 +248,10 @@ class HFTorchDecoder(DecoderBase):
             kwargs["torch_dtype"] = torch.bfloat16
         if "deepseek" in name:
             kwargs["torch_dtype"] = torch.bfloat16
+            self.skip_special_tokens = True
+        if "/phi" in name:
+            kwargs["torch_dtype"] = torch.float16
+            kwargs["trust_remote_code"] = True
             self.skip_special_tokens = True
 
         print(f"{kwargs = }")
@@ -909,15 +916,29 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name == "dolphin-2.6":
-        return Dolphin(
+        return ChatML(
             batch_size=batch_size,
             name="cognitivecomputations/dolphin-2.6-mixtral-8x7b",
             temperature=temperature,
+            max_new_tokens=512 + 256,
         )
     elif name == "solar-10.7b-instruct":
         return Solar(
             batch_size=batch_size,
             name="upstage/SOLAR-10.7B-Instruct-v1.0",
+            temperature=temperature,
+        )
+    elif name == "mistral-hermes-codepro-7b":
+        return ChatML(
+            batch_size=batch_size,
+            name="beowolx/MistralHermes-CodePro-7B-v1",
+            temperature=temperature,
+            max_new_tokens=512 + 256,
+        )
+    elif name == "phi-2":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="microsoft/phi-2",
             temperature=temperature,
         )
 
