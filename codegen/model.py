@@ -1010,5 +1010,12 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
             conversational=True,
         )
+    elif name == "xdan-l1-chat":
+        return Alpaca(
+            batch_size=batch_size,
+            name="xDAN-AI/xDAN-L1-Chat-dpo-qlora-v1",
+            temperature=temperature,
+            conversational=True,
+        )
 
     raise ValueError(f"Invalid model name: {name}")
