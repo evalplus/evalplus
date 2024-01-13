@@ -104,6 +104,12 @@ class VLlmDecoder(DecoderBase):
         kwargs = {"tensor_parallel_size": int(os.getenv("VLLM_N_GPUS", "1"))}
         if "CodeLlama" in name:
             kwargs["dtype"] = "bfloat16"
+        elif "code-millenials" in name:
+            kwargs["dtype"] = "float16"
+        elif "uukuguy/speechless-code-mistral-7b-v1.0" == name:
+            kwargs["dtype"] = "float16"
+        elif "uukuguy/speechless-codellama-34b-v2.0" == name:
+            kwargs["dtype"] = "float16"
         elif "CodeBooga" in name:
             kwargs["dtype"] = "float16"
         elif "WizardCoder" in name:
@@ -119,6 +125,8 @@ class VLlmDecoder(DecoderBase):
         elif "phi" in name.lower():
             kwargs["dtype"] = "float16"
             kwargs["trust_remote_code"] = True
+        elif "openchat" in name.lower():
+            kwargs["dtype"] = "bfloat16"
 
         self.llm = LLM(model=name, **kwargs)
 
@@ -171,6 +179,28 @@ Can you complete the following Python function?
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 
 
+class OpenChat(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""GPT4 Correct User: Can you complete the following Python function?
+```python
+{prompt}
+```
+<|end_of_turn|>GPT4 Correct Assistant:
+```python
+"""
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
 class Solar(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
@@ -195,18 +225,19 @@ Sure!
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 
 
-class WizardCoderDecoder(VLlmDecoder):
+class Alpaca(VLlmDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        prompt = f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
-
+        prompt = f"""Below is an instruction that describes a task. Write a response that appropriately completes request.
 
 ### Instruction:
 Create a Python script for this problem:
 {prompt}
 
-### Response:"""
+### Response:
+```python
+"""
 
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
@@ -869,21 +900,21 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 temperature=temperature,
             )
     elif name == "wizardcoder-34b":
-        return WizardCoderDecoder(
+        return Alpaca(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-Python-34B-V1.0",
             temperature=temperature,
             conversational=True,
         )
     elif name == "wizardcoder-15b":
-        return WizardCoderDecoder(
+        return Alpaca(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-15B-V1.0",
             temperature=temperature,
             conversational=True,
         )
     elif name == "wizardcoder-7b":
-        return WizardCoderDecoder(
+        return Alpaca(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-Python-7B-V1.0",
             temperature=temperature,
@@ -945,6 +976,34 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="microsoft/phi-2",
             temperature=temperature,
+        )
+    elif name == "openchat":
+        return OpenChat(
+            batch_size=batch_size,
+            name="openchat/openchat-3.5-0106",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "speechless-codellama-34b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-codellama-34b-v2.0",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "speechless-mistral-7b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-code-mistral-7b-v1.0",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "code-millenials-34b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="budecosystem/code-millenials-34b",
+            temperature=temperature,
+            conversational=True,
         )
 
     raise ValueError(f"Invalid model name: {name}")
