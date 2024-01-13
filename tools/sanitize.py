@@ -18,9 +18,9 @@ from evalplus.data import (
 from tools.checker import syntax_check
 
 
-def remove_unindented_lines(code, cut_after):
+def remove_unindented_lines(code, cut_after, execeptions):
     lines = code.splitlines()
-    cut_idx = None
+    cut_idx = []
     met_cut_after = False
     for i, line in enumerate(lines):
         if not met_cut_after and line.startswith(cut_after):
@@ -28,13 +28,14 @@ def remove_unindented_lines(code, cut_after):
             continue
         if line.strip() == "":
             continue
+        if any(line.startswith(e) for e in execeptions):
+            continue
 
         lspace = len(line) - len(line.lstrip())
         if lspace == 0:
-            cut_idx = i
-            break
+            cut_idx.append(i)
 
-    return "\n".join(lines[:cut_idx])
+    return "\n".join([line for i, line in enumerate(lines) if i not in cut_idx])
 
 
 def to_four_space_indents(old_code):
@@ -133,11 +134,8 @@ if __name__ == "__main__":
         if def_left not in new_code:
             warn(f"Cannot find {def_left} in {dbg_identifier}. Skipping.")
 
-        if args.dataset == "humaneval":
-            imports, def_right = prompts[task_id].split(def_left)
-            new_code = imports + def_left + new_code.split(def_left, maxsplit=1)[-1]
-
         chunks = [chunk for chunk in new_code.split(def_left)]
+        # TODO: having return does not mean this is complete
         bodies = [
             chunk for chunk in chunks[1:] if "    return " in chunk.split("\ndef")[0]
         ]
@@ -148,7 +146,9 @@ if __name__ == "__main__":
             new_code = new_code.split(eof)[0]
 
         # remove lines starting from the first unindented line after def_left
-        new_code = remove_unindented_lines(new_code, cut_after=def_left)
+        new_code = remove_unindented_lines(
+            new_code, cut_after=def_left, execeptions=["def ", "import ", "from "]
+        )
         new_code = chunks[0] + new_code
 
         # cut all functions that are not syntactically correct && not the entry point
