@@ -18,13 +18,13 @@ from evalplus.data import (
 from tools.checker import syntax_check
 
 
-def remove_unindented_lines(code, cut_after, execeptions):
+def remove_unindented_lines(code, protect_before, execeptions, trim_tails):
     lines = code.splitlines()
     cut_idx = []
-    met_cut_after = False
+    cut_enabled = False
     for i, line in enumerate(lines):
-        if not met_cut_after and line.startswith(cut_after):
-            met_cut_after = True
+        if not cut_enabled and line.startswith(protect_before):
+            cut_enabled = True
             continue
         if line.strip() == "":
             continue
@@ -34,6 +34,11 @@ def remove_unindented_lines(code, cut_after, execeptions):
         lspace = len(line) - len(line.lstrip())
         if lspace == 0:
             cut_idx.append(i)
+
+        if any(line.rstrip().startswith(t) for t in trim_tails):
+            # cut off everything behind
+            cut_idx.extend(list(range(i, len(lines))))
+            break
 
     return "\n".join([line for i, line in enumerate(lines) if i not in cut_idx])
 
@@ -147,7 +152,10 @@ if __name__ == "__main__":
 
         # remove lines starting from the first unindented line after def_left
         new_code = remove_unindented_lines(
-            new_code, cut_after=def_left, execeptions=["def ", "import ", "from "]
+            new_code,
+            protect_before=def_left,
+            execeptions=["def ", "import ", "from "],
+            trim_tails=['"""', "if", "print"],
         )
         new_code = chunks[0] + new_code
 
