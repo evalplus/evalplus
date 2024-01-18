@@ -179,6 +179,31 @@ Can you complete the following Python function?
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 
 
+# zyte format
+class Zyte(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""<|system|>You are an intelligent programming assistant to produce Python algorithmic solutions</s>
+<|user|>Can you complete the following Python function?
+```python
+{prompt}
+```
+</s>
+<|assistant|>
+```python
+"""
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
 class OpenChat(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         kwargs["conversational"] = True
@@ -261,6 +286,7 @@ class HFTorchDecoder(DecoderBase):
                 "Salesforce/codegen2-16B",
                 "deepseek-ai/deepseek-coder-6.7b-base",
                 "deepseek-ai/deepseek-coder-33b-base",
+                "stabilityai/stable-code-3b",
             }
         }
 
@@ -1014,6 +1040,19 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return Alpaca(
             batch_size=batch_size,
             name="xDAN-AI/xDAN-L1-Chat-dpo-qlora-v1",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "stable-code-3b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="stabilityai/stable-code-3b",
+            temperature=temperature,
+        )
+    elif name == "zyte-1b":
+        return Zyte(
+            batch_size=batch_size,
+            name="aihub-app/zyte-1B",
             temperature=temperature,
             conversational=True,
         )
