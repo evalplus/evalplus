@@ -26,6 +26,17 @@ def check(candidate):
         {assertion}
 """
 
+HUMANEVAL_CROSSCHECK_TEMPLATE = """\
+{aux_fn}
+
+{ref_func}
+
+def check(candidate):
+    inputs = {inputs}
+    for i, (inp, exp) in enumerate(zip(inputs, results)):
+        assertion(candidate(*inp), ref_func(*inp), {atol})
+"""
+
 ASSERTION_FN = f"""\
 import numpy as np
 
@@ -50,24 +61,27 @@ def assertion(out, exp, atol):
 """
 
 
-def synthesize_test_code(task_id, entry_point, inputs, results, atol):
-    imports = set()
+def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
+    # dataset size optimization for large outputs
+    if entry_point in ("tri", "string_sequence"):
+        return task_id, HUMANEVAL_CROSSCHECK_TEMPLATE.format(
+            aux_fn=ASSERTION_FN,
+            inputs=inputs,
+            ref_func=ref_func.replace(f" {entry_point}(", " ref_func("),
+            atol=atol,
+        )
 
-    # "test" field is a string of the checker code
+    # default settings
+    imports = set()
+    aux_fn = ASSERTION_FN
+    assertion = f"assertion(candidate(*inp), exp, {atol})"
+
+    # special case: poly
     if entry_point == "find_zero":
         imports.add("import math")
         aux_fn = inspect.getsource(_poly) + "\n"
         assertion = f"assert _poly(*candidate(*inp), inp) <= {atol}"
-        return task_id, HUMANEVAL_TEST_TEMPLATE.format(
-            imports="\n".join(imports),
-            aux_fn=aux_fn,
-            inputs=inputs,
-            results=results,
-            assertion=assertion,
-        )
 
-    aux_fn = ASSERTION_FN
-    assertion = f"assertion(candidate(*inp), exp, {atol})"
     return task_id, HUMANEVAL_TEST_TEMPLATE.format(
         imports="\n".join(imports),
         aux_fn=aux_fn,
@@ -143,6 +157,7 @@ def main():
                     compatible_form["entry_point"],
                     inputs,
                     results,
+                    compatible_form["canonical_solution"],
                     atol,
                 )
             )
