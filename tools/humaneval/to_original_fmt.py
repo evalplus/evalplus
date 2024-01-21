@@ -21,7 +21,7 @@ HUMANEVAL_TEST_TEMPLATE = """\
 
 def check(candidate):
     inputs = {inputs}
-    exp_out = {results}
+    results = {results}
     for i, (inp, exp) in enumerate(zip(inputs, results)):
         {assertion}
 """
