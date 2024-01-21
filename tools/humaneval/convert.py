@@ -1,13 +1,14 @@
+import inspect
 import json
 import sys
 from argparse import ArgumentParser
 from copy import deepcopy
 from typing import Dict
 
-import numpy as np
 from rich.progress import track
 
 from evalplus.data.humaneval import get_human_eval_plus, get_human_eval_plus_hash
+from evalplus.eval import is_floats
 from evalplus.eval._special_oracle import _poly
 from evalplus.evaluate import get_groundtruth
 
@@ -26,15 +27,7 @@ def check(candidate):
 ASSERTION_FN = f"""\
 import numpy as np
 
-def is_floats(x) -> bool:
-    # check if it is float; List[float]; Tuple[float]
-    if isinstance(x, float):
-        return True
-    if isinstance(x, (list, tuple)):
-        return all(isinstance(i, float) for i in x)
-    if isinstance(x, np.ndarray):
-        return x.dtype == np.float64 or x.dtype == np.float32
-    return False
+{inspect.getsource(is_floats)}
 
 def assertion(out, exp, atol):
     exact_match = out == exp
@@ -46,17 +39,6 @@ def assertion(out, exp, atol):
     else:
         assert exact_match
 """
-
-
-def is_floats(x) -> bool:
-    # check if it is float | List[float] | Tuple[float] and not empty for sequence
-    if isinstance(x, float):
-        return True
-    if isinstance(x, (list, tuple)) and len(x) > 0:
-        return all(isinstance(i, float) for i in x)
-    if isinstance(x, np.ndarray):
-        return x.dtype == np.float64 or x.dtype == np.float32
-    return False
 
 
 def humaneval_checker(problem: Dict) -> str:
@@ -71,8 +53,6 @@ def humaneval_checker(problem: Dict) -> str:
     imports = set()
     aux_fn = ""
     if "find_zero" == problem["entry_point"]:
-        import inspect
-
         imports.add("import math")
         aux_fn = inspect.getsource(_poly) + "\n"
         assertion = f"assert _poly(*candidate(*inp), inp) <= {atol}"
