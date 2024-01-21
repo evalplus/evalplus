@@ -64,6 +64,7 @@ def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
         "starts_one_ends",
         "make_a_pile",
         "special_factorial",
+        "all_prefixes",
     ):
         return task_id, HUMANEVAL_CROSSCHECK_TEMPLATE.format(
             aux_fn=ASSERTION_FN,
