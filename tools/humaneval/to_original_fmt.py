@@ -1,3 +1,4 @@
+import ast
 import inspect
 import json
 import multiprocessing
@@ -57,7 +58,13 @@ def assertion(out, exp, atol):
 
 def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
     # dataset size optimization for large outputs
-    if entry_point in ("tri", "string_sequence"):
+    if entry_point in (
+        "tri",
+        "string_sequence",
+        "starts_one_ends",
+        "make_a_pile",
+        "special_factorial",
+    ):
         return task_id, HUMANEVAL_CROSSCHECK_TEMPLATE.format(
             aux_fn=ASSERTION_FN,
             inputs=inputs,
@@ -159,6 +166,8 @@ def main():
 
         for future in tqdm(as_completed(futures), total=len(plus_problems)):
             task_id, test_code = future.result()
+            # syntax check of test_code
+            ast.parse(test_code)
             id2bytes[task_id] = len(test_code.encode("utf-8"))
             compatible_problems[task_id]["test"] = test_code
 
