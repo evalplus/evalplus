@@ -151,6 +151,14 @@ def main():
             assert len(inputs) == len(results)
             atol = plus_form["atol"]
 
+            simplified_prompt = ""
+            for line in compatible_form["prompt"].split("\n"):
+                if not line:
+                    continue
+                if '"""' in line or "'''" in line:
+                    break
+                simplified_prompt += line + "\n"
+
             futures.append(
                 executor.submit(
                     synthesize_test_code,
@@ -158,8 +166,7 @@ def main():
                     compatible_form["entry_point"],
                     inputs,
                     results,
-                    [line for line in compatible_form["prompt"].split("\n") if line][0]
-                    + compatible_form["canonical_solution"],
+                    simplified_prompt + compatible_form["canonical_solution"],
                     atol,
                 )
             )
