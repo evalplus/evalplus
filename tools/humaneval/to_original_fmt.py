@@ -100,7 +100,7 @@ def main():
 
     args = parser.parse_args()
 
-    if sys.version_info >= (3, 11, 4):
+    if hasattr(sys, "set_int_max_str_digits"):
         sys.set_int_max_str_digits(int(10e8))
 
     plus_problems = get_human_eval_plus(mini=False)
