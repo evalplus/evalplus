@@ -11,6 +11,7 @@ from evalplus.data.humaneval import (
     get_human_eval_plus,
     get_human_eval_plus_hash,
 )
+from evalplus.eval import is_floats
 from evalplus.eval._special_oracle import _poly
 from evalplus.evaluate import get_groundtruth
 
@@ -40,14 +41,7 @@ def check(candidate):
 ASSERTION_FN = f"""\
 import numpy as np
 
-def is_floats(x) -> bool:
-    if isinstance(x, float):
-        return True
-    if isinstance(x, (list, tuple)):
-        return all(isinstance(i, float) for i in x)
-    if isinstance(x, np.ndarray):
-        return x.dtype == np.float64 or x.dtype == np.float32
-    return False
+{inspect.getsource(is_floats)}
 
 def assertion(out, exp, atol):
     exact_match = out == exp
