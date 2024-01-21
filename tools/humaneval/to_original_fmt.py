@@ -35,7 +35,7 @@ HUMANEVAL_CROSSCHECK_TEMPLATE = """\
 
 def check(candidate):
     inputs = {inputs}
-    for i, (inp, exp) in enumerate(zip(inputs, results)):
+    for i, inp in enumerate(inputs):
         assertion(candidate(*inp), ref_func(*inp), {atol})
 """
 
