@@ -151,8 +151,7 @@ def main():
                     compatible_form["entry_point"],
                     inputs,
                     results,
-                    compatible_form["prompt"].split(":")[0]
-                    + ":"
+                    [line for line in compatible_form["prompt"].split("\n") if line][0]
                     + compatible_form["canonical_solution"],
                     atol,
                 )
