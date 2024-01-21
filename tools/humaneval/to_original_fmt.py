@@ -1,0 +1,176 @@
+import inspect
+import json
+import multiprocessing
+import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
+from tqdm import tqdm
+
+from evalplus.data.humaneval import (
+    HUMANEVAL_PLUS_VERSION,
+    get_human_eval_plus,
+    get_human_eval_plus_hash,
+)
+from evalplus.eval._special_oracle import _poly
+from evalplus.evaluate import get_groundtruth
+
+HUMANEVAL_TEST_TEMPLATE = """\
+{imports}
+
+{aux_fn}
+
+def check(candidate):
+    inputs = {inputs}
+    exp_out = {results}
+    for i, (inp, exp) in enumerate(zip(inputs, results)):
+        {assertion}
+"""
+
+ASSERTION_FN = f"""\
+import numpy as np
+
+def is_floats(x) -> bool:
+    if isinstance(x, float):
+        return True
+    if isinstance(x, (list, tuple)):
+        return all(isinstance(i, float) for i in x)
+    if isinstance(x, np.ndarray):
+        return x.dtype == np.float64 or x.dtype == np.float32
+    return False
+
+def assertion(out, exp, atol):
+    exact_match = out == exp
+
+    if atol == 0 and is_floats(exp):
+        atol = 1e-6
+    if not exact_match and atol != 0:
+        np.testing.assert_allclose(out, exp, atol=atol)
+    else:
+        assert exact_match
+"""
+
+
+def synthesize_test_code(task_id, entry_point, inputs, results, atol):
+    imports = set()
+
+    # "test" field is a string of the checker code
+    if entry_point == "find_zero":
+        imports.add("import math")
+        aux_fn = inspect.getsource(_poly) + "\n"
+        assertion = f"assert _poly(*candidate(*inp), inp) <= {atol}"
+        return task_id, HUMANEVAL_TEST_TEMPLATE.format(
+            imports="\n".join(imports),
+            aux_fn=aux_fn,
+            inputs=inputs,
+            results=results,
+            assertion=assertion,
+        )
+
+    aux_fn = ASSERTION_FN
+    assertion = f"assertion(candidate(*inp), exp, {atol})"
+    return task_id, HUMANEVAL_TEST_TEMPLATE.format(
+        imports="\n".join(imports),
+        aux_fn=aux_fn,
+        inputs=inputs,
+        results=results,
+        assertion=assertion,
+    )
+
+
+def deduplicate(inputs, results):
+    assert len(inputs) == len(results)
+    unique_input_strs = set([f"{x}" for x in inputs])
+
+    new_inputs, new_results = [], []
+    for inp, res in zip(inputs, results):
+        inp_str = f"{inp}"
+        if inp_str in unique_input_strs:
+            new_inputs.append(inp)
+            new_results.append(res)
+            unique_input_strs.remove(inp_str)
+
+    return new_inputs, new_results
+
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--debug-tasks", nargs="+", default=[], type=int)
+
+    args = parser.parse_args()
+
+    if sys.version_info >= (3, 11, 4):
+        sys.set_int_max_str_digits(int(10e8))
+
+    plus_problems = get_human_eval_plus(mini=False)
+    dataset_hash = get_human_eval_plus_hash()
+
+    compatible_problems = {}
+    expected_outputs = get_groundtruth(plus_problems, dataset_hash, [])
+
+    # debugging: monitoring test code size
+    id2bytes = {}
+
+    n_workers = max(1, multiprocessing.cpu_count() // 4)
+    with ProcessPoolExecutor(max_workers=n_workers) as executor:
+        futures = []
+        for task_id, plus_form in tqdm(plus_problems.items()):
+            if args.debug_tasks and int(task_id.split("/")[-1]) not in args.debug_tasks:
+                continue
+
+            compatible_form = {}
+            compatible_form["task_id"] = task_id
+            compatible_form["prompt"] = plus_form["prompt"]
+            compatible_form["canonical_solution"] = plus_form["canonical_solution"]
+            compatible_form["entry_point"] = plus_form["entry_point"]
+            compatible_problems[task_id] = compatible_form
+
+            inputs = plus_form["base_input"] + plus_form["plus_input"]
+            results = (
+                expected_outputs[task_id]["base"] + expected_outputs[task_id]["plus"]
+            )
+
+            inputs, results = deduplicate(inputs, results)
+
+            assert len(inputs) == len(results)
+            atol = plus_form["atol"]
+
+            futures.append(
+                executor.submit(
+                    synthesize_test_code,
+                    task_id,
+                    compatible_form["entry_point"],
+                    inputs,
+                    results,
+                    atol,
+                )
+            )
+
+        for future in tqdm(as_completed(futures), total=len(plus_problems)):
+            task_id, test_code = future.result()
+            id2bytes[task_id] = len(test_code.encode("utf-8"))
+            compatible_problems[task_id]["test"] = test_code
+
+    # print the top-10 largest test code
+    print("Top-10 largest test code comes from problems (in megabytes):")
+    for task_id, size in sorted(id2bytes.items(), key=lambda x: x[1], reverse=True)[
+        :10
+    ]:
+        print(f"{task_id}:\t{size / 1024 / 1024:.2f}mb")
+
+    if args.debug_tasks:
+        for problem in compatible_problems.values():
+            print("--- debugging:", problem["task_id"])
+            print(problem["prompt"] + problem["canonical_solution"])
+            print(problem["test"][:1024], "...")
+    else:
+        with open(
+            f"compatible_humaneval_plus_{HUMANEVAL_PLUS_VERSION}.jsonl", "w"
+        ) as f:
+            for problem in compatible_problems.values():
+                f.write(json.dumps(problem) + "\n")
+
+
+if __name__ == "__main__":
+    main()
