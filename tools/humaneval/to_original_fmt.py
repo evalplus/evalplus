@@ -157,7 +157,9 @@ def main():
                     compatible_form["entry_point"],
                     inputs,
                     results,
-                    compatible_form["canonical_solution"],
+                    compatible_form["prompt"].split(":")[0]
+                    + ":"
+                    + compatible_form["canonical_solution"],
                     atol,
                 )
             )
@@ -178,7 +180,12 @@ def main():
         for problem in compatible_problems.values():
             print("--- debugging:", problem["task_id"])
             print(problem["prompt"] + problem["canonical_solution"])
-            print(problem["test"][:1024], "...")
+            test_code = problem["test"]
+            if len(test_code) <= 2048 + 512:
+                print(test_code)
+            else:
+                print(problem["test"][:1024], "...")
+                print("...", problem["test"][-1024:])
     else:
         with open(
             f"compatible_humaneval_plus_{HUMANEVAL_PLUS_VERSION}.jsonl", "w"
