@@ -3,7 +3,7 @@
 <p align="center">
     <a href="https://evalplus.github.io/leaderboard.html"><img src="https://img.shields.io/badge/%F0%9F%8F%86-leaderboard-8A2BE2"></a>
     <a href="https://openreview.net/forum?id=1qvx610Cu7"><img src="https://img.shields.io/badge/Paper-NeurIPS'23-a55fed.svg"></a>
-    <a href="https://arxiv.org/abs/2305.01210"><img src="https://img.shields.io/badge/arXiv-2305.01210-b31b1b.svg"></a>
+    <a href="https://huggingface.co/evalplus/"><img src="https://img.shields.io/badge/🤗%20Hugging%20Face-evalplus-%23ff8811.svg"></a>
     <a href="https://pypi.org/project/evalplus/"><img src="https://img.shields.io/pypi/v/evalplus?color=g"></a>
     <a href="https://pepy.tech/project/evalplus"><img src="https://static.pepy.tech/badge/evalplus"></a>
     <a href="https://hub.docker.com/r/ganler/evalplus" title="Docker"><img src="https://img.shields.io/docker/image-size/ganler/evalplus"></a>
@@ -39,13 +39,19 @@
 > </b>
 > </div>
 
-To address this, we started the EvalPlus project -- a rigourous evaluation framework for LLM4Code that:
+EvalPlus is a rigourous evaluation framework for LLM4Code, with:
 
-+ ✨ improves code benchmarks by adding up to thousands of new tests! (**80x** for **HumanEval** and **35x** for **MBPP**!)
-+ ✨ crafts a set [utility tools](#-useful-tools) to sanitize, visualize and inspect LLM-generated code and evaluation results!
-+ ✨ accelerates LLM4Code research by open-sourcing [LLM-generated samples](#-LLM-generated-code) for 20+ models -- no need to re-run the expensive benchmarks!
+* ✨ **HumanEval+**: 80x more tests than the original HumanEval!
+* ✨ **MBPP+**: 35x more tests than the original MBPP!
+* ✨ **Evaluation framework**: EvalPlus packages/images/tools can easily and safely evaluate your LLMs on HumanEval(+), MBPP(+), etc.
 
-Want to know more details? Please read our [**NeurIPS'23 paper**](https://openreview.net/forum?id=1qvx610Cu7) [![](https://img.shields.io/badge/Paper-NeurIPS'23-a55fed.svg)](https://openreview.net/forum?id=1qvx610Cu7)!
+Why EvalPlus? What does using EvalPlus datasets bring to you?
+
+* ✨ **Reliable ranking**: See [our leaderboard](https://evalplus.github.io/leaderboard.html) for the latest ranking of LLMs and differences from the original benchmarks.
+* ✨ **Code robustness**: Look at the score differences! esp. before (e.g., HumanEval) and after (e.g., HumanEval+) using EvalPlus! The drop/gap indicates if the LLM can generate more robust code: less drop means more robustness, and larger drop means the code tends to be more fragile.
++ ✨**Pre-generated samples**: EvalPlus accelerates LLM4Code research by open-sourcing [LLM-generated samples](#-LLM-generated-code) for vairous models -- no need to re-run the expensive benchmarks!
+
+Want to know more details? Read our [**NeurIPS'23 paper**](https://openreview.net/forum?id=1qvx610Cu7) [![](https://img.shields.io/badge/Paper-NeurIPS'23-a55fed.svg)](https://openreview.net/forum?id=1qvx610Cu7) as well as our [**Google Slides**](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs)!
 
 ## 🔥 Quick Start
 
