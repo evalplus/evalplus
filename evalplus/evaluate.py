@@ -289,7 +289,7 @@ def main():
     parser.add_argument("--parallel", default=None, type=int)
     parser.add_argument("--i-just-wanna-run", action="store_true")
     parser.add_argument("--test-details", action="store_true")
-    parser.add_argument("--min-time-limit", default=0.2, type=float)
+    parser.add_argument("--min-time-limit", default=0.5, type=float)
     parser.add_argument("--gt-time-limit-factor", default=4.0, type=float)
     parser.add_argument("--mini", action="store_true")
     args = parser.parse_args()

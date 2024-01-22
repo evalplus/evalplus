@@ -140,7 +140,7 @@ evalplus.evaluate --dataset [humaneval|mbpp] --samples samples.jsonl
 > LLM solutions are regarded as **failed** on timeout (and OOM etc.).
 > Specifically, we set the timeout $T=\max(T_{base}, T_{gt}\times k)$, where:
 >
-> - $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 0.2s);
+> - $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 0.5s);
 > - $T_{gt}$ is the runtime of the ground-truth solutions (achieved via profiling);
 > - $k$ is a configurable factor `--gt-time-limit-factor` (default to 4);
 >
