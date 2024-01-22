@@ -197,9 +197,7 @@ def main():
                 print(problem["test"][:1024], "...")
                 print("...", problem["test"][-1024:])
     else:
-        with open(
-            f"compatible_humaneval_plus_{HUMANEVAL_PLUS_VERSION}.jsonl", "w"
-        ) as f:
+        with open(f"HumanEvalPlus-OriginFmt-{HUMANEVAL_PLUS_VERSION}.jsonl", "w") as f:
             for problem in compatible_problems.values():
                 f.write(json.dumps(problem) + "\n")
 
