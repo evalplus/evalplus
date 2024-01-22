@@ -39,16 +39,16 @@
 > </b>
 > </div>
 
-EvalPlus is a rigourous evaluation framework for LLM4Code, with:
+EvalPlus is a rigorous evaluation framework for LLM4Code, with:
 
 * ✨ **HumanEval+**: 80x more tests than the original HumanEval!
 * ✨ **MBPP+**: 35x more tests than the original MBPP!
-* ✨ **Evaluation framework**: EvalPlus packages/images/tools can easily and safely evaluate your LLMs on HumanEval(+), MBPP(+), etc.
+* ✨ **Evaluation framework**: our packages/images/tools can easily and safely evaluate LLMs on above benchmarks.
 
 Why EvalPlus? What does using EvalPlus datasets bring to you?
 
 * ✨ **Reliable ranking**: See [our leaderboard](https://evalplus.github.io/leaderboard.html) for the latest LLM ranking before and after rigorous evaluation.
-* ✨ **Code robustness**: Look at the score differences! esp. before (e.g., HumanEval) and after (e.g., HumanEval+) using EvalPlus! The drop/gap indicates if the LLM can generate more robust code: less drop means more robustness, and larger drop means the code tends to be more fragile.
+* ✨ **Code robustness**: Look at the score differences! esp. before (e.g., HumanEval) and after (e.g., HumanEval+) using EvalPlus! The drop/gap indicates if the LLM can generate more robust code: less drop means more robustness and a larger drop means the code tends to be more fragile.
 * ✨**Pre-generated samples**: EvalPlus accelerates LLM4Code research by open-sourcing [LLM-generated samples](#-LLM-generated-code) for vairous models -- no need to re-run the expensive benchmarks!
 
 Want to know more details? Read our [**NeurIPS'23 paper**](https://openreview.net/forum?id=1qvx610Cu7) [![](https://img.shields.io/badge/Paper-NeurIPS'23-a55fed.svg)](https://openreview.net/forum?id=1qvx610Cu7) as well as our [**Google Slides**](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs)!
