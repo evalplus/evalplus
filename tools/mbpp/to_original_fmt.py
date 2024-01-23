@@ -7,7 +7,12 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from tqdm import tqdm
 
-from evalplus.data.mbpp import MBPP_PLUS_VERSION, get_mbpp_plus, get_mbpp_plus_hash
+from evalplus.data.mbpp import (
+    MBPP_PLUS_VERSION,
+    get_mbpp,
+    get_mbpp_plus,
+    get_mbpp_plus_hash,
+)
 from evalplus.eval import is_floats
 from evalplus.eval._special_oracle import MBPP_OUTPUT_NOT_NONE_TASKS
 from evalplus.evaluate import get_groundtruth
@@ -17,11 +22,10 @@ MBPP_TEST_TEMPLATE = """\
 
 {aux_fn}
 
-def check(candidate):
-    inputs = {inputs}
-    results = {results}
-    for i, (inp, exp) in enumerate(zip(inputs, results)):
-        {assertion}
+inputs = {inputs}
+results = {results}
+for i, (inp, exp) in enumerate(zip(inputs, results)):
+    {assertion}
 """
 
 MBPP_CROSSCHECK_TEMPLATE = """\
@@ -29,10 +33,9 @@ MBPP_CROSSCHECK_TEMPLATE = """\
 
 {ref_func}
 
-def check(candidate):
-    inputs = {inputs}
-    for i, inp in enumerate(inputs):
-        assertion(candidate(*inp), ref_func(*inp), {atol})
+inputs = {inputs}
+for i, inp in enumerate(inputs):
+    assertion(candidate(*inp), ref_func(*inp), {atol})
 """
 
 ASSERTION_FN = f"""\
@@ -54,11 +57,7 @@ def assertion(out, exp, atol):
 
 def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
     # dataset size optimization for large outputs
-    if entry_point in (
-        "combinations_colors",  # too big
-        "freq_count",  # collections.Counter exists in results
-        # Mbpp/271 timeout in human-eval framework
-    ):
+    if entry_point in ("combinations_colors", "freq_count", "get_coordinates"):
         return task_id, MBPP_CROSSCHECK_TEMPLATE.format(
             aux_fn=ASSERTION_FN,
             inputs=inputs,
@@ -69,22 +68,18 @@ def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
     # default settings
     imports = set()
     aux_fn = ASSERTION_FN
-    assertion = f"assertion(candidate(*inp), exp, {atol})"
+
+    # inf exists in inputs/results
+    if entry_point in ("zero_count", "minimum"):
+        imports.add("from math import inf")
 
     test_code = MBPP_TEST_TEMPLATE.format(
         imports="\n".join(imports),
         aux_fn=aux_fn,
         inputs=inputs,
         results=results,
-        assertion=assertion,
+        assertion=f"assertion(candidate(*inp), exp, {atol})",
     )
-
-    # inf exists in inputs/results
-    if entry_point in (
-        "zero_count",
-        "minimum",
-    ):
-        test_code = "from math import inf\n" + test_code
 
     return task_id, test_code
 
@@ -118,6 +113,8 @@ def main():
     plus_problems = get_mbpp_plus(mini=False)
     dataset_hash = get_mbpp_plus_hash()
 
+    original_mbpp = get_mbpp()
+
     compatible_problems = {}
     expected_outputs = get_groundtruth(
         plus_problems, dataset_hash, MBPP_OUTPUT_NOT_NONE_TASKS
@@ -130,28 +127,22 @@ def main():
     with ProcessPoolExecutor(max_workers=n_workers) as executor:
         futures = []
         for task_id, plus_form in tqdm(plus_problems.items()):
-            if args.debug_tasks and int(task_id.split("/")[-1]) not in args.debug_tasks:
+            # expected MBPP task_id is numbers directly
+            # i.e., "666" instead of "Mbpp/666"
+            # But in EvalPlus the task_id is "Mbpp/666"
+            task_id_int = int(task_id.split("/")[-1])
+            if args.debug_tasks and task_id_int not in args.debug_tasks:
                 continue
 
-            # special case for Mbpp/56, whose entry point is "check"
-            # we need to replace it with "check_reverse_twice"
-            # but llm-produced samples are still using "check" as entry point
-            # (released on https://github.com/evalplus/evalplus/releases/tag/v0.2.0)
-            if task_id == "Mbpp/56":
-                plus_form["prompt"] = plus_form["prompt"].replace(
-                    "check(", "check_reverse_twice("
-                )
-                plus_form["canonical_solution"] = plus_form[
-                    "canonical_solution"
-                ].replace("check(", "check_reverse_twice(")
-                plus_form["entry_point"] = "check_reverse_twice"
-
-            compatible_form = {}
-            compatible_form["task_id"] = task_id
-            compatible_form["prompt"] = plus_form["prompt"]
-            compatible_form["canonical_solution"] = plus_form["canonical_solution"]
-            compatible_form["entry_point"] = plus_form["entry_point"]
-            compatible_problems[task_id] = compatible_form
+            compatible_form = {
+                "task_id": task_id_int,
+                "prompt": plus_form["prompt"],
+                "code": plus_form["canonical_solution"],
+                "source_file": original_mbpp[str(task_id_int)]["source_file"],
+                "test_imports": original_mbpp[str(task_id_int)]["test_imports"],
+                "test_list": original_mbpp[str(task_id_int)]["test_list"],
+            }
+            compatible_problems[task_id_int] = compatible_form
 
             inputs = (
                 plus_form["base_input"] + plus_form["plus_input"]
@@ -178,11 +169,11 @@ def main():
             futures.append(
                 executor.submit(
                     synthesize_test_code,
-                    task_id,
-                    compatible_form["entry_point"],
+                    task_id_int,
+                    plus_form["entry_point"],
                     inputs,
                     results,
-                    simplified_prompt + compatible_form["canonical_solution"],
+                    simplified_prompt + compatible_form["code"],
                     atol,
                 )
             )
