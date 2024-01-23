@@ -195,7 +195,7 @@ def main():
     if args.debug_tasks:
         for problem in compatible_problems.values():
             print("--- debugging:", problem["task_id"])
-            print(problem["prompt"] + problem["canonical_solution"])
+            print(problem["prompt"] + problem["code"])
             test_code = problem["test"]
             if len(test_code) <= 2048 + 512:
                 print(test_code)
