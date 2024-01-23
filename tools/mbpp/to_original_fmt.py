@@ -25,7 +25,7 @@ MBPP_TEST_TEMPLATE = """\
 inputs = {inputs}
 results = {results}
 for i, (inp, exp) in enumerate(zip(inputs, results)):
-    {assertion}
+    assertion({entry_point}(*inp), exp, {atol})
 """
 
 MBPP_CROSSCHECK_TEMPLATE = """\
@@ -35,7 +35,7 @@ MBPP_CROSSCHECK_TEMPLATE = """\
 
 inputs = {inputs}
 for i, inp in enumerate(inputs):
-    assertion(candidate(*inp), ref_func(*inp), {atol})
+    assertion({entry_point}(*inp), ref_func(*inp), {atol})
 """
 
 ASSERTION_FN = f"""\
@@ -62,6 +62,7 @@ def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
             aux_fn=ASSERTION_FN,
             inputs=inputs,
             ref_func=ref_func.replace(f" {entry_point}(", " ref_func("),
+            entry_point=entry_point,
             atol=atol,
         )
 
@@ -78,7 +79,8 @@ def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
         aux_fn=aux_fn,
         inputs=inputs,
         results=results,
-        assertion=f"assertion(candidate(*inp), exp, {atol})",
+        entry_point=entry_point,
+        atol=atol,
     )
 
     return task_id, test_code
@@ -187,9 +189,9 @@ def main():
     if args.debug_tasks:
         for problem in compatible_problems.values():
             print("--- debugging:", problem["task_id"])
-            print(problem["prompt"] + problem["code"])
+            print('"""\n' + problem["prompt"] + '\n"""\n' + problem["code"])
             test_code = problem["test"]
-            if len(test_code) <= 2048 + 512:
+            if True or len(test_code) <= 2048 + 512:
                 print(test_code)
             else:
                 print(problem["test"][:1024], "...")
