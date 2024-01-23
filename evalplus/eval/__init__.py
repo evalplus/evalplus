@@ -148,7 +148,10 @@ def unsafe_execute(
                             elif entry_point in MBPP_OUTPUT_NOT_NONE_TASKS:
                                 # exp is True  if not None
                                 #        False if None
-                                exact_match = exp == (out is not None)
+                                if isinstance(out, bool):
+                                    exact_match = out == exp
+                                else:
+                                    exact_match = exp == (out is not None)
 
                         if dataset == "humaneval":
                             if "find_zero" == entry_point:
