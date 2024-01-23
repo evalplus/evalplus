@@ -136,8 +136,8 @@ def main():
 
             compatible_form = {
                 "task_id": task_id_int,
-                "prompt": plus_form["prompt"],
                 "code": plus_form["canonical_solution"],
+                "prompt": original_mbpp[str(task_id_int)]["prompt"],
                 "source_file": original_mbpp[str(task_id_int)]["source_file"],
                 "test_imports": original_mbpp[str(task_id_int)]["test_imports"],
                 "test_list": original_mbpp[str(task_id_int)]["test_list"],
@@ -158,14 +158,6 @@ def main():
             assert len(inputs) == len(results)
             atol = plus_form["atol"]
 
-            simplified_prompt = ""
-            for line in compatible_form["prompt"].split("\n"):
-                if not line:
-                    continue
-                if '"""' in line or "'''" in line:
-                    break
-                simplified_prompt += line + "\n"
-
             futures.append(
                 executor.submit(
                     synthesize_test_code,
@@ -173,7 +165,7 @@ def main():
                     plus_form["entry_point"],
                     inputs,
                     results,
-                    simplified_prompt + compatible_form["code"],
+                    compatible_form["code"],
                     atol,
                 )
             )
