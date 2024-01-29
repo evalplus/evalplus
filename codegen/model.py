@@ -179,6 +179,29 @@ Can you complete the following Python function?
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 
 
+class CodeLlamaInstruct(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```:
+```python
+{prompt}
+```
+[/INST]
+```python
+"""
+
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
 # zyte format
 class Zyte(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
@@ -900,6 +923,15 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name.startswith("code-llama-"):
+        if name.endswith("instruct"):
+            nb = name.split("-")[2]
+            assert nb.endswith("b")
+            return CodeLlamaInstruct(
+                batch_size=batch_size,
+                name=f"codellama/CodeLlama-{nb}-Instruct-hf",
+                temperature=temperature,
+            )
+
         assert name.endswith("b")
         nb = name.split("-")[-1]
         return VLlmDecoder(
