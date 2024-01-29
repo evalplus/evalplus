@@ -144,7 +144,9 @@ if __name__ == "__main__":
         bodies = [
             chunk for chunk in chunks[1:] if "    return " in chunk.split("\ndef")[0]
         ]
-        new_code = def_left + def_left.join(bodies)  # fn + impl
+        new_code = (
+            def_left + def_left.join(bodies) if len(bodies) > 0 else ""
+        )  # fn + impl
         new_code = to_four_space_indents(new_code)
 
         for eof in args.eofs:
