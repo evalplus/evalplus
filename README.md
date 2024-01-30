@@ -254,6 +254,9 @@ Check LLM-produced code and answer the following questions:
 2. Are LLM-generated code compilable? (if no, something could be wrong and you'd better check)
 
 ```shell
+# Set PYTHONPATH to run local Python files
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+
 python tools/checker.py --samples samples.jsonl --dataset [humaneval|mbpp]
 # --samples can also be a directory organized as: ${SAMPLE_DIR}/${TASK_ID}/{SAMPLE_ID}.py
 ```
@@ -265,6 +268,9 @@ But some of them can be easily fixable by doing simple post-processing.
 This tool will make the LLM-generated code more clean/compilable by doing certain post-processing such as trimming with more magical EOFs and some garbage non-code tokens.
 
 ```shell
+# Set PYTHONPATH to run local Python files
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+
 # 💡 If you are storing codes in directories:
 python tools/sanitize.py --samples samples.jsonl --dataset [humaneval|mbpp]
 # Sanitized code will be produced to `samples-sanitized.jsonl`
