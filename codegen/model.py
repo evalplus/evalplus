@@ -128,7 +128,7 @@ class VLlmDecoder(DecoderBase):
         elif "openchat" in name.lower():
             kwargs["dtype"] = "bfloat16"
 
-        self.llm = LLM(model=name, **kwargs)
+        self.llm = LLM(model=name, max_model_len=2048, **kwargs)
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
