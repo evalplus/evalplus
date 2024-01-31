@@ -405,46 +405,26 @@ class HFTorchDecoder(DecoderBase):
         return outputs
 
 
-class DeepSeekInstruct(HFTorchDecoder):
-    @torch.inference_mode()
+class DeepSeekInstruct(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        if self.temperature == 0:
-            assert not do_sample
-            assert num_samples == 1
+        prompt = f"""You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.
+### Instruction:
+Please complete the following Python function in a markdown style code block:
+```python
+{prompt}
+```
+### Response:
+```python
+"""
 
-        input_tokens = self.tokenizer.apply_chat_template(
-            [
-                {
-                    "role": "user",
-                    "content": f"Please implement the following Python function in a markdown style code block:\n\n```python\n{prompt}\n```\n",
-                }
-            ],
-            return_tensors="pt",
-        ).to(self.device)
-        kwargs = {}
-        if do_sample:
-            kwargs["top_p"] = 0.95
-            kwargs["temperature"] = self.temperature
-
-        raw_outputs = self.model.generate(
-            input_tokens,
-            max_new_tokens=self.max_new_tokens,
-            do_sample=do_sample,
-            output_scores=True,
-            return_dict_in_generate=True,
-            top_k=50,
-            num_return_sequences=min(self.batch_size, num_samples),
-            pad_token_id=self.tokenizer.eos_token_id,
-            eos_token_id=32021,
-            **kwargs,
-        )  # remove warning
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
-        gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
-        )
-        return gen_strs
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
 class OpenAIChatDecoder(DecoderBase):
@@ -957,7 +937,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 conversational=True,
             )
         else:
-            return HFTorchDecoder(
+            return VLlmDecoder(
                 batch_size=batch_size,
                 name=f"deepseek-ai/deepseek-coder-{nb}b-base",
                 temperature=temperature,
