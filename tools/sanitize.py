@@ -4,7 +4,6 @@
 """
 
 import os
-from warnings import warn
 
 from tqdm import tqdm
 
@@ -15,7 +14,7 @@ from evalplus.data import (
     write_directory,
     write_jsonl,
 )
-from tools.checker import syntax_check
+from evalplus.sanitize import sanitize
 
 
 def remove_unindented_lines(code, protect_before, execeptions, trim_tails):
@@ -74,7 +73,6 @@ if __name__ == "__main__":
 
     # task_id -> entry_point
     entry_point = {}
-    prompts = {}
 
     if args.dataset == "humaneval":
         dataset = get_human_eval_plus()
@@ -83,7 +81,6 @@ if __name__ == "__main__":
 
     for task_id, problem in dataset.items():
         entry_point[task_id] = problem["entry_point"]
-        prompts[task_id] = problem["prompt"]
 
     # make a new folder with "-sanitized" suffix
     is_folder = os.path.isdir(args.samples)
@@ -114,79 +111,24 @@ if __name__ == "__main__":
             assert "completion" in solution
             old_code = dataset[task_id]["prompt"] + "\n" + solution["completion"]
 
-        # start to modify old_code | old_code should not be re-defined
+        old_code = old_code.strip()
 
-        new_code = old_code
-        if args.rm_prefix_lines is not None:
-            new_code = "\n".join(
-                [
-                    line
-                    for line in old_code.splitlines()
-                    if not line.startswith(args.rm_prefix_lines)
-                ]
-            )
-
-        new_code = "\n" + new_code
-        def_left = "def " + entry_point[task_id]
-
-        # basic handling of chat output
-        new_code = new_code.replace("\n```python\n", "\n```\n")
-        for chunk in new_code.split("\n```\n"):
-            if def_left in chunk:
-                new_code = chunk
-                break
-
-        if def_left not in new_code:
-            warn(f"Cannot find {def_left} in {dbg_identifier}. Skipping.")
-
-        chunks = [chunk for chunk in new_code.split(def_left)]
-        # TODO: having return does not mean this is complete
-        bodies = [
-            chunk for chunk in chunks[1:] if "    return " in chunk.split("\ndef")[0]
-        ]
-        new_code = (
-            def_left + def_left.join(bodies) if len(bodies) > 0 else ""
-        )  # fn + impl
-        new_code = to_four_space_indents(new_code)
-
-        for eof in args.eofs:
-            new_code = new_code.split(eof)[0]
-
-        # remove lines starting from the first unindented line after def_left
-        new_code = remove_unindented_lines(
-            new_code,
-            protect_before=def_left,
-            execeptions=["def ", "import ", "from "],
-            trim_tails=['"""', "if", "print"],
-        )
-        new_code = chunks[0] + new_code
-
-        # cut all functions that are not syntactically correct && not the entry point
-        parts = new_code.split("\ndef ")
-        includes = [parts[0]]
-        for fn in new_code.split("\ndef ")[1:]:
-            if (
-                fn.strip().startswith(entry_point[task_id] + " ")
-                or fn.strip().startswith(entry_point[task_id] + "(")
-                or syntax_check("\ndef " + fn)
-            ):
-                includes.append(fn)
-        new_code = "\ndef ".join(includes)
+        new_code = sanitize(
+            old_code=old_code,
+            entry_point=entry_point[task_id],
+            rm_prefix_lines=args.rm_prefix_lines,
+            eofs=args.eofs,
+        ).strip()
 
         # if changed, print the message
-        if new_code.strip() != old_code.strip():
+        if new_code != old_code:
             msg = "Sanitized: " + dbg_identifier
             if is_folder:
                 msg += " -> " + dbg_identifier.replace(args.samples, target_path)
             print(msg)
             nsan += 1
 
-        new_solutions.append(
-            {
-                "task_id": solution["task_id"],
-                "solution": new_code.strip(),
-            }
-        )
+        new_solutions.append({"task_id": task_id, "solution": new_code})
 
     if is_folder:
         write_directory(target_path, new_solutions)

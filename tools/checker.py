@@ -3,23 +3,10 @@
 2. Warn the code that are not compilable (it could be some impl issues).
 """
 
-import ast
-import traceback
-
 from termcolor import colored
 
 from evalplus.data import load_solutions
-
-
-def syntax_check(code, verbose=False):
-    try:
-        ast.parse(code)
-        return True
-    except (SyntaxError, MemoryError):
-        if verbose:
-            traceback.print_exc()
-        return False
-
+from evalplus.sanitize import syntax_check
 
 if __name__ == "__main__":
     import argparse
