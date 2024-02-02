@@ -191,11 +191,18 @@ class CodeLlamaInstruct(VLlmDecoder):
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
-        input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```:
+        input = f"""'<s>Source: system
+
+ You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
+ <step> Source: user
+
+ Provide a self-contained Python script that solves the following problem:
 ```python
 {prompt}
 ```
-[/INST]
+ <step> Source: assistant
+
+ Here is a Python script that solves the problem:
 ```python
 """
 
