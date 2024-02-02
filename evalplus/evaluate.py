@@ -141,12 +141,16 @@ def evaluate(flags):
         results = compatible_eval_result(results)
     else:
         if flags.dataset == "humaneval":
-            problems = get_human_eval_plus(mini=flags.mini)
-            dataset_hash = get_human_eval_plus_hash()
+            problems = get_human_eval_plus(mini=flags.mini, noextreme=flags.noextreme)
+            dataset_hash = get_human_eval_plus_hash(
+                mini=flags.mini, noextreme=flags.noextreme
+            )
             expected_output = get_groundtruth(problems, dataset_hash, [])
         elif flags.dataset == "mbpp":
-            problems = get_mbpp_plus(mini=flags.mini)
-            dataset_hash = get_mbpp_plus_hash()
+            problems = get_mbpp_plus(mini=flags.mini, noextreme=flags.noextreme)
+            dataset_hash = get_mbpp_plus_hash(
+                mini=flags.mini, noextreme=flags.noextreme
+            )
             expected_output = get_groundtruth(
                 problems,
                 dataset_hash,
@@ -217,9 +221,9 @@ def evaluate(flags):
             results["eval"][task_id] = {
                 "nfiles": len(task_results),
                 "base": [x["base"] for x in task_results],
-                "plus": [x["plus"] for x in task_results]
-                if not flags.base_only
-                else [],
+                "plus": (
+                    [x["plus"] for x in task_results] if not flags.base_only else []
+                ),
             }
 
     if os.path.isfile(result_path) and flags.i_just_wanna_run:
@@ -292,6 +296,9 @@ def main():
     parser.add_argument("--min-time-limit", default=1, type=float)
     parser.add_argument("--gt-time-limit-factor", default=4.0, type=float)
     parser.add_argument("--mini", action="store_true")
+    parser.add_argument(
+        "--noextreme", action="store_true", help="Omit extreme test inputs"
+    )
     args = parser.parse_args()
 
     evaluate(args)

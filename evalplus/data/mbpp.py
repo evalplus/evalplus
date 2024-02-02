@@ -17,13 +17,15 @@ MBPP_PLUS_VERSION = "v0.1.0"
 MBPP_OVERRIDE_PATH = os.environ.get("MBPP_OVERRIDE_PATH", None)
 
 
-def _ready_mbpp_plus_path(mini=False) -> str:
+def _ready_mbpp_plus_path(mini=False, noextreme=False) -> str:
     assert mini is False, "Mini version of MBPP+ is not available yet."
 
     if MBPP_OVERRIDE_PATH:
         return MBPP_OVERRIDE_PATH
 
-    url, plus_path = get_dataset_metadata("MbppPlus", MBPP_PLUS_VERSION, mini)
+    url, plus_path = get_dataset_metadata(
+        "MbppPlus", MBPP_PLUS_VERSION, mini, noextreme
+    )
     make_cache(url, plus_path)
 
     return plus_path
@@ -176,8 +178,8 @@ def get_mbpp() -> Dict[str, Dict]:
     return {str(task["task_id"]): task for task in mbpp}
 
 
-def get_mbpp_plus(err_incomplete=True, mini=False) -> Dict[str, Dict]:
-    plus_path = _ready_mbpp_plus_path()
+def get_mbpp_plus(err_incomplete=True, mini=False, noextreme=False) -> Dict[str, Dict]:
+    plus_path = _ready_mbpp_plus_path(mini=mini, noextreme=noextreme)
     plus = {task["task_id"]: task for task in stream_jsonl(plus_path)}
     for task_id, task in plus.items():
         task["base_input"] = mbpp_deserialize_inputs(task_id, task["base_input"])
@@ -188,12 +190,12 @@ def get_mbpp_plus(err_incomplete=True, mini=False) -> Dict[str, Dict]:
     return plus
 
 
-def get_mbpp_plus_hash() -> str:
+def get_mbpp_plus_hash(mini=False, noextreme=False) -> str:
     """Get the hash of MbppPlus.
     Returns:
         str: The hash of MbppPlus
     """
-    plus_path = _ready_mbpp_plus_path()
+    plus_path = _ready_mbpp_plus_path(mini=mini, noextreme=noextreme)
     with open(plus_path, "rb") as f:
         plus = f.read()
     return hashlib.md5(plus).hexdigest()
