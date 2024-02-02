@@ -110,6 +110,8 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "float16"
         elif "uukuguy/speechless-codellama-34b-v2.0" == name:
             kwargs["dtype"] = "float16"
+        elif "whiterabbitneo/WhiteRabbitNeo-33B-v-1" == name:
+            kwargs["dtype"] = "float16"
         elif "CodeBooga" in name:
             kwargs["dtype"] = "float16"
         elif "WizardCoder" in name:
@@ -296,6 +298,28 @@ Create a Python script for this problem:
 {prompt}
 
 ### Response:
+```python
+"""
+
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class WhiteRabbitNeo(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""You code like a superhero!
+USER:
+Create a Python script to solve this problem:
+```python
+{prompt}
+```
+ASSISTANT:
 ```python
 """
 
@@ -1072,6 +1096,13 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return Zyte(
             batch_size=batch_size,
             name="aihub-app/zyte-1B",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "white-rabbit-neo-33b-v1":
+        return WhiteRabbitNeo(
+            batch_size=batch_size,
+            name="whiterabbitneo/WhiteRabbitNeo-33B-v-1",
             temperature=temperature,
             conversational=True,
         )
