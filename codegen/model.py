@@ -106,9 +106,7 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "bfloat16"
         elif "code-millenials" in name:
             kwargs["dtype"] = "float16"
-        elif "uukuguy/speechless-code-mistral-7b-v1.0" == name:
-            kwargs["dtype"] = "float16"
-        elif "uukuguy/speechless-codellama-34b-v2.0" == name:
+        elif "speechless" in name:
             kwargs["dtype"] = "float16"
         elif "whiterabbitneo/WhiteRabbitNeo-33B-v-1" == name:
             kwargs["dtype"] = "float16"
@@ -1097,6 +1095,13 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return Alpaca(
             batch_size=batch_size,
             name="uukuguy/speechless-code-mistral-7b-v1.0",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "speechless-coder-ds-6.7b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-coder-ds-6.7b-v1.0",
             temperature=temperature,
             conversational=True,
         )
