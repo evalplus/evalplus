@@ -118,6 +118,8 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "float16"
         elif "deepseek" in name:
             kwargs["dtype"] = "bfloat16"
+        elif "hiteshsom/mistral_finetuned_code" == name:
+            kwargs["dtype"] = "float16"
         elif "mixtral" in name.lower():
             kwargs["dtype"] = "bfloat16"
         elif "solar" in name:
@@ -823,6 +825,21 @@ class CodeT5P(DecoderBase):
         return outputs
 
 
+class MistralCode(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
+{prompt}
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     if name == "codegen-2b":
         return HFTorchDecoder(
@@ -998,6 +1015,12 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Nondzu/Mistral-7B-codealpaca-lora",
+            temperature=temperature,
+        )
+    elif name == "mistral-code":
+        return MistralCode(
+            batch_size=batch_size,
+            name="hiteshsom/mistral_finetuned_code",
             temperature=temperature,
         )
     elif name == "zephyr-7b":
