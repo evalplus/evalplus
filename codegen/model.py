@@ -129,6 +129,8 @@ class VLlmDecoder(DecoderBase):
             kwargs["trust_remote_code"] = True
         elif "openchat" in name.lower():
             kwargs["dtype"] = "bfloat16"
+        elif "python-code" in name:
+            kwargs["dtype"] = "bfloat16"
 
         self.llm = LLM(model=name, max_model_len=2048, **kwargs)
 
@@ -838,6 +840,24 @@ class MistralCode(VLlmDecoder):
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
+class PythonCode(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""This is a conversation with your helpful AI assistant. AI assistant can generate Python Code along with necessary explanation.
+
+Context
+You are a helpful AI assistant.
+
+USER: {prompt}
+ASSISTANT:"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     if name == "codegen-2b":
         return HFTorchDecoder(
@@ -1042,6 +1062,12 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Phind/Phind-CodeLlama-34B-v2",
+            temperature=temperature,
+        )
+    elif name == "python-code-33b":
+        return PythonCode(
+            batch_size=batch_size,
+            name="ajibawa-2023/Python-Code-33B",
             temperature=temperature,
         )
     elif name == "mistral-7b":
