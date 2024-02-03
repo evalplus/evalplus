@@ -118,6 +118,10 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "bfloat16"
         elif "CodeBooga" in name:
             kwargs["dtype"] = "float16"
+        elif "ajibawa-2023/Code-13B" == name:
+            kwargs["dtype"] = "bfloat16"
+        elif "ajibawa-2023/Code-33B" == name:
+            kwargs["dtype"] = "bfloat16"
         elif "WizardCoder" in name:
             kwargs["dtype"] = "float16"
         elif "deepseek" in name:
@@ -846,7 +850,7 @@ class MistralCode(VLlmDecoder):
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
-class PythonCode(VLlmDecoder):
+class Code(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
@@ -1064,6 +1068,16 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="oobabooga/CodeBooga-34B-v0.1",
             temperature=temperature,
         )
+    elif name == "code-13b":
+        return Code(
+            batch_size=batch_size, name="ajibawa-2023/Code-13B", temperature=temperature
+        )
+    elif name == "code-33b":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Code-33B",
+            temperature=temperature,
+        )
     elif name == "phind-code-llama-34b-v2":
         return HFTorchDecoder(
             batch_size=batch_size,
@@ -1071,7 +1085,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name == "python-code-33b":
-        return PythonCode(
+        return Code(
             batch_size=batch_size,
             name="ajibawa-2023/Python-Code-33B",
             temperature=temperature,
