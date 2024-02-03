@@ -1090,6 +1090,12 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="ajibawa-2023/Python-Code-33B",
             temperature=temperature,
         )
+    elif name == "python-code-13b":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Python-Code-13B",
+            temperature=temperature,
+        )
     elif name == "mistral-7b":
         return HFTorchDecoder(
             batch_size=batch_size,
