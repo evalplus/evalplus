@@ -1163,7 +1163,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     elif name == "speechless-coding-7b-16k-tora":
         return Alpaca(
             batch_size=batch_size,
-            name="uukuguy/speechless-coding-7b-16k-tora-v1.0",
+            name="uukuguy/speechless-coding-7b-16k-tora",
             temperature=temperature,
             conversational=True,
         )
