@@ -970,7 +970,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     elif name.startswith("deepseek-coder"):
         import re
 
-        # format deepseek-coder-{nb}b*
+        # format deepseek-coder-{nb}b-{base|instruct}-[v{version}]
         pattern = re.compile(r"deepseek-coder-(\d+\.?\d*)b(.*)")
         matches = pattern.findall(name)[0]
         nb = float(matches[0])
@@ -978,16 +978,21 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             nb = int(nb)
 
         if "instruct" in name:
+            # if version is specified, use it
+            version = matches[1].split("-")[-1]
+            version_suffix = f"-{version}" if version.startswith("v") else ""
             return DeepSeekInstruct(
                 batch_size=batch_size,
-                name=f"deepseek-ai/deepseek-coder-{nb}b-instruct",
+                name=f"deepseek-ai/deepseek-coder-{nb}b-instruct{version_suffix}",
                 temperature=temperature,
                 conversational=True,
             )
         else:
+            version = matches[1].split("-")[-1]
+            version_suffix = f"-{version}" if version.startswith("v") else ""
             return VLlmDecoder(
                 batch_size=batch_size,
-                name=f"deepseek-ai/deepseek-coder-{nb}b-base",
+                name=f"deepseek-ai/deepseek-coder-{nb}b-base{version_suffix}",
                 temperature=temperature,
             )
     elif name == "wizardcoder-34b":
