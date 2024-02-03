@@ -852,6 +852,7 @@ class MistralCode(VLlmDecoder):
 
 class Code(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -863,13 +864,19 @@ class Code(VLlmDecoder):
 Context
 You are a helpful AI assistant.
 
-USER: {prompt}
-ASSISTANT:"""
+USER:
+```python
+{prompt}
+```
+ASSISTANT:
+```python
+"""
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
 class XwinCoder(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -878,8 +885,12 @@ class XwinCoder(VLlmDecoder):
     ) -> List[str]:
         prompt = f"""<system>: You are an AI coding assistant that helps people with programming. Write a response that appropriately completes the user's request.
 <user>: Complete the following code for me and return a fully runable code.
+```python
 {prompt}
-<AI>: """
+```
+<AI>:
+```python
+"""
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
