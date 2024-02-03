@@ -868,6 +868,21 @@ ASSISTANT:"""
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
+class XwinCoder(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""<system>: You are an AI coding assistant that helps people with programming. Write a response that appropriately completes the user's request.
+<user>: Complete the following code for me and return a fully runable code.
+{prompt}
+<AI>: """
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     if name == "codegen-2b":
         return HFTorchDecoder(
@@ -1182,6 +1197,12 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size,
             name="stabilityai/stable-code-3b",
+            temperature=temperature,
+        )
+    elif name == "xwincoder-34b":
+        return XwinCoder(
+            batch_size=batch_size,
+            name="Xwin-LM/XwinCoder-34B",
             temperature=temperature,
         )
     elif name == "zyte-1b":
