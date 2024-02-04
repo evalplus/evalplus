@@ -108,12 +108,20 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "float16"
         elif "uukuguy/speechless-code-mistral-7b-v1.0" == name:
             kwargs["dtype"] = "float16"
-        elif "uukuguy/speechless-codellama-34b-v2.0" == name:
-            kwargs["dtype"] = "float16"
         elif "whiterabbitneo/WhiteRabbitNeo-33B-v-1" == name:
             kwargs["dtype"] = "float16"
+        elif "uukuguy/speechless-codellama-34b-v2.0" == name:
+            kwargs["dtype"] = "float16"
+        elif "uukuguy/speechless-coder-ds-6.7b" == name:
+            kwargs["dtype"] = "float16"
+        elif "uukuguy/speechless-coding-7b-16k-tora" == name:
+            kwargs["dtype"] = "bfloat16"
         elif "CodeBooga" in name:
             kwargs["dtype"] = "float16"
+        elif "ajibawa-2023/Code-13B" == name:
+            kwargs["dtype"] = "bfloat16"
+        elif "ajibawa-2023/Code-33B" == name:
+            kwargs["dtype"] = "bfloat16"
         elif "WizardCoder" in name:
             kwargs["dtype"] = "float16"
         elif "deepseek" in name:
@@ -128,6 +136,8 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "float16"
             kwargs["trust_remote_code"] = True
         elif "openchat" in name.lower():
+            kwargs["dtype"] = "bfloat16"
+        elif "python-code" in name:
             kwargs["dtype"] = "bfloat16"
 
         self.llm = LLM(model=name, max_model_len=2048, **kwargs)
@@ -823,6 +833,50 @@ class CodeT5P(DecoderBase):
         return outputs
 
 
+class Code(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""This is a conversation with your helpful AI assistant. AI assistant can generate Python Code along with necessary explanation.
+
+Context
+You are a helpful AI assistant.
+
+USER:
+```python
+{prompt}
+```
+ASSISTANT:
+```python
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class XwinCoder(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""<system>: You are an AI coding assistant that helps people with programming. Write a response that appropriately completes the user's request.
+<user>: Complete the following code for me and return a fully runable code.
+```python
+{prompt}
+```
+<AI>:
+```python
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     if name == "codegen-2b":
         return HFTorchDecoder(
@@ -953,7 +1007,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     elif name.startswith("deepseek-coder"):
         import re
 
-        # format deepseek-coder-{nb}b*
+        # format deepseek-coder-{nb}b-{base|instruct}-[v{version}]
         pattern = re.compile(r"deepseek-coder-(\d+\.?\d*)b(.*)")
         matches = pattern.findall(name)[0]
         nb = float(matches[0])
@@ -961,16 +1015,21 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             nb = int(nb)
 
         if "instruct" in name:
+            # if version is specified, use it
+            version = matches[1].split("-")[-1]
+            version_suffix = f"-{version}" if version.startswith("v") else ""
             return DeepSeekInstruct(
                 batch_size=batch_size,
-                name=f"deepseek-ai/deepseek-coder-{nb}b-instruct",
+                name=f"deepseek-ai/deepseek-coder-{nb}b-instruct{version_suffix}",
                 temperature=temperature,
                 conversational=True,
             )
         else:
+            version = matches[1].split("-")[-1]
+            version_suffix = f"-{version}" if version.startswith("v") else ""
             return VLlmDecoder(
                 batch_size=batch_size,
-                name=f"deepseek-ai/deepseek-coder-{nb}b-base",
+                name=f"deepseek-ai/deepseek-coder-{nb}b-base{version_suffix}",
                 temperature=temperature,
             )
     elif name == "wizardcoder-34b":
@@ -1012,10 +1071,32 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="oobabooga/CodeBooga-34B-v0.1",
             temperature=temperature,
         )
+    elif name == "code-13b":
+        return Code(
+            batch_size=batch_size, name="ajibawa-2023/Code-13B", temperature=temperature
+        )
+    elif name == "code-33b":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Code-33B",
+            temperature=temperature,
+        )
     elif name == "phind-code-llama-34b-v2":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Phind/Phind-CodeLlama-34B-v2",
+            temperature=temperature,
+        )
+    elif name == "python-code-33b":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Python-Code-33B",
+            temperature=temperature,
+        )
+    elif name == "python-code-13b":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Python-Code-13B",
             temperature=temperature,
         )
     elif name == "mistral-7b":
@@ -1072,6 +1153,20 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
             conversational=True,
         )
+    elif name == "speechless-coder-ds-6.7b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-coder-ds-6.7b",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "speechless-coding-7b-16k-tora":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-coding-7b-16k-tora",
+            temperature=temperature,
+            conversational=True,
+        )
     elif name == "code-millenials-34b":
         return Alpaca(
             batch_size=batch_size,
@@ -1090,6 +1185,12 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size,
             name="stabilityai/stable-code-3b",
+            temperature=temperature,
+        )
+    elif name == "xwincoder-34b":
+        return XwinCoder(
+            batch_size=batch_size,
+            name="Xwin-LM/XwinCoder-34B",
             temperature=temperature,
         )
     elif name == "zyte-1b":
