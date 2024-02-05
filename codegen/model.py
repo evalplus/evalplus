@@ -153,6 +153,12 @@ class VLlmDecoder(DecoderBase):
     ) -> List[str]:
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        printed = os.environ.get("DEBUG_PRINTED", False)
+        if not printed:
+            print(prompt)
+            os.environ["DEBUG_PRINTED"] = "True"
+
         batch_size = min(self.batch_size, num_samples)
 
         vllm_outputs = self.llm.generate(

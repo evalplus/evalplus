@@ -163,7 +163,7 @@ def main():
         args.model
         + f"_temp_{args.temperature}"
         + ("" if args.contract_type == "none" else f"-contract-{args.contract_type}"),
-        +("" if args.prompt is None else f"-{args.prompt}"),
+        +("" if args.prompt_method is None else f"-{args.prompt_method}"),
     )
     os.makedirs(workdir, exist_ok=True)
 
