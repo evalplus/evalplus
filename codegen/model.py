@@ -1086,6 +1086,7 @@ def make_model(
             batch_size=batch_size,
             name=f"codellama/CodeLlama-{nb}-Python-hf",
             temperature=temperature,
+            prompt_method=prompt_method,
         )
     elif name.startswith("deepseek-coder"):
         import re
