@@ -72,6 +72,7 @@ class DecoderBase(ABC):
         max_new_tokens: int = 512,
         conversational: bool = False,
         max_conversational_new_tokens: int = 1024,
+        prompt_method=None,
     ) -> None:
         print("Initializing a decoder model: {} ...".format(name))
         self.name = name
@@ -83,10 +84,15 @@ class DecoderBase(ABC):
             max_conversational_new_tokens if conversational else max_new_tokens
         )
         self.conversational = conversational
+        self.prompt_method = prompt_method
 
     @abstractmethod
     def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+        self,
+        prompt: str,
+        do_sample: bool = True,
+        num_samples: int = 200,
+        prompt_method=None,
     ) -> List[str]:
         pass
 
@@ -208,7 +214,7 @@ class CodeLlamaInstruct70B(VLlmDecoder):
  You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
  <step> Source: user
 
- Provide a self-contained Python script that solves the following problem:
+ Provide a self-contained Python script that solves the following problem. Specifically, let's think step by step to implement an efficient and scalable version:
 ```python
 {prompt}
 ```
@@ -233,7 +239,16 @@ class CodeLlamaInstructSmall(VLlmDecoder):
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
-        input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```:
+        if self.prompt_method == "zero-shot-CoT":
+            input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```.Specifically, let's think step by step to implement an efficient and scalable version:
+```python
+{prompt}
+```
+[/INST]
+```python
+"""
+        else:
+            input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```:
 ```python
 {prompt}
 ```
@@ -478,7 +493,18 @@ class DeepSeekInstruct(VLlmDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        prompt = f"""You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.
+        if self.prompt_method == "zero-shot-CoT":
+            prompt = f"""You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.
+### Instruction:
+Please complete the following Python function in a markdown style code block. Specifically, let's think step by step to implement an efficient and scalable version:
+```python
+{prompt}
+```
+### Response:
+```python
+"""
+        else:
+            prompt = f"""You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.
 ### Instruction:
 Please complete the following Python function in a markdown style code block:
 ```python
@@ -900,7 +926,9 @@ class XwinCoder(VLlmDecoder):
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
-def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
+def make_model(
+    name: str, batch_size: int = 1, temperature: float = 0.8, prompt_method=None
+):
     if name == "codegen-2b":
         return HFTorchDecoder(
             batch_size=batch_size,
@@ -1020,6 +1048,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                     name=f"codellama/CodeLlama-70B-Instruct-hf",
                     temperature=temperature,
                     conversational=True,
+                    prompt_method=prompt_method,
                 )
             else:
                 return CodeLlamaInstructSmall(
@@ -1027,6 +1056,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                     name=f"codellama/CodeLlama-{nb}-Instruct-hf",
                     temperature=temperature,
                     conversational=True,
+                    prompt_method=prompt_method,
                 )
         assert name.endswith("b")
         nb = name.split("-")[-1]
@@ -1054,6 +1084,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 name=f"deepseek-ai/deepseek-coder-{nb}b-instruct{version_suffix}",
                 temperature=temperature,
                 conversational=True,
+                prompt_method=prompt_method,
             )
         else:
             version = matches[1].split("-")[-1]
@@ -1062,6 +1093,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 batch_size=batch_size,
                 name=f"deepseek-ai/deepseek-coder-{nb}b-base{version_suffix}",
                 temperature=temperature,
+                prompt_method=prompt_method,
             )
     elif name == "wizardcoder-34b":
         return Alpaca(
