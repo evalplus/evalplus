@@ -209,12 +209,28 @@ class CodeLlamaInstruct70B(VLlmDecoder):
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
-        input = f"""'<s>Source: system
+        if self.prompt_method == "zero-shot-CoT":
+            input = f"""'<s>Source: system
 
  You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
  <step> Source: user
 
  Provide a self-contained Python script that solves the following problem. Specifically, let's think step by step to implement an efficient and scalable version:
+```python
+{prompt}
+```
+ <step> Source: assistant
+
+ Here is a Python script that solves the problem:
+```python
+"""
+        else:
+            input = f"""'<s>Source: system
+
+ You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
+ <step> Source: user
+
+ Provide a self-contained Python script that solves the following problem:
 ```python
 {prompt}
 ```
