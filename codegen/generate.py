@@ -85,10 +85,16 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
 
             sidx = args.n_samples - nsamples
             while sidx < args.n_samples:
+                prompt = construct_contract_prompt(
+                    task["prompt"], args.contract_type, task["contract"]
+                )
+                if args.prompt == "zero-shot-CoT":
+                    prompt = (
+                        "Please complete the following Python function in a markdown style code block. Specifically, let's think step by step to implement an efficient and scalable version:\n"
+                        + prompt
+                    )
                 outputs = model.codegen(
-                    construct_contract_prompt(
-                        task["prompt"], args.contract_type, task["contract"]
-                    ),
+                    prompt=prompt,
                     do_sample=not args.greedy,
                     num_samples=args.n_samples - sidx,
                 )
@@ -129,6 +135,7 @@ def main():
     parser.add_argument("--greedy", action="store_true")
     # id_range is list
     parser.add_argument("--id-range", default=None, nargs="+", type=int)
+    parser.add_argument("--prompt", choices=["zero-shot-CoT"])
     args = parser.parse_args()
 
     if args.greedy and (args.temperature != 0 or args.bs != 1 or args.n_samples != 1):
@@ -157,6 +164,7 @@ def main():
         args.model
         + f"_temp_{args.temperature}"
         + ("" if args.contract_type == "none" else f"-contract-{args.contract_type}"),
+        +("" if args.prompt is None else f"-{args.prompt}"),
     )
     os.makedirs(workdir, exist_ok=True)
 
