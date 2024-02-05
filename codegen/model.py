@@ -191,7 +191,7 @@ Can you complete the following Python function?
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 
 
-class CodeLlamaInstruct(VLlmDecoder):
+class CodeLlamaInstruct70B(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         kwargs["conversational"] = True
         super().__init__(name, **kwargs)
@@ -215,6 +215,29 @@ class CodeLlamaInstruct(VLlmDecoder):
  <step> Source: assistant
 
  Here is a Python script that solves the problem:
+```python
+"""
+
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
+class CodeLlamaInstructSmall(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```:
+```python
+{prompt}
+```
+[/INST]
 ```python
 """
 
@@ -991,12 +1014,20 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         if name.endswith("instruct"):
             nb = name.split("-")[2]
             assert nb.endswith("b")
-            return CodeLlamaInstruct(
-                batch_size=batch_size,
-                name=f"codellama/CodeLlama-{nb}-Instruct-hf",
-                temperature=temperature,
-            )
-
+            if nb == "70b":
+                return CodeLlamaInstruct70B(
+                    batch_size=batch_size,
+                    name=f"codellama/CodeLlama-70B-Instruct-hf",
+                    temperature=temperature,
+                    conversational=True,
+                )
+            else:
+                return CodeLlamaInstructSmall(
+                    batch_size=batch_size,
+                    name=f"codellama/CodeLlama-{nb}-Instruct-hf",
+                    temperature=temperature,
+                    conversational=True,
+                )
         assert name.endswith("b")
         nb = name.split("-")[-1]
         return VLlmDecoder(
