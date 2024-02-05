@@ -85,14 +85,21 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
 
             sidx = args.n_samples - nsamples
             while sidx < args.n_samples:
-                if args.prompt_method == "zero-shot-CoT":
+                if (
+                    args.prompt_method == "zero-shot-CoT"
+                    and "instruct" not in args.model
+                ):
                     if args.dataset == "humaneval":
-                        task["prompt"] = f"""
+                        task[
+                            "prompt"
+                        ] = f"""
 {task["prompt"]}
     # Let's think step by step to implement an efficient and scalable version:
 """
                     else:
-                        task["prompt"] = f"""
+                        task[
+                            "prompt"
+                        ] = f"""
 {task["prompt"]}
 # Let's think step by step to implement an efficient and scalable version:
 """
@@ -181,7 +188,7 @@ def main():
 
     with open(os.path.join(workdir, "args.txt"), "w") as f:
         f.write(str(args))
-    
+
     code_generate(args, workdir=workdir, model=model, id_range=args.id_range)
 
 
