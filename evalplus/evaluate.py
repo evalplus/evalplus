@@ -22,9 +22,12 @@ from evalplus.data import (
     get_mbpp_plus_hash,
     load_solutions,
 )
+from evalplus.data.mbpp import mbpp_serialize_inputs
 from evalplus.data.utils import CACHE_DIR
 from evalplus.eval import (
+    FAILED,
     SUCCESS,
+    TIMEOUT,
     compatible_eval_result,
     estimate_pass_at_k,
     untrusted_check,
@@ -35,6 +38,10 @@ from evalplus.gen.util import trusted_exec
 # 1st item: the status
 # 2nd item (optional): the detailed pass/fail boolean for each input
 Result = Tuple[str, List[bool]]
+
+PASS = "pass"
+FAIL = "fail"
+STATUSMAP = {SUCCESS: PASS, FAILED: FAIL, TIMEOUT: TIMEOUT}
 
 
 def get_groundtruth(problems, hashcode, tasks_only_output_not_none):
@@ -90,6 +97,7 @@ def check_correctness(
         "completion_id": completion_id,
         "task_id": problem["task_id"],
         "_identifier": identifier,
+        "solution": solution,
     }
     ret["base"] = untrusted_check(
         dataset,
@@ -218,13 +226,65 @@ def evaluate(flags):
         # sort the results for each problem by completion_id
         for task_id, task_results in eval_results.items():
             task_results.sort(key=lambda x: x["completion_id"])
-            results["eval"][task_id] = {
-                "nfiles": len(task_results),
-                "base": [x["base"] for x in task_results],
-                "plus": (
-                    [x["plus"] for x in task_results] if not flags.base_only else []
-                ),
-            }
+            results["eval"][task_id] = []
+            for res in task_results:
+                base_status = STATUSMAP[res["base"][0]]
+                plus_status = STATUSMAP[res["plus"][0]] if not flags.base_only else None
+
+                # Collect all failed tests when flags.test_details is True, otherwise collect the first failed test
+                if flags.test_details:
+                    base_fail_tests = (
+                        [
+                            problems[task_id]["base_input"][i]
+                            for i in range(len(res["base"][1]))
+                            if not res["base"][1][i]
+                        ]
+                        if base_status == FAIL
+                        else None,
+                    )
+                    plus_fail_tests = (
+                        [
+                            problems[task_id]["plus_input"][i]
+                            for i in range(len(res["plus"][1]))
+                            if not res["plus"][1][i]
+                        ]
+                        if plus_status == FAIL
+                        else None,
+                    )
+                else:
+                    base_fail_tests = (
+                        problems[task_id]["base_input"][len(res["base"][1])]
+                        if base_status == FAIL
+                        else None
+                    )
+                    plus_fail_tests = (
+                        problems[task_id]["plus_input"][len(res["plus"][1])]
+                        if plus_status == FAIL
+                        else None
+                    )
+
+                if flags.dataset == "mbpp":
+                    base_fail_tests = (
+                        mbpp_serialize_inputs(task_id, base_fail_tests)
+                        if base_fail_tests
+                        else None
+                    )
+                    plus_fail_tests = (
+                        mbpp_serialize_inputs(task_id, plus_fail_tests)
+                        if plus_fail_tests
+                        else None
+                    )
+
+                results["eval"][task_id].append(
+                    {
+                        "task_id": task_id,
+                        "solution": res["solution"],
+                        "base_status": base_status,
+                        "plus_status": plus_status,
+                        "base_fail_tests": base_fail_tests,
+                        "plus_fail_tests": plus_fail_tests,
+                    }
+                )
 
     if os.path.isfile(result_path) and flags.i_just_wanna_run:
         decision = ""
@@ -245,19 +305,19 @@ def evaluate(flags):
             json.dump(results, f)
 
     # Calculate pass@k.
-    total = np.array([r["nfiles"] for r in results["eval"].values()])
+    total = np.array([len(r) for r in results["eval"].values()])
     base_correct = []
     new_correct = []
 
     for res in results["eval"].values():
-        bc = sum([r[0] == SUCCESS for r in res["base"]])
+        bc = sum([r["base_status"] == PASS for r in res])
         base_correct.append(bc)
-        if res["plus"]:
+        if not flags.base_only:
             new_correct.append(
                 sum(
                     [
-                        res["plus"][i][0] == res["base"][i][0] == SUCCESS
-                        for i in range(len(res["plus"]))
+                        res[i]["base_status"] == res[i]["plus_status"] == PASS
+                        for i in range(len(res))
                     ]
                 )
             )
