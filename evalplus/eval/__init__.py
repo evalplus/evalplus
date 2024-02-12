@@ -75,16 +75,16 @@ def estimate_pass_at_k(
     )
 
 
-SUCCESS = "success"
-FAILED = "failed"
-TIMEOUT = "timed out"
+PASS = "pass"
+FAIL = "fail"
+TIMEOUT = "timeout"
 
 _SUCCESS = 0
 _FAILED = 1
 _TIMEOUT = 2
 _UNKNOWN = 3
 
-_mapping = {_SUCCESS: SUCCESS, _FAILED: FAILED, _TIMEOUT: TIMEOUT, _UNKNOWN: None}
+_mapping = {_SUCCESS: PASS, _FAILED: FAIL, _TIMEOUT: TIMEOUT, _UNKNOWN: None}
 
 
 def is_floats(x) -> bool:
@@ -238,9 +238,9 @@ def untrusted_check(
     if not stat:
         stat = TIMEOUT
 
-    if stat == SUCCESS:
+    if stat == PASS:
         if len(details) != len(inputs) or not all(details):
-            stat = FAILED
+            stat = FAIL
 
     return stat, details
 

@@ -8,7 +8,7 @@ import time
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple
 from warnings import warn
 
 import numpy as np
@@ -25,9 +25,8 @@ from evalplus.data import (
 from evalplus.data.mbpp import mbpp_serialize_inputs
 from evalplus.data.utils import CACHE_DIR
 from evalplus.eval import (
-    FAILED,
-    SUCCESS,
-    TIMEOUT,
+    FAIL,
+    PASS,
     compatible_eval_result,
     estimate_pass_at_k,
     untrusted_check,
@@ -38,10 +37,6 @@ from evalplus.gen.util import trusted_exec
 # 1st item: the status
 # 2nd item (optional): the detailed pass/fail boolean for each input
 Result = Tuple[str, List[bool]]
-
-PASS = "pass"
-FAIL = "fail"
-STATUSMAP = {SUCCESS: PASS, FAILED: FAIL, TIMEOUT: TIMEOUT}
 
 
 def get_groundtruth(problems, hashcode, tasks_only_output_not_none):
@@ -92,7 +87,7 @@ def check_correctness(
     identifier=None,
     min_time_limit: float = 0.1,
     gt_time_limit_factor: float = 2.0,
-) -> Dict[str, Union[int, Optional[Result]]]:
+) -> Dict[str, Result]:  # {...}, "base" | "plus" -> (status, details)
     ret = {
         "completion_id": completion_id,
         "task_id": problem["task_id"],
@@ -175,7 +170,7 @@ def evaluate(flags):
             futures = []
             completion_id = Counter()
             n_samples = 0
-            eval_results = defaultdict(list)
+            eval_results = defaultdict(list)  # task_id ->
             remainings = set()
 
             print("Reading samples...")
@@ -228,61 +223,45 @@ def evaluate(flags):
             task_results.sort(key=lambda x: x["completion_id"])
             results["eval"][task_id] = []
             for res in task_results:
-                base_status = STATUSMAP[res["base"][0]]
-                plus_status = STATUSMAP[res["plus"][0]] if not flags.base_only else None
-                base_inputs = problems[task_id]["base_input"]
-                plus_inputs = problems[task_id]["plus_input"]
 
-                # Collect all failed tests when flags.test_details is True, otherwise collect the first failed test
-                if flags.test_details:
-                    base_fail_tests = (
-                        [
-                            base_inputs[i]
-                            for i in range(len(res["base"][1]))
-                            if not res["base"][1][i]
+                def get_failed_tests(stat, details, inputs) -> List[Any]:
+                    if stat == PASS or not details:
+                        return []
+
+                    if flags.test_details:
+                        return [
+                            inputs[i] for i in range(len(details)) if not details[i]
                         ]
-                        if base_status == FAIL
-                        else None
-                    )
-                    plus_fail_tests = (
-                        [
-                            plus_inputs[i]
-                            for i in range(len(res["plus"][1]))
-                            if not res["plus"][1][i]
-                        ]
-                        if plus_status == FAIL and plus_inputs
-                        else None
-                    )
-                else:
-                    base_fail_tests = (
-                        [base_inputs[len(res["base"][1])]]
-                        if base_status == FAIL
-                        else None
-                    )
-                    plus_fail_tests = (
-                        [plus_inputs[len(res["plus"][1])]]
-                        if plus_status == FAIL and plus_inputs
-                        else None
+
+                    # esle => simply return the only and the last fail test
+                    return [inputs[len(details)]]
+
+                base_stat, base_details = res["base"]
+                base_fail_tests = get_failed_tests(
+                    base_stat, base_details, problems[task_id]["base_input"]
+                )
+
+                # initialize plus tests
+                plus_stat = None
+                plus_fail_tests = []
+
+                # with plus tests
+                if not flags.base_only:
+                    plus_stat, plus_details = res["plus"]
+                    plus_fail_tests = get_failed_tests(
+                        plus_stat, plus_details, problems[task_id]["plus_input"]
                     )
 
                 if flags.dataset == "mbpp":
-                    base_fail_tests = (
-                        mbpp_serialize_inputs(task_id, base_fail_tests)
-                        if base_fail_tests
-                        else None
-                    )
-                    plus_fail_tests = (
-                        mbpp_serialize_inputs(task_id, plus_fail_tests)
-                        if plus_fail_tests
-                        else None
-                    )
+                    base_fail_tests = mbpp_serialize_inputs(task_id, base_fail_tests)
+                    plus_fail_tests = mbpp_serialize_inputs(task_id, plus_fail_tests)
 
                 results["eval"][task_id].append(
                     {
                         "task_id": task_id,
                         "solution": res["solution"],
-                        "base_status": base_status,
-                        "plus_status": plus_status,
+                        "base_status": base_stat,
+                        "plus_status": plus_stat,
                         "base_fail_tests": base_fail_tests,
                         "plus_fail_tests": plus_fail_tests,
                     }
