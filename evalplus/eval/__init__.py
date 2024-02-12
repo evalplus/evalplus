@@ -22,6 +22,7 @@
 
 import itertools
 import multiprocessing
+import os
 import time
 from multiprocessing import Array, Value
 from typing import Any, Dict, List, Tuple, Union
@@ -197,7 +198,7 @@ def untrusted_check(
     gt_time_limit_factor: float = 2.0,
 ) -> Tuple[str, np.ndarray]:
     time_limits = [max(min_time_limit, gt_time_limit_factor * t) for t in ref_time]
-    timeout = sum(time_limits) + 1
+    timeout = min(os.getenv("EVALPLUS_TIMEOUT_PER_TASK", 60), sum(time_limits)) + 1
     if not fast_check:
         timeout += 1  # extra time for data collection
 
