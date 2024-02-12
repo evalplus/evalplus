@@ -230,12 +230,14 @@ def evaluate(flags):
             for res in task_results:
                 base_status = STATUSMAP[res["base"][0]]
                 plus_status = STATUSMAP[res["plus"][0]] if not flags.base_only else None
+                base_inputs = problems[task_id]["base_input"]
+                plus_inputs = problems[task_id]["plus_input"]
 
                 # Collect all failed tests when flags.test_details is True, otherwise collect the first failed test
                 if flags.test_details:
                     base_fail_tests = (
                         [
-                            problems[task_id]["base_input"][i]
+                            base_inputs[i]
                             for i in range(len(res["base"][1]))
                             if not res["base"][1][i]
                         ]
@@ -244,22 +246,22 @@ def evaluate(flags):
                     )
                     plus_fail_tests = (
                         [
-                            problems[task_id]["plus_input"][i]
+                            plus_inputs[i]
                             for i in range(len(res["plus"][1]))
                             if not res["plus"][1][i]
                         ]
-                        if plus_status == FAIL
+                        if plus_status == FAIL and plus_inputs
                         else None
                     )
                 else:
                     base_fail_tests = (
-                        [problems[task_id]["base_input"][len(res["base"][1])]]
+                        [base_inputs[len(res["base"][1])]]
                         if base_status == FAIL
                         else None
                     )
                     plus_fail_tests = (
-                        [problems[task_id]["plus_input"][len(res["plus"][1])]]
-                        if plus_status == FAIL
+                        [plus_inputs[len(res["plus"][1])]]
+                        if plus_status == FAIL and plus_inputs
                         else None
                     )
 
