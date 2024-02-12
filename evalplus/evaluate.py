@@ -240,7 +240,7 @@ def evaluate(flags):
                             if not res["base"][1][i]
                         ]
                         if base_status == FAIL
-                        else None,
+                        else None
                     )
                     plus_fail_tests = (
                         [
@@ -249,16 +249,16 @@ def evaluate(flags):
                             if not res["plus"][1][i]
                         ]
                         if plus_status == FAIL
-                        else None,
+                        else None
                     )
                 else:
                     base_fail_tests = (
-                        problems[task_id]["base_input"][len(res["base"][1])]
+                        [problems[task_id]["base_input"][len(res["base"][1])]]
                         if base_status == FAIL
                         else None
                     )
                     plus_fail_tests = (
-                        problems[task_id]["plus_input"][len(res["plus"][1])]
+                        [problems[task_id]["plus_input"][len(res["plus"][1])]]
                         if plus_status == FAIL
                         else None
                     )
