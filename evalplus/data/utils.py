@@ -99,7 +99,9 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
     # if it is a file
     if os.path.isfile(sample_path):
         for i, sample in enumerate(stream_jsonl(sample_path)):
-            sample["_identifier"] = sample["task_id"] + "_" + str(i)
+            sample["_identifier"] = (
+                sample["task_id"] + f" (line {i+1} in {sample_path})"
+            )
             yield sample
     else:
         # if it is a folder
