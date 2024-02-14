@@ -146,23 +146,21 @@ class VLlmDecoder(DecoderBase):
         elif "python-code" in name:
             kwargs["dtype"] = "bfloat16"
 
-        self.llm = LLM(model=name, max_model_len=2048, **kwargs)
+        self.llm = LLM(model=name, gpu_memory_utilization=0.9, **kwargs)
 
     def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+        self, prompts: List[str], do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
         printed = os.environ.get("DEBUG_PRINTED", False)
         if not printed:
-            print(prompt)
+            print(prompts)
             os.environ["DEBUG_PRINTED"] = "True"
 
-        batch_size = min(self.batch_size, num_samples)
-
         vllm_outputs = self.llm.generate(
-            [prompt] * batch_size,
+            prompts,
             SamplingParams(
                 temperature=self.temperature,
                 max_tokens=self.max_new_tokens,
@@ -207,16 +205,17 @@ class CodeLlamaInstruct70B(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         kwargs["conversational"] = True
         super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
+        self.eos += ["\n```", "\nassert ", "\nif __name__ == "]
 
     def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+        self, prompts: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
         if self.prompt_method == "zero-shot-CoT":
-            input = f"""'<s>Source: system
+            input = [
+                f"""'<s>Source: system
 
  You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
  <step> Source: user
@@ -230,8 +229,11 @@ class CodeLlamaInstruct70B(VLlmDecoder):
  Here is a Python script that solves the problem:
 ```python
 """
+                for prompt in prompts
+            ]
         else:
-            input = f"""'<s>Source: system
+            input = [
+                f"""'<s>Source: system
 
  You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
  <step> Source: user
@@ -245,6 +247,8 @@ class CodeLlamaInstruct70B(VLlmDecoder):
  Here is a Python script that solves the problem:
 ```python
 """
+                for prompt in prompts
+            ]
 
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 
@@ -1067,7 +1071,7 @@ def make_model(
             if nb == "70b":
                 return CodeLlamaInstruct70B(
                     batch_size=batch_size,
-                    name=f"codellama/CodeLlama-70B-Instruct-hf",
+                    name=f"codellama/CodeLlama-70b-Instruct-hf",
                     temperature=temperature,
                     conversational=True,
                     prompt_method=prompt_method,
