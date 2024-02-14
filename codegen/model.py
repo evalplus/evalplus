@@ -214,13 +214,29 @@ class CodeLlamaInstruct70B(VLlmDecoder):
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
-        if self.prompt_method == "zero-shot-CoT":
+        if self.prompt_method == "instruct":
             input = f"""'<s>Source: system
 
  You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
  <step> Source: user
 
- Provide a self-contained Python script that solves the following problem. Specifically, let's think step by step to implement an efficient and scalable version:
+ Provide a self-contained Python script that solves the following problem efficiently by writing a fast implementation:
+
+```python
+{prompt}
+```
+ <step> Source: assistant
+
+ Here is a Python script that solves the problem:
+```python
+"""
+        elif self.prompt_method == "CoT":
+            input = f"""'<s>Source: system
+
+ You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
+ <step> Source: user
+
+    Think step by step, provide a self-contained Python script that solves the following problem efficiently by writing a fast implementation:
 ```python
 {prompt}
 ```
@@ -260,8 +276,16 @@ class CodeLlamaInstructSmall(VLlmDecoder):
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
-        if self.prompt_method == "zero-shot-CoT":
-            input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```.Specifically, let's think step by step to implement an efficient and scalable version:
+        if self.prompt_method == "instruct":
+            input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```. Specifically, please solve the task efficiently by writing a fast implementation.
+```python
+{prompt}
+```
+[/INST]
+```python
+"""
+        elif self.prompt_method == "CoT":
+            input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```. Specifically, please think step by step to solve the task efficiently by writing a fast implementation.
 ```python
 {prompt}
 ```
@@ -514,10 +538,20 @@ class DeepSeekInstruct(VLlmDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        if self.prompt_method == "zero-shot-CoT":
+        if self.prompt_method == "instruct":
             prompt = f"""You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.
 ### Instruction:
-Please complete the following Python function in a markdown style code block. Specifically, let's think step by step to implement an efficient and scalable version:
+Please complete the following Python function in a markdown style code block. Specifically, please solve the task efficiently by writing a fast implementation:
+```python
+{prompt}
+```
+### Response:
+```python
+"""
+        elif self.prompt_method == "CoT":
+            prompt = f"""You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.
+### Instruction:
+Please complete the following Python function in a markdown style code block. Specifically, please think step by step to solve the task efficiently by writing a fast implementation:
 ```python
 {prompt}
 ```
