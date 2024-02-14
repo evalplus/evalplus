@@ -149,18 +149,19 @@ class VLlmDecoder(DecoderBase):
         self.llm = LLM(model=name, gpu_memory_utilization=0.9, **kwargs)
 
     def codegen(
-        self, prompts: List[str], do_sample: bool = True, num_samples: int = 200
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
         printed = os.environ.get("DEBUG_PRINTED", False)
         if not printed:
-            print(prompts)
+            print(prompt)
             os.environ["DEBUG_PRINTED"] = "True"
 
+        batch_size = min(self.batch_size, num_samples)
         vllm_outputs = self.llm.generate(
-            prompts,
+            [prompt] * batch_size,
             SamplingParams(
                 temperature=self.temperature,
                 max_tokens=self.max_new_tokens,
@@ -208,14 +209,13 @@ class CodeLlamaInstruct70B(VLlmDecoder):
         self.eos += ["\n```", "\nassert ", "\nif __name__ == "]
 
     def codegen(
-        self, prompts: str, do_sample: bool = True, num_samples: int = 200
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
 
         if self.prompt_method == "zero-shot-CoT":
-            input = [
-                f"""'<s>Source: system
+            input = f"""'<s>Source: system
 
  You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
  <step> Source: user
@@ -229,11 +229,8 @@ class CodeLlamaInstruct70B(VLlmDecoder):
  Here is a Python script that solves the problem:
 ```python
 """
-                for prompt in prompts
-            ]
         else:
-            input = [
-                f"""'<s>Source: system
+            input = f"""'<s>Source: system
 
  You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
  <step> Source: user
@@ -247,8 +244,6 @@ class CodeLlamaInstruct70B(VLlmDecoder):
  Here is a Python script that solves the problem:
 ```python
 """
-                for prompt in prompts
-            ]
 
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 

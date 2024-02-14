@@ -35,12 +35,6 @@ def construct_contract_prompt(prompt: str, contract_type: str, contract: str) ->
         return prompt + contract
 
 
-def batch(iterable, n=4):
-    l = len(iterable)
-    for ndx in range(0, l, n):
-        yield iterable[ndx : min(ndx + n, l)]
-
-
 def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
     with Progress(
         TextColumn(
@@ -60,72 +54,59 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
 
             dataset = get_mbpp_plus()
 
-        batchs = list(batch(list(dataset.items()), 6))
-        for items in p.track(batchs):
-            # if id_range is not None:
-            #     id_num = int(task_id.split("/")[1])
-            #     low, high = id_range
-            #     if id_num < low or id_num >= high:
-            #         p.console.print(f"Skipping {task_id} as it is not in {id_range}")
-            #         continue
-
-            to_process = []
-            for task_id, task in items:
-                p_name = task_id.replace("/", "_")
-                os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
-                log = f"Codegen: {p_name} @ {model}"
-                n_existing = 0
-                if args.resume:
-                    # count existing .py files
-                    n_existing = len(
-                        [
-                            f
-                            for f in os.listdir(os.path.join(workdir, p_name))
-                            if f.endswith(".py")
-                        ]
-                    )
-                    if n_existing > 0:
-                        log += f" (resuming from {n_existing})"
-                p.console.print(log)
-                if n_existing > 0:
+        for task_id, task in p.track(dataset.items()):
+            if id_range is not None:
+                id_num = int(task_id.split("/")[1])
+                low, high = id_range
+                if id_num < low or id_num >= high:
+                    p.console.print(f"Skipping {task_id} as it is not in {id_range}")
                     continue
-                to_process.append((p_name, task))
 
-            if not to_process:
+            p_name = task_id.replace("/", "_")
+            if args.contract_type != "none" and task["contract"] == "":
                 continue
+            os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
+            log = f"Codegen: {p_name} @ {model}"
+            n_existing = 0
+            if args.resume:
+                # count existing .py files
+                n_existing = len(
+                    [
+                        f
+                        for f in os.listdir(os.path.join(workdir, p_name))
+                        if f.endswith(".py")
+                    ]
+                )
+                if n_existing > 0:
+                    log += f" (resuming from {n_existing})"
 
-            prompts = [item[1]["prompt"] for item in to_process]
-            prompts = [p.rstrip("\n") for p in prompts]
-            if args.prompt_method == "zero-shot-CoT" and "instruct" not in args.model:
-                hint = "# Let's think step by step to implement an efficient and scalable version:"
-                if args.dataset == "humaneval":
-                    prompts = [f"{p}\n    {hint}" for p in prompts]
-                else:  # mbpp
-                    prompts = [f"{p}\n{hint}" for p in prompts]
+            nsamples = args.n_samples - n_existing
+            p.console.print(log)
 
-            outputs = model.codegen(
-                prompts,
-                do_sample=not args.greedy,
-                num_samples=1,
-            )
-            print(outputs)
-
-            assert outputs, "No outputs from model!"
-            for impl, item in zip(outputs, to_process):
-                p_name = item[0]
-                task = item[1]
-                try:
-                    with open(
-                        os.path.join(workdir, p_name, f"0.py"),
-                        "w",
-                        encoding="utf-8",
-                    ) as f:
-                        if model.conversational:
-                            f.write(impl)
-                        else:
-                            f.write(task["prompt"] + impl)
-                except UnicodeEncodeError:
-                    continue
+            sidx = args.n_samples - nsamples
+            while sidx < args.n_samples:
+                outputs = model.codegen(
+                    construct_contract_prompt(
+                        task["prompt"], args.contract_type, task["contract"]
+                    ),
+                    do_sample=not args.greedy,
+                    num_samples=args.n_samples - sidx,
+                )
+                assert outputs, "No outputs from model!"
+                for impl in outputs:
+                    try:
+                        with open(
+                            os.path.join(workdir, p_name, f"{sidx}.py"),
+                            "w",
+                            encoding="utf-8",
+                        ) as f:
+                            if model.conversational:
+                                f.write(impl)
+                            else:
+                                f.write(task["prompt"] + impl)
+                    except UnicodeEncodeError:
+                        continue
+                    sidx += 1
 
 
 def main():
@@ -148,9 +129,6 @@ def main():
     parser.add_argument("--greedy", action="store_true")
     # id_range is list
     parser.add_argument("--id-range", default=None, nargs="+", type=int)
-    parser.add_argument(
-        "--prompt-method", choices=["zero-shot-CoT"], required=False, default=None
-    )
     args = parser.parse_args()
 
     if args.greedy and (args.temperature != 0 or args.bs != 1 or args.n_samples != 1):
@@ -171,18 +149,14 @@ def main():
     # Make dir for codes generated by each model
     args.model = args.model.lower()
     model = make_model(
-        name=args.model,
-        batch_size=args.bs,
-        temperature=args.temperature,
-        prompt_method=args.prompt_method,
+        name=args.model, batch_size=args.bs, temperature=args.temperature
     )
     workdir = os.path.join(
         args.root,
         args.dataset,
         args.model
         + f"_temp_{args.temperature}"
-        + ("" if args.contract_type == "none" else f"-contract-{args.contract_type}")
-        + ("" if args.prompt_method is None else f"-{args.prompt_method}"),
+        + ("" if args.contract_type == "none" else f"-contract-{args.contract_type}"),
     )
     os.makedirs(workdir, exist_ok=True)
 
