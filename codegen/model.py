@@ -146,7 +146,9 @@ class VLlmDecoder(DecoderBase):
         elif "python-code" in name:
             kwargs["dtype"] = "bfloat16"
 
-        self.llm = LLM(model=name, gpu_memory_utilization=0.9, **kwargs)
+        self.llm = LLM(
+            model=name, gpu_memory_utilization=0.9, max_model_len=2048, **kwargs
+        )
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -236,7 +238,7 @@ class CodeLlamaInstruct70B(VLlmDecoder):
  You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
  <step> Source: user
 
-    Think step by step, provide a self-contained Python script that solves the following problem efficiently by writing a fast implementation:
+    Think step by step. Provide a self-contained Python script that solves the following problem efficiently by writing a fast implementation:
 ```python
 {prompt}
 ```
