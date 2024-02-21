@@ -1030,6 +1030,16 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 )
         assert name.endswith("b")
         nb = name.split("-")[-1]
+
+        # Multi-lingual
+        if name.startswith("code-llama-multi"):
+            return VLlmDecoder(
+                batch_size=batch_size,
+                name=f"codellama/CodeLlama-{nb}-hf",
+                temperature=temperature,
+            )
+
+        # Python only
         return VLlmDecoder(
             batch_size=batch_size,
             name=f"codellama/CodeLlama-{nb}-Python-hf",
