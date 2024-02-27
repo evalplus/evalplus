@@ -122,6 +122,8 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "bfloat16"
         elif "ajibawa-2023/Code-33B" == name:
             kwargs["dtype"] = "bfloat16"
+        elif "WizardLM/WizardCoder-33B-v1.1" == name:
+            kwargs["dtype"] = "bfloat16"
         elif "WizardCoder" in name:
             kwargs["dtype"] = "float16"
         elif "deepseek" in name:
@@ -1073,6 +1075,13 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 name=f"deepseek-ai/deepseek-coder-{nb}b-base{version_suffix}",
                 temperature=temperature,
             )
+    elif name == "wizardcoder-33b-v1.1":
+        return Alpaca(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-33B-V1.1",
+            temperature=temperature,
+            conversational=True,
+        )
     elif name == "wizardcoder-34b":
         return Alpaca(
             batch_size=batch_size,
