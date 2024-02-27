@@ -493,6 +493,27 @@ Please complete the following Python function in a markdown style code block:
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
+class Magicoder(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
+
+        @@ Instruction
+        {prompt}
+
+        @@ Response
+        ```python
+        """
+
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 class OpenAIChatDecoder(DecoderBase):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
@@ -1075,6 +1096,20 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 name=f"deepseek-ai/deepseek-coder-{nb}b-base{version_suffix}",
                 temperature=temperature,
             )
+    elif name == "magicoder-s-ds-6.7b":
+        return Magicoder(
+            batch_size=batch_size,
+            name="ise-uiuc/Magicoder-S-DS-6.7B",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "magicoder-s-cl-7b":
+        return Magicoder(
+            batch_size=batch_size,
+            name="ise-uiuc/Magicoder-S-CL-7B",
+            temperature=temperature,
+            conversational=True,
+        )
     elif name == "wizardcoder-33b-v1.1":
         return Alpaca(
             batch_size=batch_size,
