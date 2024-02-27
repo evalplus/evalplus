@@ -1167,7 +1167,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
         )
     elif name == "phind-code-llama-34b-v2":
-        return HFTorchDecoder(
+        return VLlmDecoder(
             batch_size=batch_size,
             name="Phind/Phind-CodeLlama-34B-v2",
             temperature=temperature,
