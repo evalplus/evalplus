@@ -18,7 +18,7 @@ def make_request(
     system_msg = "You are a helpful assistant good at coding."
     if (
         kwargs.get("response_format", None)
-        and kwargs["response_format"]["type"] == "json"
+        and kwargs["response_format"]["type"] == "json_object"
     ):
         system_msg = "You are a helpful assistant designed to output JSON."
 
