@@ -504,11 +504,11 @@ class Magicoder(VLlmDecoder):
     ) -> List[str]:
         prompt = f"""You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
 
-        @@ Instruction
-        {prompt}
+@@ Instruction
+{prompt}
 
-        @@ Response
-        ```python
+@@ Response
+```python
         """
 
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
