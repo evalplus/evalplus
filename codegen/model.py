@@ -1239,7 +1239,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             conversational=True,
         )
     elif name == "speechless-coder-ds-6.7b":
-        return Alpaca(
+        return HFTorchDecoder(
             batch_size=batch_size,
             name="uukuguy/speechless-coder-ds-6.7b",
             temperature=temperature,
