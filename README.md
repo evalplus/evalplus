@@ -48,7 +48,7 @@ EvalPlus is a rigorous evaluation framework for LLM4Code, with:
 Why EvalPlus? What does using EvalPlus datasets bring to you?
 
 * ✨ **Reliable ranking**: See [our leaderboard](https://evalplus.github.io/leaderboard.html) for the latest LLM ranking before and after rigorous evaluation.
-* ✨ **Code robustness**: Look at the score differences! esp. before (e.g., HumanEval) and after (e.g., HumanEval+) using EvalPlus! The drop/gap indicates if the LLM can generate more robust code: less drop means more robustness and a larger drop means the code tends to be more fragile.
+* ✨ **Coding rigorousness**: Look at the score differences! esp. before and after using EvalPlus tests! Less drop is better as it means more rigorousness and less laxity in code generation; while a big drop means the generated code tends to be fragile.
 * ✨**Pre-generated samples**: EvalPlus accelerates LLM4Code research by open-sourcing [LLM-generated samples](#-LLM-generated-code) for vairous models -- no need to re-run the expensive benchmarks!
 
 Want to know more details? Read our [**NeurIPS'23 paper**](https://openreview.net/forum?id=1qvx610Cu7) [![](https://img.shields.io/badge/Paper-NeurIPS'23-a55fed.svg)](https://openreview.net/forum?id=1qvx610Cu7) as well as our [**Google Slides**](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs)!

@@ -15,13 +15,17 @@ def make_request(
     n: int = 1,
     **kwargs
 ) -> ChatCompletion:
+    system_msg = "You are a helpful assistant good at coding."
+    if (
+        kwargs.get("response_format", None)
+        and kwargs["response_format"]["type"] == "json_object"
+    ):
+        system_msg = "You are a helpful assistant designed to output JSON."
+
     return client.chat.completions.create(
         model=model,
         messages=[
-            {
-                "role": "system",
-                "content": "You are a helpful assistant designed to output JSON.",
-            },
+            {"role": "system", "content": system_msg},
             {"role": "user", "content": message},
         ],
         max_tokens=max_tokens,

@@ -128,6 +128,8 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "bfloat16"
         elif "ajibawa-2023/Code-33B" == name:
             kwargs["dtype"] = "bfloat16"
+        elif "WizardLM/WizardCoder-33B-v1.1" == name:
+            kwargs["dtype"] = "bfloat16"
         elif "WizardCoder" in name:
             kwargs["dtype"] = "float16"
         elif "deepseek" in name:
@@ -468,6 +470,12 @@ class HFTorchDecoder(DecoderBase):
             kwargs["torch_dtype"] = torch.float16
             kwargs["trust_remote_code"] = True
             self.skip_special_tokens = True
+        if "uukuguy/speechless-coder-ds-6.7b" == name:
+            kwargs["torch_dtype"] = torch.float16
+            self.skip_special_tokens = True
+        if "uukuguy/speechless-coding-7b-16k-tora" == name:
+            kwargs["torch_dtype"] = torch.bfloat16
+            self.skip_special_tokens = True
 
         print(f"{kwargs = }")
 
@@ -570,6 +578,27 @@ Please complete the following Python function in a markdown style code block:
 ### Response:
 ```python
 """
+
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class Magicoder(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
+
+@@ Instruction
+{prompt}
+
+@@ Response
+```python
+        """
 
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
@@ -851,6 +880,68 @@ class StarCoderInfill(HFTorchDecoder):
         return outputs
 
 
+class Speechless(HFTorchDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        if "uukuguy/speechless-coding-7b-16k-tora" == name:
+            self.extra_eos = ["</s>"]
+        elif "uukuguy/speechless-coder-ds-6.7b" == name:
+            self.extra_eos = ["<｜end▁of▁sentence｜>"]
+        else:
+            raise ValueError(f"Invalid model name: {name}")
+        self.eos = self.eos + self.extra_eos
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+
+        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
+            self.device
+        )
+        scores = StoppingCriteriaList(
+            [
+                EndOfFunctionCriteria(
+                    start_length=len(input_tokens[0]),
+                    eos=self.eos,
+                    tokenizer=self.tokenizer,
+                )
+            ]
+        )
+        kwargs = {}
+        if do_sample:
+            kwargs["top_p"] = 0.95
+            kwargs["temperature"] = self.temperature
+
+        raw_outputs = self.model.generate(
+            input_tokens,
+            max_new_tokens=self.max_new_tokens,
+            stopping_criteria=scores,
+            do_sample=do_sample,
+            output_scores=True,
+            return_dict_in_generate=True,
+            num_return_sequences=min(self.batch_size, num_samples),
+            pad_token_id=self.tokenizer.eos_token_id,
+            **kwargs,
+        )  # remove warning
+        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
+        outputs = []
+        # removes eos tokens.
+        for output in gen_strs:
+            min_index = 10000
+            for eos in self.eos:
+                if eos in output:
+                    # could be multiple eos in outputs, better pick minimum one
+                    min_index = min(min_index, output.index(eos))
+            outputs.append(output[:min_index])
+        return outputs
+
+
 class CodeT5P(DecoderBase):
     def __init__(self, name: str, **kwargs):
         super().__init__(name=name, **kwargs)
@@ -1073,6 +1164,12 @@ def make_model(
         return HFTorchDecoder(
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
         )
+    elif name == "starcoder2":
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name="bigcode/starcoder2-15b",
+            temperature=temperature,
+        )
     elif name.startswith("starcoder"):
         return StarCoderInfill(
             batch_size=batch_size, name=f"bigcode/{name}", temperature=temperature
@@ -1117,6 +1214,16 @@ def make_model(
                 )
         assert name.endswith("b")
         nb = name.split("-")[-1]
+
+        # Multi-lingual
+        if name.startswith("code-llama-multi"):
+            return VLlmDecoder(
+                batch_size=batch_size,
+                name=f"codellama/CodeLlama-{nb}-hf",
+                temperature=temperature,
+            )
+
+        # Python only
         return VLlmDecoder(
             batch_size=batch_size,
             name=f"codellama/CodeLlama-{nb}-Python-hf",
@@ -1153,6 +1260,27 @@ def make_model(
                 temperature=temperature,
                 prompt_method=prompt_method,
             )
+    elif name == "magicoder-s-ds-6.7b":
+        return Magicoder(
+            batch_size=batch_size,
+            name="ise-uiuc/Magicoder-S-DS-6.7B",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "magicoder-s-cl-7b":
+        return Magicoder(
+            batch_size=batch_size,
+            name="ise-uiuc/Magicoder-S-CL-7B",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "wizardcoder-33b-v1.1":
+        return Alpaca(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-33B-V1.1",
+            temperature=temperature,
+            conversational=True,
+        )
     elif name == "wizardcoder-34b":
         return Alpaca(
             batch_size=batch_size,
@@ -1203,7 +1331,7 @@ def make_model(
             temperature=temperature,
         )
     elif name == "phind-code-llama-34b-v2":
-        return HFTorchDecoder(
+        return VLlmDecoder(
             batch_size=batch_size,
             name="Phind/Phind-CodeLlama-34B-v2",
             temperature=temperature,
@@ -1275,14 +1403,14 @@ def make_model(
             conversational=True,
         )
     elif name == "speechless-coder-ds-6.7b":
-        return Alpaca(
+        return Speechless(
             batch_size=batch_size,
             name="uukuguy/speechless-coder-ds-6.7b",
             temperature=temperature,
             conversational=True,
         )
     elif name == "speechless-coding-7b-16k-tora":
-        return Alpaca(
+        return Speechless(
             batch_size=batch_size,
             name="uukuguy/speechless-coding-7b-16k-tora",
             temperature=temperature,

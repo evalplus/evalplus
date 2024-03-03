@@ -22,6 +22,7 @@
 
 import itertools
 import multiprocessing
+import os
 import time
 from multiprocessing import Array, Value
 from typing import Any, Dict, List, Tuple, Union
@@ -75,16 +76,16 @@ def estimate_pass_at_k(
     )
 
 
-SUCCESS = "success"
-FAILED = "failed"
-TIMEOUT = "timed out"
+PASS = "pass"
+FAIL = "fail"
+TIMEOUT = "timeout"
 
 _SUCCESS = 0
 _FAILED = 1
 _TIMEOUT = 2
 _UNKNOWN = 3
 
-_mapping = {_SUCCESS: SUCCESS, _FAILED: FAILED, _TIMEOUT: TIMEOUT, _UNKNOWN: None}
+_mapping = {_SUCCESS: PASS, _FAILED: FAIL, _TIMEOUT: TIMEOUT, _UNKNOWN: None}
 
 
 def is_floats(x) -> bool:
@@ -197,7 +198,7 @@ def untrusted_check(
     gt_time_limit_factor: float = 2.0,
 ) -> Tuple[str, np.ndarray]:
     time_limits = [max(min_time_limit, gt_time_limit_factor * t) for t in ref_time]
-    timeout = sum(time_limits) + 1
+    timeout = min(os.getenv("EVALPLUS_TIMEOUT_PER_TASK", 60), sum(time_limits)) + 1
     if not fast_check:
         timeout += 1  # extra time for data collection
 
@@ -238,9 +239,9 @@ def untrusted_check(
     if not stat:
         stat = TIMEOUT
 
-    if stat == SUCCESS:
+    if stat == PASS:
         if len(details) != len(inputs) or not all(details):
-            stat = FAILED
+            stat = FAIL
 
     return stat, details
 

@@ -8,7 +8,7 @@ import time
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple
 from warnings import warn
 
 import numpy as np
@@ -22,9 +22,11 @@ from evalplus.data import (
     get_mbpp_plus_hash,
     load_solutions,
 )
+from evalplus.data.mbpp import mbpp_serialize_inputs
 from evalplus.data.utils import CACHE_DIR
 from evalplus.eval import (
-    SUCCESS,
+    FAIL,
+    PASS,
     compatible_eval_result,
     estimate_pass_at_k,
     untrusted_check,
@@ -85,11 +87,12 @@ def check_correctness(
     identifier=None,
     min_time_limit: float = 0.1,
     gt_time_limit_factor: float = 2.0,
-) -> Dict[str, Union[int, Optional[Result]]]:
+) -> Dict[str, Result]:  # {...}, "base" | "plus" -> (status, details)
     ret = {
         "completion_id": completion_id,
         "task_id": problem["task_id"],
         "_identifier": identifier,
+        "solution": solution,
     }
     ret["base"] = untrusted_check(
         dataset,
@@ -167,7 +170,7 @@ def evaluate(flags):
             futures = []
             completion_id = Counter()
             n_samples = 0
-            eval_results = defaultdict(list)
+            eval_results = defaultdict(list)  # task_id ->
             remainings = set()
 
             print("Reading samples...")
@@ -218,13 +221,51 @@ def evaluate(flags):
         # sort the results for each problem by completion_id
         for task_id, task_results in eval_results.items():
             task_results.sort(key=lambda x: x["completion_id"])
-            results["eval"][task_id] = {
-                "nfiles": len(task_results),
-                "base": [x["base"] for x in task_results],
-                "plus": (
-                    [x["plus"] for x in task_results] if not flags.base_only else []
-                ),
-            }
+            results["eval"][task_id] = []
+            for res in task_results:
+
+                def get_failed_tests(stat, details, inputs) -> List[Any]:
+                    if stat == PASS or not details:
+                        return []
+
+                    if flags.test_details:
+                        return [
+                            inputs[i] for i in range(len(details)) if not details[i]
+                        ]
+
+                    # esle => simply return the only and the last fail test
+                    return [inputs[len(details)]]
+
+                base_stat, base_details = res["base"]
+                base_fail_tests = get_failed_tests(
+                    base_stat, base_details, problems[task_id]["base_input"]
+                )
+
+                # initialize plus tests
+                plus_stat = None
+                plus_fail_tests = []
+
+                # with plus tests
+                if not flags.base_only:
+                    plus_stat, plus_details = res["plus"]
+                    plus_fail_tests = get_failed_tests(
+                        plus_stat, plus_details, problems[task_id]["plus_input"]
+                    )
+
+                if flags.dataset == "mbpp":
+                    base_fail_tests = mbpp_serialize_inputs(task_id, base_fail_tests)
+                    plus_fail_tests = mbpp_serialize_inputs(task_id, plus_fail_tests)
+
+                results["eval"][task_id].append(
+                    {
+                        "task_id": task_id,
+                        "solution": res["solution"],
+                        "base_status": base_stat,
+                        "plus_status": plus_stat,
+                        "base_fail_tests": base_fail_tests,
+                        "plus_fail_tests": plus_fail_tests,
+                    }
+                )
 
     if os.path.isfile(result_path) and flags.i_just_wanna_run:
         decision = ""
@@ -245,19 +286,19 @@ def evaluate(flags):
             json.dump(results, f)
 
     # Calculate pass@k.
-    total = np.array([r["nfiles"] for r in results["eval"].values()])
+    total = np.array([len(r) for r in results["eval"].values()])
     base_correct = []
     new_correct = []
 
     for res in results["eval"].values():
-        bc = sum([r[0] == SUCCESS for r in res["base"]])
+        bc = sum([r["base_status"] == PASS for r in res])
         base_correct.append(bc)
-        if res["plus"]:
+        if not flags.base_only:
             new_correct.append(
                 sum(
                     [
-                        res["plus"][i][0] == res["base"][i][0] == SUCCESS
-                        for i in range(len(res["plus"]))
+                        res[i]["base_status"] == res[i]["plus_status"] == PASS
+                        for i in range(len(res))
                     ]
                 )
             )
