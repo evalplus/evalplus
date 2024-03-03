@@ -141,6 +141,8 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "bfloat16"
         elif "python-code" in name:
             kwargs["dtype"] = "bfloat16"
+        elif "bigcode/starcoder2-15b" == name:
+            kwargs["dtype"] = "bfloat16"
 
         self.llm = LLM(model=name, max_model_len=2048, **kwargs)
 
@@ -797,6 +799,19 @@ class StarCoderInfill(HFTorchDecoder):
         return outputs
 
 
+class Starcoder2Infill(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.prefix_token = "<fim_prefix>"
+        self.suffix_token = "<fim_suffix><fim_middle>"
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = self.prefix_token + prompt + self.suffix_token
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 class Speechless(HFTorchDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
@@ -1080,7 +1095,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
         )
     elif name == "starcoder2":
-        return VLlmDecoder(
+        return Starcoder2Infill(
             batch_size=batch_size,
             name="bigcode/starcoder2-15b",
             temperature=temperature,
