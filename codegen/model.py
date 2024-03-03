@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from typing import List
 from warnings import warn
 
+from cycler import V
+
 # Communism
 os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/JawTitan/huggingface/")
 
@@ -880,6 +882,19 @@ class StarCoderInfill(HFTorchDecoder):
         return outputs
 
 
+class Starcoder2Infill(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.fim_prefix = "<fim_prefix>"
+        self.fim_suffix = "<fim_suffix><fim_middle>"
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = self.fim_prefix + prompt + self.fim_suffix
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 class Speechless(HFTorchDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
@@ -1165,7 +1180,7 @@ def make_model(
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
         )
     elif name == "starcoder2":
-        return VLlmDecoder(
+        return Starcoder2Infill(
             batch_size=batch_size,
             name="bigcode/starcoder2-15b",
             temperature=temperature,
