@@ -997,7 +997,6 @@ class CodeGemma(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         kwargs["conversational"] = True
         super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -1006,6 +1005,30 @@ class CodeGemma(VLlmDecoder):
 {prompt}
 ### Response
 """
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class OpenHermes(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        # simple change for codegen
+        prompt = f"""
+This is a conversation with your helpful AI assistant. AI assistant can generate Code in various Programming Languages along with necessary explanation. It can generate Story, Blogs .....
+
+Context
+You are a helpful AI assistant.
+
+USER: complete the python code below
+```python
+{prompt}
+```
+ASSISTANT:```python"""
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
@@ -1393,6 +1416,13 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return CodeGemma(
             batch_size=batch_size,
             name=f"TechxGenus/CodeGemma-{nb}b",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif "open-hermes-2.5-code-290k-13b":
+        return OpenHermes(
+            batch_size=batch_size,
+            name="ajibawa-2023/OpenHermes-2.5-Code-290k-13B",
             temperature=temperature,
             conversational=True,
         )
