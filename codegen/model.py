@@ -8,7 +8,11 @@ from warnings import warn
 os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/JawTitan/huggingface/")
 
 import openai
-import anthropic
+
+try:
+    import anthropic
+except ImportError:
+    warn("Anthropic is not installed, some decoders will not work.")
 import torch
 from transformers import (
     AutoModelForCausalLM,
@@ -17,7 +21,10 @@ from transformers import (
     StoppingCriteria,
     StoppingCriteriaList,
 )
-# from vllm import LLM, SamplingParams
+try:
+    from vllm import LLM, SamplingParams
+except ImportError:
+    warn("VLLM is not installed, some decoders will not work.")
 
 from evalplus.gen.util.api_request import make_auto_request
 
