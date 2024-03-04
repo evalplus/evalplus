@@ -1385,6 +1385,8 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             conversational=True,
         )
     elif "codegemma" in name:
+        import re
+
         pattern = re.compile(r"codegemma-(\d+)b")
         matches = pattern.findall(name)
         nb = int(matches[0])
