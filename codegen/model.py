@@ -8,6 +8,7 @@ from warnings import warn
 os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/JawTitan/huggingface/")
 
 import openai
+import anthropic
 import torch
 from transformers import (
     AutoModelForCausalLM,
@@ -16,7 +17,7 @@ from transformers import (
     StoppingCriteria,
     StoppingCriteriaList,
 )
-from vllm import LLM, SamplingParams
+# from vllm import LLM, SamplingParams
 
 from evalplus.gen.util.api_request import make_auto_request
 
@@ -572,6 +573,38 @@ class OpenAIChatDecoder(DecoderBase):
         return outputs
 
 
+class AnthropicChatDecoder(DecoderBase):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_KEY"))
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be positive for sampling"
+
+        batch_size = min(self.batch_size, num_samples)
+        assert batch_size <= 20, "Use larger batch size could blow up the memory!"
+
+        # construct prompt
+        message = f"{anthropic.HUMAN_PROMPT}\nPlease generate code to complete the following problem:"
+
+        message += f"\n```python\n{prompt.strip()}\n```\n{anthropic.AI_PROMPT}\n"
+
+
+        outputs = []
+        for _ in range(batch_size):
+            response = self.client.completions.create(
+                model=self.name,
+                prompt=message,
+                max_tokens_to_sample=self.max_new_tokens,
+                temperature=self.temperature,
+            )
+            outputs.append(response.completion)
+
+        return outputs
+
 class IncoderDecoder(HFTorchDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
@@ -1068,6 +1101,13 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name=name,
             temperature=temperature,
             conversational=True,
+        )
+    elif name.startswith("claude"):
+        return AnthropicChatDecoder(
+            batch_size=batch_size, 
+            name=name, 
+            temperature=temperature, 
+            conversational=True
         )
     elif name == "gptneo-2b":
         return HFTorchDecoder(
