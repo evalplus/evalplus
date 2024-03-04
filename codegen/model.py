@@ -143,6 +143,10 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "bfloat16"
         elif "bigcode/starcoder2-15b" == name:
             kwargs["dtype"] = "bfloat16"
+        elif "CodeGemma" in name:
+            kwargs["dtype"] = "bfloat16"
+        elif "ajibawa-2023/OpenHermes-2.5-Code-290k-13B" == name:
+            kwargs["dtype"] = "bfloat16"
 
         self.llm = LLM(model=name, max_model_len=2048, **kwargs)
 
