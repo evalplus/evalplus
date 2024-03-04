@@ -993,6 +993,22 @@ class XwinCoder(VLlmDecoder):
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
+class CodeGemma(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""### Instruction
+{prompt}
+### Response
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     if name == "codegen-2b":
         return HFTorchDecoder(
@@ -1365,6 +1381,16 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return WhiteRabbitNeo(
             batch_size=batch_size,
             name="whiterabbitneo/WhiteRabbitNeo-33B-v-1",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif "codegemma" in name:
+        pattern = re.compile(r"codegemma-(\d+)b")
+        matches = pattern.findall(name)
+        nb = int(matches[0])
+        return CodeGemma(
+            batch_size=batch_size,
+            name=f"TechxGenus/CodeGemma-{nb}b",
             temperature=temperature,
             conversational=True,
         )
