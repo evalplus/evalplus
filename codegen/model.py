@@ -965,7 +965,7 @@ class OpenCodeInterpreterDecoder(VLlmDecoder):
     def __init__(self, name: str, **kwargs):
         super().__init__(name=name, **kwargs)
         self.skip_special_tokens = True
-        self.eos += ["<|EOT|>"]
+        self.eos += ["<|EOT|>", "\n```\n", "\nif "]
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
