@@ -614,7 +614,7 @@ class AnthropicMessageDecoder(AnthropicDecoder):
                 ],
                 max_tokens=self.max_new_tokens,
                 temperature=self.temperature,
-                stop_sequences=["\n```\n"],
+                stop_sequences=["\n```\n", "\nassert ", "\nif "],
             )
             outputs.append(message.content[0].text)
 
