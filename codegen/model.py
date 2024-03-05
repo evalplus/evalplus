@@ -1356,6 +1356,12 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="ajibawa-2023/Code-33B",
             temperature=temperature,
         )
+    elif name == "code-290k-6.7b-instruct":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Code-290k-6.7B-Instruct",
+            temperature=temperature,
+        )
     elif name == "phind-code-llama-34b-v2":
         return VLlmDecoder(
             batch_size=batch_size,
