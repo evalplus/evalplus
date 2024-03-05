@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from abc import ABC, abstractmethod
 from typing import List
 from warnings import warn
@@ -21,6 +22,7 @@ from transformers import (
     StoppingCriteria,
     StoppingCriteriaList,
 )
+
 try:
     from vllm import LLM, SamplingParams
 except ImportError:
@@ -580,11 +582,13 @@ class OpenAIChatDecoder(DecoderBase):
         return outputs
 
 
-class AnthropicChatDecoder(DecoderBase):
+class AnthropicDecoder(DecoderBase, ABC):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
         self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_KEY"))
 
+
+class AnthropicCompletionDecoder(AnthropicDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
@@ -592,13 +596,13 @@ class AnthropicChatDecoder(DecoderBase):
             assert self.temperature > 0, "Temperature must be positive for sampling"
 
         batch_size = min(self.batch_size, num_samples)
-        assert batch_size <= 20, "Use larger batch size could blow up the memory!"
+        if not do_sample:
+            assert batch_size == 1, "Sampling only supports batch size of 1"
 
         # construct prompt
         message = f"{anthropic.HUMAN_PROMPT}\nPlease generate code to complete the following problem:"
 
         message += f"\n```python\n{prompt.strip()}\n```\n{anthropic.AI_PROMPT}\n"
-
 
         outputs = []
         for _ in range(batch_size):
@@ -611,6 +615,38 @@ class AnthropicChatDecoder(DecoderBase):
             outputs.append(response.completion)
 
         return outputs
+
+
+class AnthropicMessageDecoder(AnthropicDecoder):
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be positive for sampling"
+
+        batch_size = min(self.batch_size, num_samples)
+        if not do_sample:
+            assert batch_size == 1, "Sampling only supports batch size of 1"
+
+        outputs = []
+        for _ in range(batch_size):
+            message = self.client.messages.create(
+                model=self.name,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": "Please generate code to complete the following problem wrap in a markdown block:"
+                        + f"\n```python\n{prompt.strip()}\n```\n",
+                    }
+                ],
+                max_tokens=self.max_new_tokens,
+                temperature=self.temperature,
+                stop_sequences=["\n```\n"],
+            )
+            outputs.append(message.content[0].text)
+
+        return outputs
+
 
 class IncoderDecoder(HFTorchDecoder):
     def __init__(self, name: str, **kwargs) -> None:
@@ -1110,11 +1146,11 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             conversational=True,
         )
     elif name.startswith("claude"):
-        return AnthropicChatDecoder(
-            batch_size=batch_size, 
-            name=name, 
-            temperature=temperature, 
-            conversational=True
+        return AnthropicMessageDecoder(
+            batch_size=batch_size,
+            name=name,
+            temperature=temperature,
+            conversational=True,
         )
     elif name == "gptneo-2b":
         return HFTorchDecoder(
