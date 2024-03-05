@@ -3,3 +3,4 @@ rich
 accelerate
 vllm
 anthropic
+mistralai
