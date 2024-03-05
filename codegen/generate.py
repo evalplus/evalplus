@@ -85,6 +85,7 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
 
             sidx = args.n_samples - nsamples
             while sidx < args.n_samples:
+                model.dataset=args.dataset
                 outputs = model.codegen(
                     construct_contract_prompt(
                         task["prompt"], args.contract_type, task["contract"]
