@@ -1097,10 +1097,15 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
         )
-    elif name == "starcoder2":
+    elif name.startswith("starcoder"):
+        import re
+
+        pattern = re.compile(r"starcoder2-(\d+)b")
+        matches = pattern.findall(name)
+        nb = int(matches[0])
         return VLlmDecoder(
             batch_size=batch_size,
-            name="bigcode/starcoder2-15b",
+            name=f"bigcode/starcoder2-{nb}b",
             temperature=temperature,
         )
     elif name.startswith("starcoder"):
