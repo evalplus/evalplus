@@ -31,7 +31,13 @@ def make_auto_request(client: anthropic.Client, *args, **kwargs) -> Message:
             signal.alarm(0)
             time.sleep(5)
         except anthropic.APIError as e:
+            print("Unknown API error")
             print(e)
+            if (
+                e.body["error"]["message"]
+                == "Output blocked by content filtering policy"
+            ):
+                raise Exception("Content filtering policy blocked output")
             signal.alarm(0)
         except Exception as e:
             print("Unknown error. Waiting...")

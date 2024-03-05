@@ -608,13 +608,13 @@ class AnthropicMessageDecoder(AnthropicDecoder):
                 messages=[
                     {
                         "role": "user",
-                        "content": "Please generate code to complete the following problem wrap in a markdown block:"
+                        "content": "Please generate code to complete the following problem wrapped in a Python markdown block:"
                         + f"\n```python\n{prompt.strip()}\n```\n",
                     }
                 ],
                 max_tokens=self.max_new_tokens,
                 temperature=self.temperature,
-                stop_sequences=["\n```\n", "\nassert ", "\nif "],
+                stop_sequences=["\n```\n", "\nif "],
             )
             outputs.append(message.content[0].text)
 
