@@ -1,6 +1,5 @@
 import json
 import os
-import time
 from abc import ABC, abstractmethod
 from typing import List
 from warnings import warn
@@ -12,6 +11,8 @@ import openai
 
 try:
     import anthropic
+
+    from evalplus.gen.util import anthropic_request
 except ImportError:
     warn("Anthropic is not installed, some decoders will not work.")
 import torch
@@ -28,7 +29,7 @@ try:
 except ImportError:
     warn("VLLM is not installed, some decoders will not work.")
 
-from evalplus.gen.util.api_request import make_auto_request
+from evalplus.gen.util import openai_request
 
 EOS = ["<|endoftext|>", "<|endofmask|>", "</s>"]
 
@@ -553,7 +554,7 @@ class OpenAIChatDecoder(DecoderBase):
 
         message += f"\n```python\n{prompt.strip()}\n```"
 
-        ret = make_auto_request(
+        ret = openai_request.make_auto_request(
             self.client,
             message=message,
             model=self.name,
@@ -588,35 +589,6 @@ class AnthropicDecoder(DecoderBase, ABC):
         self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_KEY"))
 
 
-class AnthropicCompletionDecoder(AnthropicDecoder):
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if do_sample:
-            assert self.temperature > 0, "Temperature must be positive for sampling"
-
-        batch_size = min(self.batch_size, num_samples)
-        if not do_sample:
-            assert batch_size == 1, "Sampling only supports batch size of 1"
-
-        # construct prompt
-        message = f"{anthropic.HUMAN_PROMPT}\nPlease generate code to complete the following problem:"
-
-        message += f"\n```python\n{prompt.strip()}\n```\n{anthropic.AI_PROMPT}\n"
-
-        outputs = []
-        for _ in range(batch_size):
-            response = self.client.completions.create(
-                model=self.name,
-                prompt=message,
-                max_tokens_to_sample=self.max_new_tokens,
-                temperature=self.temperature,
-            )
-            outputs.append(response.completion)
-
-        return outputs
-
-
 class AnthropicMessageDecoder(AnthropicDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -630,7 +602,8 @@ class AnthropicMessageDecoder(AnthropicDecoder):
 
         outputs = []
         for _ in range(batch_size):
-            message = self.client.messages.create(
+            message = anthropic_request.make_auto_request(
+                client=self.client,
                 model=self.name,
                 messages=[
                     {
