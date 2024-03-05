@@ -8,6 +8,13 @@ from warnings import warn
 os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/JawTitan/huggingface/")
 
 import openai
+
+try:
+    import anthropic
+
+    from evalplus.gen.util import anthropic_request
+except ImportError:
+    warn("Anthropic is not installed, some decoders will not work.")
 import torch
 from transformers import (
     AutoModelForCausalLM,
@@ -16,9 +23,13 @@ from transformers import (
     StoppingCriteria,
     StoppingCriteriaList,
 )
-from vllm import LLM, SamplingParams
 
-from evalplus.gen.util.api_request import make_auto_request
+try:
+    from vllm import LLM, SamplingParams
+except ImportError:
+    warn("VLLM is not installed, some decoders will not work.")
+
+from evalplus.gen.util import openai_request
 
 EOS = ["<|endoftext|>", "<|endofmask|>", "</s>"]
 
@@ -545,7 +556,7 @@ class OpenAIChatDecoder(DecoderBase):
 
         message += f"\n```python\n{prompt.strip()}\n```"
 
-        ret = make_auto_request(
+        ret = openai_request.make_auto_request(
             self.client,
             message=message,
             model=self.name,
@@ -570,6 +581,44 @@ class OpenAIChatDecoder(DecoderBase):
                 except Exception as e:
                     print(e)
             outputs.append(content)
+
+        return outputs
+
+
+class AnthropicDecoder(DecoderBase, ABC):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_KEY"))
+
+
+class AnthropicMessageDecoder(AnthropicDecoder):
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be positive for sampling"
+
+        batch_size = min(self.batch_size, num_samples)
+        if not do_sample:
+            assert batch_size == 1, "Sampling only supports batch size of 1"
+
+        outputs = []
+        for _ in range(batch_size):
+            message = anthropic_request.make_auto_request(
+                client=self.client,
+                model=self.name,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": "Please generate code to complete the following problem wrapped in a Python markdown block:"
+                        + f"\n```python\n{prompt.strip()}\n```\n",
+                    }
+                ],
+                max_tokens=self.max_new_tokens,
+                temperature=self.temperature,
+                stop_sequences=["\n```\n", "\nif "],
+            )
+            outputs.append(message.content[0].text)
 
         return outputs
 
@@ -992,6 +1041,104 @@ class XwinCoder(VLlmDecoder):
 """
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
+class OpenCodeInterpreterDecoder(DecoderBase):
+    def __init__(self, name: str, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        kwargs = {}
+        kwargs["torch_dtype"] = torch.bfloat16
+        kwargs["device_map"] = "auto"
+        print("kwargs",kwargs)
+        self.skip_special_tokens = True
+        self.tokenizer = AutoTokenizer.from_pretrained(name)
+        self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
+        self.max_new_tokens=1024
+        self.eos += ["<|EOT|>"]
+        
+    def build_humaneval_instruction(self, prompt: str):
+        return '''You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
+
+@@ Instruction
+Here is the given code to do completion:
+```python
+{}
+```
+Please continue to complete the function with python programming language. You are not allowed to modify the given code and do the completion only. 
+
+Please return all completed codes in one code block. 
+This code block should be in the following format:
+```python
+# Your codes here
+```
+
+@@ Response
+'''.format(prompt)
+
+
+    def build_mbpp_instruction(self, prompt: str):
+        return '''You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
+
+@@ Instruction
+Here is the given problem and test examples:
+{}
+
+Please use the python programming language to solve this problem.
+Please make sure that your code includes the functions from the test samples and that the input and output formats of these functions match the test samples.
+
+Please return all completed codes in one code block. 
+This code block should be in the following format:
+```python
+# Your codes here
+```
+
+@@ Response
+'''.format(prompt)
+        
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if self.temperature == 0:
+            assert not do_sample
+            assert num_samples == 1
+        
+        if self.dataset=="humaneval":
+            prompt=self.build_humaneval_instruction(prompt)
+        elif self.dataset=="mbpp":
+            prompt=self.build_mbpp_instruction(prompt)
+
+        inputs = self.tokenizer.apply_chat_template(
+            [{'role': 'user', 'content': prompt }],
+            return_tensors="pt"
+        ).to(self.model.device)
+
+        kwargs = {}
+        if do_sample:
+            kwargs["top_p"] = 0.95
+            kwargs["temperature"] = self.temperature
+
+        raw_outputs = self.model.generate(
+            inputs, 
+            max_new_tokens=self.max_new_tokens,
+            do_sample=do_sample,
+            pad_token_id=self.tokenizer.eos_token_id,
+            eos_token_id=self.tokenizer.eos_token_id,
+            **kwargs,
+        )  # remove warning
+        gen_seqs = raw_outputs[:, len(inputs[0]) :]
+        gen_strs = self.tokenizer.batch_decode(
+            gen_seqs, skip_special_tokens=self.skip_special_tokens
+        )
+        outputs = []
+        # removes eos tokens.
+        for output in gen_strs:
+            min_index = 10000
+            for eos in self.eos:
+                if eos in output:
+                    # could be multiple eos in outputs, better pick minimum one
+                    min_index = min(min_index, output.index(eos))
+            outputs.append(output[:min_index])
+        return outputs
 
 class CodeGemma(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
@@ -1082,6 +1229,13 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         )
     elif name.startswith("gpt-3.5-") or name.startswith("gpt-4-"):
         return OpenAIChatDecoder(
+            batch_size=batch_size,
+            name=name,
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name.startswith("claude"):
+        return AnthropicMessageDecoder(
             batch_size=batch_size,
             name=name,
             temperature=temperature,
@@ -1399,5 +1553,20 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
             conversational=True,
         )
+    elif "opencodeinterpreter" in name:
+        if "ds-6.7b" in name:
+            return OpenCodeInterpreterDecoder(
+                batch_size=batch_size,
+                name="m-a-p/OpenCodeInterpreter-DS-6.7B",
+                temperature=temperature,
+                conversational=True,
+            )
+        elif "ds-33b" in name:
+            return OpenCodeInterpreterDecoder(
+                batch_size=batch_size,
+                name="m-a-p/OpenCodeInterpreter-DS-33B",
+                temperature=temperature,
+                conversational=True,
+            )
 
     raise ValueError(f"Invalid model name: {name}")
