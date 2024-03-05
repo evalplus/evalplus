@@ -1439,6 +1439,14 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             conversational=True,
             dtype="float16",
         )
+    elif name == "speechless-thoughts-mistral-7b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-thoughts-mistral-7b",
+            temperature=temperature,
+            conversational=True,
+            dtype="float16",
+        )
     elif name == "speechless-coder-ds-6.7b":
         return Speechless(
             batch_size=batch_size,
@@ -1530,14 +1538,14 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
             conversational=True,
         )
-    elif "open-hermes-2.5-code-290k-13b" == name:
+    elif name == "open-hermes-2.5-code-290k-13b":
         return OpenHermes(
             batch_size=batch_size,
             name="ajibawa-2023/OpenHermes-2.5-Code-290k-13B",
             temperature=temperature,
             conversational=True,
         )
-    elif "starcoder2_15b_oci" == name:
+    elif name == "starcoder2_15b_oci":
         return VLlmDecoder(
             batch_size=batch_size,
             name="TokenBender/starcoder2_15B_OCI",
