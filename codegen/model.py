@@ -141,8 +141,10 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "bfloat16"
         elif "python-code" in name:
             kwargs["dtype"] = "bfloat16"
-        elif "bigcode/starcoder2-15b" == name:
+        elif name.lower().startswith("bigcode/starcoder2-"):
             kwargs["dtype"] = "bfloat16"
+        elif "TokenBender/starcoder2_15B_OCI" == name:
+            kwargs["dtype"] = "float16"
         elif "CodeGemma" in name:
             kwargs["dtype"] = "bfloat16"
         elif "ajibawa-2023/OpenHermes-2.5-Code-290k-13B" == name:
@@ -1423,7 +1425,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
             conversational=True,
         )
-    elif "open-hermes-2.5-code-290k-13b":
+    elif "open-hermes-2.5-code-290k-13b" == name:
         return OpenHermes(
             batch_size=batch_size,
             name="ajibawa-2023/OpenHermes-2.5-Code-290k-13B",
