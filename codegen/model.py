@@ -83,6 +83,8 @@ class DecoderBase(ABC):
         max_new_tokens: int = 512,
         conversational: bool = False,
         max_conversational_new_tokens: int = 1024,
+        dtype: str = "bfloat16",  # default
+        trust_remote_code: bool = False,
     ) -> None:
         print("Initializing a decoder model: {} ...".format(name))
         self.name = name
@@ -94,6 +96,8 @@ class DecoderBase(ABC):
             max_conversational_new_tokens if conversational else max_new_tokens
         )
         self.conversational = conversational
+        self.dtype = dtype
+        self.trust_remote_code = trust_remote_code
 
     @abstractmethod
     def codegen(
@@ -112,48 +116,11 @@ class VLlmDecoder(DecoderBase):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
 
-        kwargs = {"tensor_parallel_size": int(os.getenv("VLLM_N_GPUS", "1"))}
-        if "CodeLlama" in name:
-            kwargs["dtype"] = "bfloat16"
-        elif "code-millenials" in name:
-            kwargs["dtype"] = "float16"
-        elif "uukuguy/speechless-code-mistral-7b-v1.0" == name:
-            kwargs["dtype"] = "float16"
-        elif "whiterabbitneo/WhiteRabbitNeo-33B-v-1" == name:
-            kwargs["dtype"] = "float16"
-        elif "uukuguy/speechless-codellama-34b-v2.0" == name:
-            kwargs["dtype"] = "float16"
-        elif "uukuguy/speechless-coder-ds-6.7b" == name:
-            kwargs["dtype"] = "float16"
-        elif "uukuguy/speechless-coding-7b-16k-tora" == name:
-            kwargs["dtype"] = "bfloat16"
-        elif "CodeBooga" in name:
-            kwargs["dtype"] = "float16"
-        elif "ajibawa-2023/Code-13B" == name:
-            kwargs["dtype"] = "bfloat16"
-        elif "ajibawa-2023/Code-33B" == name:
-            kwargs["dtype"] = "bfloat16"
-        elif "WizardLM/WizardCoder-33B-v1.1" == name:
-            kwargs["dtype"] = "bfloat16"
-        elif "WizardCoder" in name:
-            kwargs["dtype"] = "float16"
-        elif "deepseek" in name:
-            kwargs["dtype"] = "bfloat16"
-        elif "mixtral" in name.lower():
-            kwargs["dtype"] = "bfloat16"
-        elif "solar" in name:
-            kwargs["dtype"] = "float16"
-        elif "mistral" in name.lower():
-            kwargs["dtype"] = "bfloat16"
-        elif "phi" in name.lower():
-            kwargs["dtype"] = "float16"
-            kwargs["trust_remote_code"] = True
-        elif "openchat" in name.lower():
-            kwargs["dtype"] = "bfloat16"
-        elif "python-code" in name:
-            kwargs["dtype"] = "bfloat16"
-        elif "bigcode/starcoder2-15b" == name:
-            kwargs["dtype"] = "bfloat16"
+        kwargs = {
+            "tensor_parallel_size": int(os.getenv("VLLM_N_GPUS", "1")),
+            "dtype": self.dtype,
+            "trust_remote_code": self.trust_remote_code,
+        }
 
         self.llm = LLM(model=name, max_model_len=2048, **kwargs)
 
@@ -378,64 +345,16 @@ class HFTorchDecoder(DecoderBase):
     def __init__(self, name: str, **kwargs):
         super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        kwargs = {
-            "trust_remote_code": name
-            in {
-                "bigcode/santacoder",
-                "Salesforce/codegen2-1B",
-                "Salesforce/codegen2-3_7B",
-                "Salesforce/codegen2-7B",
-                "Salesforce/codegen2-16B",
-                "deepseek-ai/deepseek-coder-6.7b-base",
-                "deepseek-ai/deepseek-coder-33b-base",
-                "stabilityai/stable-code-3b",
-            }
-        }
-
-        if "codegen-" in name:  # use fp16 for codegen models
-            kwargs["torch_dtype"] = torch.float16
-        if "codegen2-" in name:  # avoid warning of trust remote code
-            kwargs["revision"] = "main"
-            if "16b" in name.lower():
-                kwargs["device_map"] = "auto"
-        if "starcoder" in name:
-            kwargs["torch_dtype"] = torch.bfloat16
-        if "CodeLlama" in name:
-            if "34b" in name.lower():
-                kwargs["device_map"] = "auto"
-            kwargs["torch_dtype"] = torch.bfloat16
-            self.skip_special_tokens = True
-        if "CodeBooga" in name:
-            kwargs["torch_dtype"] = torch.float16
-            kwargs["device_map"] = "auto"
-            self.skip_special_tokens = True
-        if "Mistral-7B-codealpaca-lora" == name:
-            kwargs["torch_dtype"] = torch.float16
-            self.skip_special_tokens = True
-        elif "Mistral" in name or "zephyr-7b-beta" in name:
-            kwargs["torch_dtype"] = torch.bfloat16
-        if "deepseek" in name:
-            kwargs["torch_dtype"] = torch.bfloat16
-            self.skip_special_tokens = True
-        if "/phi" in name:
-            kwargs["torch_dtype"] = torch.float16
-            kwargs["trust_remote_code"] = True
-            self.skip_special_tokens = True
-        if "uukuguy/speechless-coder-ds-6.7b" == name:
-            kwargs["torch_dtype"] = torch.float16
-            self.skip_special_tokens = True
-        if "uukuguy/speechless-coding-7b-16k-tora" == name:
-            kwargs["torch_dtype"] = torch.bfloat16
-            self.skip_special_tokens = True
+        kwargs["device_map"] = "auto"
+        kwargs["trust_remote_code"] = self.trust_remote_code
+        # string to torch dtype
+        kwargs["torch_dtype"] = getattr(torch, self.dtype)
+        self.skip_special_tokens = True
 
         print(f"{kwargs = }")
 
         self.tokenizer = AutoTokenizer.from_pretrained(name)
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
-        if name in {"StabilityAI/stablelm-base-alpha-7b"}:
-            print("Switching to float16 ...")
-            self.model = self.model.half()
-            self.skip_special_tokens = True
         self.model = self.model.to(self.device)
 
     @torch.inference_mode()
@@ -1041,104 +960,29 @@ class XwinCoder(VLlmDecoder):
 """
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
-class OpenCodeInterpreterDecoder(DecoderBase):
+
+class OpenCodeInterpreterDecoder(VLlmDecoder):
     def __init__(self, name: str, **kwargs):
         super().__init__(name=name, **kwargs)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        kwargs = {}
-        kwargs["torch_dtype"] = torch.bfloat16
-        kwargs["device_map"] = "auto"
-        print("kwargs",kwargs)
         self.skip_special_tokens = True
-        self.tokenizer = AutoTokenizer.from_pretrained(name)
-        self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
-        self.max_new_tokens=1024
         self.eos += ["<|EOT|>"]
-        
-    def build_humaneval_instruction(self, prompt: str):
-        return '''You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
-
-@@ Instruction
-Here is the given code to do completion:
-```python
-{}
-```
-Please continue to complete the function with python programming language. You are not allowed to modify the given code and do the completion only. 
-
-Please return all completed codes in one code block. 
-This code block should be in the following format:
-```python
-# Your codes here
-```
-
-@@ Response
-'''.format(prompt)
-
-
-    def build_mbpp_instruction(self, prompt: str):
-        return '''You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
-
-@@ Instruction
-Here is the given problem and test examples:
-{}
-
-Please use the python programming language to solve this problem.
-Please make sure that your code includes the functions from the test samples and that the input and output formats of these functions match the test samples.
-
-Please return all completed codes in one code block. 
-This code block should be in the following format:
-```python
-# Your codes here
-```
-
-@@ Response
-'''.format(prompt)
-        
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        if self.temperature == 0:
-            assert not do_sample
-            assert num_samples == 1
-        
-        if self.dataset=="humaneval":
-            prompt=self.build_humaneval_instruction(prompt)
-        elif self.dataset=="mbpp":
-            prompt=self.build_mbpp_instruction(prompt)
+        prompt = f"""You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
 
-        inputs = self.tokenizer.apply_chat_template(
-            [{'role': 'user', 'content': prompt }],
-            return_tensors="pt"
-        ).to(self.model.device)
+@@ Instruction
+Here is a Python programming problem to solve:
+```python
+{prompt}
+```
+Please implement this function in a Python markdown code block starting with "```python" and follow the function/input/output formats.
 
-        kwargs = {}
-        if do_sample:
-            kwargs["top_p"] = 0.95
-            kwargs["temperature"] = self.temperature
+@@ Response
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
-        raw_outputs = self.model.generate(
-            inputs, 
-            max_new_tokens=self.max_new_tokens,
-            do_sample=do_sample,
-            pad_token_id=self.tokenizer.eos_token_id,
-            eos_token_id=self.tokenizer.eos_token_id,
-            **kwargs,
-        )  # remove warning
-        gen_seqs = raw_outputs[:, len(inputs[0]) :]
-        gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
-        )
-        outputs = []
-        # removes eos tokens.
-        for output in gen_strs:
-            min_index = 10000
-            for eos in self.eos:
-                if eos in output:
-                    # could be multiple eos in outputs, better pick minimum one
-                    min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index])
-        return outputs
 
 class CodeGemma(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
@@ -1162,36 +1006,42 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="Salesforce/codegen-2B-mono",
             temperature=temperature,
+            dtype="float16",
         )
     elif name == "codegen-6b":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Salesforce/codegen-6B-mono",
             temperature=temperature,
+            dtype="float16",
         )
     elif name == "codegen-16b":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Salesforce/codegen-16B-mono",
             temperature=temperature,
+            dtype="float16",
         )
     elif name == "codegen2-1b":
         return Codegen2Decoder(
             batch_size=batch_size,
             name="Salesforce/codegen2-1B",
             temperature=temperature,
+            trust_remote_code=True,
         )
     elif name == "codegen2-3b":
         return Codegen2Decoder(
             batch_size=batch_size,
             name="Salesforce/codegen2-3_7B",
             temperature=temperature,
+            trust_remote_code=True,
         )
     elif name == "codegen2-7b":
         return Codegen2Decoder(
             batch_size=batch_size,
             name="Salesforce/codegen2-7B",
             temperature=temperature,
+            trust_remote_code=True,
         )
     elif name == "codegen2-16b":
         warn(
@@ -1202,6 +1052,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="Salesforce/codegen2-16B",
             temperature=temperature,
+            trust_remote_code=True,
         )
     elif name == "polycoder":
         return HFTorchDecoder(
@@ -1211,7 +1062,10 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         )
     elif name == "santacoder":
         return SantaCoder(
-            batch_size=batch_size, name="bigcode/santacoder", temperature=temperature
+            batch_size=batch_size,
+            name="bigcode/santacoder",
+            temperature=temperature,
+            trust_remote_code=True,
         )
     elif name == "incoder-1b":
         return IncoderDecoder(
@@ -1367,6 +1221,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="WizardLM/WizardCoder-33B-V1.1",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif name == "wizardcoder-34b":
         return Alpaca(
@@ -1374,6 +1229,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="WizardLM/WizardCoder-Python-34B-V1.0",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif name == "wizardcoder-15b":
         return Alpaca(
@@ -1381,6 +1237,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="WizardLM/WizardCoder-15B-V1.0",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif name == "wizardcoder-7b":
         return Alpaca(
@@ -1388,12 +1245,14 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="WizardLM/WizardCoder-Python-7B-V1.0",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif name == "mistral-7b-codealpaca":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Nondzu/Mistral-7B-codealpaca-lora",
             temperature=temperature,
+            dtype="float16",
         )
     elif name == "zephyr-7b":
         return HFTorchDecoder(
@@ -1406,6 +1265,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="oobabooga/CodeBooga-34B-v0.1",
             temperature=temperature,
+            dtype="float16",
         )
     elif name == "code-13b":
         return Code(
@@ -1454,6 +1314,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="upstage/SOLAR-10.7B-Instruct-v1.0",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif name == "mistral-hermes-codepro-7b":
         return ChatML(
@@ -1467,6 +1328,8 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="microsoft/phi-2",
             temperature=temperature,
+            dtype="float16",
+            trust_remote_code=True,
         )
     elif name == "openchat":
         return OpenChat(
@@ -1481,6 +1344,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="uukuguy/speechless-codellama-34b-v2.0",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif name == "speechless-mistral-7b":
         return Alpaca(
@@ -1488,6 +1352,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="uukuguy/speechless-code-mistral-7b-v1.0",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif name == "speechless-coder-ds-6.7b":
         return Speechless(
@@ -1495,6 +1360,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="uukuguy/speechless-coder-ds-6.7b",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif name == "speechless-coding-7b-16k-tora":
         return Speechless(
@@ -1509,6 +1375,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="budecosystem/code-millenials-34b",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif name == "xdan-l1-chat":
         return Alpaca(
@@ -1522,6 +1389,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="stabilityai/stable-code-3b",
             temperature=temperature,
+            trust_remote_code=True,
         )
     elif name == "xwincoder-34b":
         return XwinCoder(
@@ -1542,6 +1410,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="whiterabbitneo/WhiteRabbitNeo-33B-v-1",
             temperature=temperature,
             conversational=True,
+            dtype="float16",
         )
     elif "codegemma" in name:
         pattern = re.compile(r"codegemma-(\d+)b")
@@ -1553,20 +1422,19 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
             conversational=True,
         )
-    elif "opencodeinterpreter" in name:
-        if "ds-6.7b" in name:
-            return OpenCodeInterpreterDecoder(
-                batch_size=batch_size,
-                name="m-a-p/OpenCodeInterpreter-DS-6.7B",
-                temperature=temperature,
-                conversational=True,
-            )
-        elif "ds-33b" in name:
-            return OpenCodeInterpreterDecoder(
-                batch_size=batch_size,
-                name="m-a-p/OpenCodeInterpreter-DS-33B",
-                temperature=temperature,
-                conversational=True,
-            )
+    elif name == "opencodeinterpreter-ds-6.7b":
+        return OpenCodeInterpreterDecoder(
+            batch_size=batch_size,
+            name="m-a-p/OpenCodeInterpreter-DS-6.7B",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "opencodeinterpreter-ds-33b":
+        return OpenCodeInterpreterDecoder(
+            batch_size=batch_size,
+            name="m-a-p/OpenCodeInterpreter-DS-33B",
+            temperature=temperature,
+            conversational=True,
+        )
 
     raise ValueError(f"Invalid model name: {name}")
