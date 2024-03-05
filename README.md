@@ -271,7 +271,7 @@ This tool will make the LLM-generated code more clean/compilable by doing certai
 # Set PYTHONPATH to run local Python files
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 
-# 💡 If you are storing codes in directories:
+# 💡 If you are storing codes in jsonl:
 python tools/sanitize.py --samples samples.jsonl --dataset [humaneval|mbpp]
 # Sanitized code will be produced to `samples-sanitized.jsonl`
 
