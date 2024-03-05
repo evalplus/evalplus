@@ -14,7 +14,19 @@ try:
 
     from evalplus.gen.util import anthropic_request
 except ImportError:
-    warn("Anthropic is not installed, some decoders will not work.")
+    warn(
+        "Anthropic is not installed, some decoders will not work. Consider `pip install anthropic`"
+    )
+
+# mistral.ai
+try:
+    from mistralai.client import MistralClient
+    from mistralai.models.chat_completion import ChatMessage
+except ImportError:
+    warn(
+        "MistralAI is not installed, some decoders will not work. Consider `pip install mistralai`"
+    )
+
 import torch
 from transformers import (
     AutoModelForCausalLM,
@@ -462,9 +474,7 @@ class OpenAIChatDecoder(DecoderBase):
     ) -> List[str]:
         if do_sample:
             assert self.temperature > 0, "Temperature must be positive for sampling"
-
         batch_size = min(self.batch_size, num_samples)
-        assert batch_size <= 20, "Use larger batch size could blow up the memory!"
 
         # construct prompt
         fmt = "json_object" if self.name == "gpt-4-1106-preview" else "text"
@@ -500,6 +510,44 @@ class OpenAIChatDecoder(DecoderBase):
                 except Exception as e:
                     print(e)
             outputs.append(content)
+
+        return outputs
+
+
+class MistralChatDecoder(DecoderBase):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.client = MistralClient(api_key=os.getenv("MISTRAL_API_KEY"))
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        kwargs = {}
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be positive for sampling"
+            kwargs["top_p"] = 0.95
+            kwargs["temperature"] = self.temperature
+        else:
+            self.temperature = 0
+
+        batch_size = min(self.batch_size, num_samples)
+
+        outputs = []
+        for _ in range(batch_size):
+            ret = self.client.chat(
+                model=self.name,
+                messages=[
+                    ChatMessage(
+                        role="user",
+                        content="Please generate code to solve the following problem in a Python markdown block:"
+                        + f"\n```python\n{prompt.strip()}\n```",
+                    )
+                ],
+                max_tokens=self.max_new_tokens,
+                **kwargs,
+            )
+
+            outputs.append(ret.choices[0].message.content)
 
         return outputs
 
@@ -1433,6 +1481,13 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return OpenCodeInterpreterDecoder(
             batch_size=batch_size,
             name="m-a-p/OpenCodeInterpreter-DS-33B",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "mistral-large-latest":
+        return MistralChatDecoder(
+            batch_size=batch_size,
+            name="mistral-large-latest",
             temperature=temperature,
             conversational=True,
         )
