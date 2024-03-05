@@ -357,6 +357,8 @@ class HFTorchDecoder(DecoderBase):
     def __init__(self, name: str, **kwargs):
         super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        kwargs = {}
         kwargs["device_map"] = "auto"
         kwargs["trust_remote_code"] = self.trust_remote_code
         # string to torch dtype
@@ -1009,7 +1011,7 @@ class XwinCoder(VLlmDecoder):
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
-class OpenCodeInterpreterDecoder(VLlmDecoder):
+class OpenCodeInterpreterDecoder(HFTorchDecoder):
     def __init__(self, name: str, **kwargs):
         super().__init__(name=name, **kwargs)
         self.skip_special_tokens = True
@@ -1029,7 +1031,7 @@ Please implement this function in a Python markdown code block starting with "``
 
 @@ Response
 """
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+        return HFTorchDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
 class CodeGemma(VLlmDecoder):
