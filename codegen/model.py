@@ -152,6 +152,8 @@ class VLlmDecoder(DecoderBase):
             kwargs["dtype"] = "bfloat16"
         elif "python-code" in name:
             kwargs["dtype"] = "bfloat16"
+        elif "bigcode/starcoder2-15b" == name:
+            kwargs["dtype"] = "bfloat16"
 
         self.llm = LLM(model=name, max_model_len=2048, **kwargs)
 
@@ -1138,6 +1140,22 @@ This code block should be in the following format:
             outputs.append(output[:min_index])
         return outputs
 
+class CodeGemma(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""### Instruction
+{prompt}
+### Response
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     if name == "codegen-2b":
         return HFTorchDecoder(
@@ -1232,6 +1250,17 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
     elif name == "gpt-j":
         return HFTorchDecoder(
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
+        )
+    elif name.startswith("starcoder"):
+        import re
+
+        pattern = re.compile(r"starcoder2-(\d+)b")
+        matches = pattern.findall(name)
+        nb = int(matches[0])
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name=f"bigcode/starcoder2-{nb}b",
+            temperature=temperature,
         )
     elif name.startswith("starcoder"):
         return StarCoderInfill(
@@ -1511,6 +1540,16 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return WhiteRabbitNeo(
             batch_size=batch_size,
             name="whiterabbitneo/WhiteRabbitNeo-33B-v-1",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif "codegemma" in name:
+        pattern = re.compile(r"codegemma-(\d+)b")
+        matches = pattern.findall(name)
+        nb = int(matches[0])
+        return CodeGemma(
+            batch_size=batch_size,
+            name=f"TechxGenus/CodeGemma-{nb}b",
             temperature=temperature,
             conversational=True,
         )
