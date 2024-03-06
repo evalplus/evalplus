@@ -1178,22 +1178,16 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
         )
-    elif name == "starcoder2":
+    elif name == "starcoder2_15b_oci":
         return VLlmDecoder(
             batch_size=batch_size,
-            name="bigcode/starcoder2-15b",
+            name="TokenBender/starcoder2_15B_OCI",
             temperature=temperature,
+            dtype="float16",
         )
-    elif name.startswith("starcoder"):
-        import re
-
-        pattern = re.compile(r"starcoder2-(\d+)b")
-        matches = pattern.findall(name)
-        nb = int(matches[0])
+    elif name.startswith("starcoder2"):
         return VLlmDecoder(
-            batch_size=batch_size,
-            name=f"bigcode/starcoder2-{nb}b",
-            temperature=temperature,
+            batch_size=batch_size, name=f"bigcode/{name}", temperature=temperature
         )
     elif name.startswith("starcoder"):
         return StarCoderInfill(
@@ -1544,13 +1538,6 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="ajibawa-2023/OpenHermes-2.5-Code-290k-13B",
             temperature=temperature,
             conversational=True,
-        )
-    elif name == "starcoder2_15b_oci":
-        return VLlmDecoder(
-            batch_size=batch_size,
-            name="TokenBender/starcoder2_15B_OCI",
-            temperature=temperature,
-            dtype="float16",
         )
 
     raise ValueError(f"Invalid model name: {name}")
