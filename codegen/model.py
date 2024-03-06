@@ -1178,7 +1178,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return HFTorchDecoder(
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
         )
-    elif name == "starcoder2_15b_oci":
+    elif name == "starcoder2-15b-oci":
         return VLlmDecoder(
             batch_size=batch_size,
             name="TokenBender/starcoder2_15B_OCI",
