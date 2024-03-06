@@ -2,3 +2,5 @@ openai
 rich
 accelerate
 vllm
+anthropic
+mistralai

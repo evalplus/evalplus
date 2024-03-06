@@ -1,6 +1,5 @@
 import signal
 import time
-from typing import Dict
 
 import openai
 from openai.types.chat import ChatCompletion
