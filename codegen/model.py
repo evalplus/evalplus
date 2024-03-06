@@ -1148,7 +1148,12 @@ class CodeGemma(VLlmDecoder):
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
-def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
+def make_model(
+    name: str,
+    batch_size: int = 1,
+    temperature: float = 0.8,
+    prompt_method: str = "basic",
+):
     if name == "codegen-2b":
         return HFTorchDecoder(
             batch_size=batch_size,
