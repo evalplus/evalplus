@@ -824,6 +824,8 @@ class Speechless(HFTorchDecoder):
             self.extra_eos = ["</s>"]
         elif "uukuguy/speechless-coder-ds-6.7b" == name:
             self.extra_eos = ["<｜end▁of▁sentence｜>"]
+        elif "uukuguy/speechless-sparsetral-mistral-16x7b-MoE" == name:
+            self.extra_eos = ["</s>"]
         else:
             raise ValueError(f"Invalid model name: {name}")
         self.eos = self.eos + self.extra_eos
@@ -1453,6 +1455,13 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
         return Speechless(
             batch_size=batch_size,
             name="uukuguy/speechless-coding-7b-16k-tora",
+            temperature=temperature,
+            conversational=True,
+        )
+    elif name == "speechless-sparsetral-16x7b-moe":
+        return Speechless(
+            batch_size=batch_size,
+            name="uukuguy/speechless-sparsetral-16x7b-MoE",
             temperature=temperature,
             conversational=True,
         )
