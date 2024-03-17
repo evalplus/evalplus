@@ -43,7 +43,7 @@ except ImportError:
 
 from evalplus.gen.util import openai_request
 
-EOS = ["<|endoftext|>", "<|endofmask|>", "</s>"]
+EOS = ["<|endoftext|>", "<|endofmask|>", "</s>", "\nif __name__", "\ndef main("]
 
 
 # Adopted from https://github.com/huggingface/transformers/pull/14897
@@ -761,62 +761,6 @@ class SantaCoder(HFTorchDecoder):
         return outputs
 
 
-class StarCoderInfill(HFTorchDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        super().__init__(name, **kwargs)
-        self.prefix_token = "<fim_prefix>"
-        self.suffix_token = "<fim_suffix><fim_middle>"
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if self.temperature == 0:
-            assert not do_sample
-            assert num_samples == 1
-
-        input = self.prefix_token + prompt + self.suffix_token
-        input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
-        scores = StoppingCriteriaList(
-            [
-                EndOfFunctionCriteria(
-                    start_length=len(input_tokens[0]),
-                    eos=self.eos,
-                    tokenizer=self.tokenizer,
-                )
-            ]
-        )
-
-        kwargs = {}
-        if do_sample:
-            kwargs["top_p"] = 0.95
-            kwargs["temperature"] = max(self.temperature, 1e-2)
-
-        raw_outputs = self.model.generate(
-            input_tokens,
-            max_new_tokens=self.max_new_tokens,
-            stopping_criteria=scores,
-            do_sample=do_sample,
-            num_return_sequences=min(self.batch_size, num_samples),
-            output_scores=True,
-            return_dict_in_generate=True,
-            repetition_penalty=1.0,
-            pad_token_id=self.tokenizer.eos_token_id,
-        )
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
-        gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
-        )
-        outputs = []
-        # removes eos tokens.
-        for output in gen_strs:
-            min_index = 10000
-            for eos in self.eos:
-                if eos in output:
-                    min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index])
-        return outputs
-
-
 class Speechless(HFTorchDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
@@ -1156,18 +1100,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
         )
     elif name.startswith("starcoder"):
-        import re
-
-        pattern = re.compile(r"starcoder2-(\d+)b")
-        matches = pattern.findall(name)
-        nb = int(matches[0])
         return VLlmDecoder(
-            batch_size=batch_size,
-            name=f"bigcode/starcoder2-{nb}b",
-            temperature=temperature,
-        )
-    elif name.startswith("starcoder"):
-        return StarCoderInfill(
             batch_size=batch_size, name=f"bigcode/{name}", temperature=temperature
         )
     elif name == "codet5p-2b":
