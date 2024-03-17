@@ -14,76 +14,34 @@ try:
 
     from evalplus.gen.util import anthropic_request
 except ImportError:
-    warn(
-        "Anthropic is not installed, some decoders will not work. Consider `pip install anthropic`"
-    )
+    warn("Anthropic decoder will not work. Fix by `pip install anthropic`")
 
 # mistral.ai
 try:
     from mistralai.client import MistralClient
     from mistralai.models.chat_completion import ChatMessage
 except ImportError:
-    warn(
-        "MistralAI is not installed, some decoders will not work. Consider `pip install mistralai`"
-    )
+    warn("MistralAI decoder will not work. Fix by `pip install mistralai`")
 
 import torch
-from transformers import (
-    AutoModelForCausalLM,
-    AutoModelForSeq2SeqLM,
-    AutoTokenizer,
-    StoppingCriteria,
-    StoppingCriteriaList,
-)
+from stop_sequencer import StopSequencer
+from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer
 
 try:
     from vllm import LLM, SamplingParams
 except ImportError:
-    warn("VLLM is not installed, some decoders will not work.")
+    warn("VLLM decoder will not work. Fix by `pip install vllm`")
 
 from evalplus.gen.util import openai_request
 
-EOS = ["<|endoftext|>", "<|endofmask|>", "</s>", "\nif __name__", "\ndef main("]
-
-
-# Adopted from https://github.com/huggingface/transformers/pull/14897
-class EndOfFunctionCriteria(StoppingCriteria):
-    def __init__(self, start_length, eos, tokenizer, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.start_length = start_length
-        self.eos = eos
-        self.tokenizer = tokenizer
-        self.end_length = {}
-
-    def __call__(self, input_ids, scores, **kwargs):
-        """Returns true if all generated sequences contain any of the end-of-function strings."""
-        decoded_generations = self.tokenizer.batch_decode(
-            input_ids[:, self.start_length :]
-        )
-        done = []
-        for index, decoded_generation in enumerate(decoded_generations):
-            finished = any(
-                [stop_string in decoded_generation for stop_string in self.eos]
-            )
-            if (
-                finished and index not in self.end_length
-            ):  # ensures first time we see it
-                for stop_string in self.eos:
-                    if stop_string in decoded_generation:
-                        self.end_length[index] = len(
-                            input_ids[
-                                index,  # get length of actual generation
-                                self.start_length : -len(
-                                    self.tokenizer.encode(
-                                        stop_string,
-                                        add_special_tokens=False,
-                                        return_tensors="pt",
-                                    )[0]
-                                ),
-                            ]
-                        )
-            done.append(finished)
-        return all(done)
+EOS = [
+    "<|endoftext|>",
+    "<|endofmask|>",
+    "</s>",
+    "\nif __name__",
+    "\ndef main(",
+    "\nprint(",
+]
 
 
 class DecoderBase(ABC):
@@ -93,10 +51,10 @@ class DecoderBase(ABC):
         batch_size: int = 1,
         temperature: float = 0.8,
         max_new_tokens: int = 512,
-        conversational: bool = False,
-        max_conversational_new_tokens: int = 1024,
+        direct_completion: bool = True,
         dtype: str = "bfloat16",  # default
         trust_remote_code: bool = False,
+        dataset: str = None,
     ) -> None:
         print("Initializing a decoder model: {} ...".format(name))
         self.name = name
@@ -104,12 +62,16 @@ class DecoderBase(ABC):
         self.temperature = temperature
         self.eos = EOS
         self.skip_special_tokens = False
-        self.max_new_tokens = (
-            max_conversational_new_tokens if conversational else max_new_tokens
-        )
-        self.conversational = conversational
+        self.max_new_tokens = max_new_tokens
+        self.direct_completion = direct_completion
         self.dtype = dtype
         self.trust_remote_code = trust_remote_code
+
+        if direct_completion:
+            if dataset.lower() == "humaneval":
+                self.eos += ["\ndef ", "\nclass ", "\nimport ", "\nfrom ", "\nassert "]
+            elif dataset.lower() == "mbpp":
+                self.eos += ['\n"""', "\nassert"]
 
     @abstractmethod
     def codegen(
@@ -161,7 +123,7 @@ class VLlmDecoder(DecoderBase):
 # chatml format
 class ChatML(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -187,7 +149,7 @@ Can you complete the following Python function?
 
 class CodeLlamaInstruct70B(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -217,7 +179,7 @@ class CodeLlamaInstruct70B(VLlmDecoder):
 
 class CodeLlamaInstructSmall(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -241,7 +203,7 @@ class CodeLlamaInstructSmall(VLlmDecoder):
 # zyte format
 class Zyte(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -265,7 +227,7 @@ class Zyte(VLlmDecoder):
 
 class OpenChat(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -311,7 +273,7 @@ Sure!
 
 class Alpaca(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -333,7 +295,7 @@ Create a Python script for this problem:
 
 class WhiteRabbitNeo(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -382,34 +344,34 @@ class HFTorchDecoder(DecoderBase):
         input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
             self.device
         )
-        scores = StoppingCriteriaList(
-            [
-                EndOfFunctionCriteria(
-                    start_length=len(input_tokens[0]),
-                    eos=self.eos,
-                    tokenizer=self.tokenizer,
-                )
-            ]
-        )
         kwargs = {}
         if do_sample:
             kwargs["top_p"] = 0.95
             kwargs["temperature"] = self.temperature
 
-        raw_outputs = self.model.generate(
+        stop_sequencer = StopSequencer(
+            self.model,
+            model_type="causal",  # or seq2seq
+            tokenizer=self.tokenizer,
+        )
+
+        model = stop_sequencer.register_stop_texts(
+            stop_texts=self.eos,
+            input_length=input_tokens.size(-1),
+        )
+
+        outputs = model.generate(
             input_tokens,
             max_new_tokens=self.max_new_tokens,
-            stopping_criteria=scores,
             do_sample=do_sample,
-            output_scores=True,
-            return_dict_in_generate=True,
             num_return_sequences=min(self.batch_size, num_samples),
             pad_token_id=self.tokenizer.eos_token_id,
             **kwargs,
-        )  # remove warning
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
+        )
+
         gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
+            outputs[:, input_tokens.size(-1) :],
+            skip_special_tokens=self.skip_special_tokens,
         )
         outputs = []
         # removes eos tokens.
@@ -417,15 +379,14 @@ class HFTorchDecoder(DecoderBase):
             min_index = 10000
             for eos in self.eos:
                 if eos in output:
-                    # could be multiple eos in outputs, better pick minimum one
                     min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index])
+            outputs.append(output[:min_index].replace("\t", "    "))
         return outputs
 
 
 class DeepSeekInstruct(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -447,7 +408,7 @@ Please complete the following Python function in a markdown style code block:
 
 class Magicoder(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -612,41 +573,7 @@ class IncoderDecoder(HFTorchDecoder):
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
         input = prompt + self.infill_ph + self.extra_end
-        input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
-        scores = StoppingCriteriaList(
-            [
-                EndOfFunctionCriteria(
-                    start_length=len(input_tokens[0]),
-                    eos=self.eos,
-                    tokenizer=self.tokenizer,
-                )
-            ]
-        )
-        raw_outputs = self.model.generate(
-            input_tokens,
-            max_new_tokens=self.max_new_tokens,
-            stopping_criteria=scores,
-            do_sample=do_sample,
-            top_p=0.95,
-            top_k=None,
-            temperature=self.temperature,
-            num_return_sequences=min(self.batch_size, num_samples),
-            output_scores=True,
-            return_dict_in_generate=True,
-        )
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
-        gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
-        )
-        outputs = []
-        # removes eos tokens.
-        for output in gen_strs:
-            min_index = 10000
-            for eos in self.eos:
-                if eos in output:
-                    min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index])
-        return outputs
+        return HFTorchDecoder.codegen(self, input, do_sample, num_samples)
 
 
 class Codegen2Decoder(HFTorchDecoder):
@@ -662,103 +589,8 @@ class Codegen2Decoder(HFTorchDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        if self.temperature == 0:
-            assert not do_sample
-            assert num_samples == 1
-
         input = prompt + self.infill_ph + self.extra_end
-        input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
-        scores = StoppingCriteriaList(
-            [
-                EndOfFunctionCriteria(
-                    start_length=len(input_tokens[0]),
-                    eos=self.eos,
-                    tokenizer=self.tokenizer,
-                )
-            ]
-        )
-        raw_outputs = self.model.generate(
-            input_tokens,
-            max_new_tokens=self.max_new_tokens,
-            stopping_criteria=scores,
-            do_sample=do_sample,
-            top_p=0.95,
-            top_k=None,
-            temperature=self.temperature,
-            output_scores=True,
-            return_dict_in_generate=True,
-            num_return_sequences=min(self.batch_size, num_samples),
-            pad_token_id=self.tokenizer.eos_token_id,
-        )
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
-        gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
-        )
-        outputs = []
-        # removes eos tokens.
-        for output in gen_strs:
-            min_index = 10000
-            for eos in self.eos:
-                if eos in output:
-                    min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index])
-        return outputs
-
-
-class SantaCoder(HFTorchDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        super().__init__(name, **kwargs)
-        self.prefix_token = "<fim-prefix>"
-        self.suffix_token = "<fim-suffix>\n<fim-middle>"
-        self.extra_eos = ["<|endofmask|>"]
-        self.eos = self.eos + self.extra_eos
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if self.temperature == 0:
-            assert not do_sample
-            assert num_samples == 1
-
-        input = self.prefix_token + prompt + self.suffix_token
-        input_tokens = self.tokenizer.encode(input, return_tensors="pt").to(self.device)
-        scores = StoppingCriteriaList(
-            [
-                EndOfFunctionCriteria(
-                    start_length=len(input_tokens[0]),
-                    eos=self.eos,
-                    tokenizer=self.tokenizer,
-                )
-            ]
-        )
-        raw_outputs = self.model.generate(
-            input_tokens,
-            max_new_tokens=self.max_new_tokens,
-            stopping_criteria=scores,
-            do_sample=do_sample,
-            top_p=0.95,
-            top_k=None,
-            temperature=self.temperature,
-            num_return_sequences=min(self.batch_size, num_samples),
-            output_scores=True,
-            return_dict_in_generate=True,
-            pad_token_id=self.tokenizer.eos_token_id,
-        )
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
-        gen_strs = self.tokenizer.batch_decode(
-            gen_seqs,
-            skip_special_tokens=self.skip_special_tokens,
-            truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"],
-        )
-        outputs = []
-        # removes eos tokens.
-        for output in gen_strs:
-            min_index = 10000
-            for eos in self.eos:
-                if eos in output:
-                    min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index])
-        return outputs
+        return HFTorchDecoder.codegen(self, input, do_sample, num_samples)
 
 
 class Speechless(HFTorchDecoder):
@@ -771,56 +603,6 @@ class Speechless(HFTorchDecoder):
         else:
             raise ValueError(f"Invalid model name: {name}")
         self.eos = self.eos + self.extra_eos
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if self.temperature == 0:
-            assert not do_sample
-            assert num_samples == 1
-
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
-            self.device
-        )
-        scores = StoppingCriteriaList(
-            [
-                EndOfFunctionCriteria(
-                    start_length=len(input_tokens[0]),
-                    eos=self.eos,
-                    tokenizer=self.tokenizer,
-                )
-            ]
-        )
-        kwargs = {}
-        if do_sample:
-            kwargs["top_p"] = 0.95
-            kwargs["temperature"] = self.temperature
-
-        raw_outputs = self.model.generate(
-            input_tokens,
-            max_new_tokens=self.max_new_tokens,
-            stopping_criteria=scores,
-            do_sample=do_sample,
-            output_scores=True,
-            return_dict_in_generate=True,
-            num_return_sequences=min(self.batch_size, num_samples),
-            pad_token_id=self.tokenizer.eos_token_id,
-            **kwargs,
-        )  # remove warning
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
-        gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
-        )
-        outputs = []
-        # removes eos tokens.
-        for output in gen_strs:
-            min_index = 10000
-            for eos in self.eos:
-                if eos in output:
-                    # could be multiple eos in outputs, better pick minimum one
-                    min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index])
-        return outputs
 
 
 class CodeT5P(DecoderBase):
@@ -849,71 +631,13 @@ class CodeT5P(DecoderBase):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        if self.temperature == 0:
-            assert not do_sample
-            assert num_samples == 1
-
         prompt = prompt.replace("    ", "\t")
-        input_tokens = self.tokenizer(prompt, return_tensors="pt").to(self.device)
-        scores = StoppingCriteriaList(
-            [
-                EndOfFunctionCriteria(
-                    start_length=len(input_tokens[0]),
-                    eos=self.eos,
-                    tokenizer=self.tokenizer,
-                )
-            ]
-        )
-        max_new_tokens = self.max_new_tokens
-
-        while max_new_tokens > 0:
-            try:
-                raw_outputs = self.model.generate(
-                    **input_tokens,
-                    decoder_input_ids=input_tokens["input_ids"],
-                    max_new_tokens=max_new_tokens,
-                    stopping_criteria=scores,
-                    do_sample=do_sample,
-                    top_p=0.95,
-                    top_k=None,
-                    temperature=self.temperature,
-                    output_scores=True,
-                    return_dict_in_generate=True,
-                    num_return_sequences=min(self.batch_size, num_samples),
-                    pad_token_id=self.tokenizer.eos_token_id,
-                    decoder_start_token_id=self.tokenizer.pad_token_id,
-                )  # remove warning
-            except RuntimeError as e:  # catch torch OOM
-                if "CUDA out of memory" in str(e):
-                    old_max_new_tokens = max_new_tokens
-                    max_new_tokens = int(max_new_tokens * 0.8)
-                    print(
-                        f"OOM, reducing max_new_tokens from {old_max_new_tokens} to {max_new_tokens}"
-                    )
-                    continue
-                else:
-                    raise e
-
-            break
-        gen_seqs = raw_outputs.sequences[:, len(input_tokens[0]) :]
-        gen_strs = self.tokenizer.batch_decode(
-            gen_seqs, skip_special_tokens=self.skip_special_tokens
-        )
-        outputs = []
-        # removes eos tokens.
-        for output in gen_strs:
-            min_index = 10000
-            for eos in self.eos:
-                if eos in output:
-                    # could be multiple eos in outputs, better pick minimum one
-                    min_index = min(min_index, output.index(eos))
-            outputs.append(output[:min_index].replace("\t", "    "))
-        return outputs
+        return HFTorchDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
 class Code(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -937,7 +661,7 @@ ASSISTANT:
 
 class XwinCoder(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -980,7 +704,7 @@ Please implement this function in a Python markdown code block starting with "``
 
 class CodeGemma(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -994,13 +718,16 @@ class CodeGemma(VLlmDecoder):
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
-def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
+def make_model(
+    name: str, batch_size: int = 1, temperature: float = 0.8, dataset: str = None
+):
     if name == "codegen-2b":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="Salesforce/codegen-2B-mono",
             temperature=temperature,
             dtype="float16",
+            dataset=dataset,
         )
     elif name == "codegen-6b":
         return HFTorchDecoder(
@@ -1008,6 +735,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="Salesforce/codegen-6B-mono",
             temperature=temperature,
             dtype="float16",
+            dataset=dataset,
         )
     elif name == "codegen-16b":
         return HFTorchDecoder(
@@ -1015,6 +743,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="Salesforce/codegen-16B-mono",
             temperature=temperature,
             dtype="float16",
+            dataset=dataset,
         )
     elif name == "codegen2-1b":
         return Codegen2Decoder(
@@ -1022,6 +751,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="Salesforce/codegen2-1B",
             temperature=temperature,
             trust_remote_code=True,
+            dataset=dataset,
         )
     elif name == "codegen2-3b":
         return Codegen2Decoder(
@@ -1029,6 +759,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="Salesforce/codegen2-3_7B",
             temperature=temperature,
             trust_remote_code=True,
+            dataset=dataset,
         )
     elif name == "codegen2-7b":
         return Codegen2Decoder(
@@ -1036,6 +767,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="Salesforce/codegen2-7B",
             temperature=temperature,
             trust_remote_code=True,
+            dataset=dataset,
         )
     elif name == "codegen2-16b":
         warn(
@@ -1047,79 +779,100 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="Salesforce/codegen2-16B",
             temperature=temperature,
             trust_remote_code=True,
+            dataset=dataset,
         )
     elif name == "polycoder":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="NinedayWang/PolyCoder-2.7B",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "santacoder":
-        return SantaCoder(
+        return VLlmDecoder(
             batch_size=batch_size,
             name="bigcode/santacoder",
             temperature=temperature,
             trust_remote_code=True,
+            dataset=dataset,
         )
     elif name == "incoder-1b":
         return IncoderDecoder(
-            batch_size=batch_size, name="facebook/incoder-1B", temperature=temperature
+            batch_size=batch_size,
+            name="facebook/incoder-1B",
+            temperature=temperature,
+            dataset=dataset,
         )
     elif name == "incoder-6b":
         return IncoderDecoder(
-            batch_size=batch_size, name="facebook/incoder-6B", temperature=temperature
+            batch_size=batch_size,
+            name="facebook/incoder-6B",
+            temperature=temperature,
+            dataset=dataset,
         )
     elif name == "stablelm-7b":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="StabilityAI/stablelm-base-alpha-7b",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name.startswith("gpt-3.5-") or name.startswith("gpt-4-"):
         return OpenAIChatDecoder(
             batch_size=batch_size,
             name=name,
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name.startswith("claude"):
         return AnthropicMessageDecoder(
             batch_size=batch_size,
             name=name,
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
+            dataset=dataset,
         )
     elif name == "gptneo-2b":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="EleutherAI/gpt-neo-2.7B",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "gpt-j":
         return HFTorchDecoder(
-            batch_size=batch_size, name="EleutherAI/gpt-j-6B", temperature=temperature
+            batch_size=batch_size,
+            name="EleutherAI/gpt-j-6B",
+            temperature=temperature,
+            dataset=dataset,
         )
     elif name.startswith("starcoder"):
-        return VLlmDecoder(
-            batch_size=batch_size, name=f"bigcode/{name}", temperature=temperature
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name=f"bigcode/{name}",
+            temperature=temperature,
+            dataset=dataset,
         )
     elif name == "codet5p-2b":
         return CodeT5P(
             batch_size=batch_size,
             name="Salesforce/codet5p-2b",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "codet5p-6b":
         return CodeT5P(
             batch_size=batch_size,
             name="Salesforce/codet5p-6b",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "codet5p-16b":
         return CodeT5P(
             batch_size=batch_size,
             name="Salesforce/codet5p-16b",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name.startswith("code-llama-"):
         if name.endswith("instruct"):
@@ -1130,14 +883,14 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                     batch_size=batch_size,
                     name=f"codellama/CodeLlama-70B-Instruct-hf",
                     temperature=temperature,
-                    conversational=True,
+                    direct_completion=False,
                 )
             else:
                 return CodeLlamaInstructSmall(
                     batch_size=batch_size,
                     name=f"codellama/CodeLlama-{nb}-Instruct-hf",
                     temperature=temperature,
-                    conversational=True,
+                    direct_completion=False,
                 )
         assert name.endswith("b")
         nb = name.split("-")[-1]
@@ -1148,6 +901,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 batch_size=batch_size,
                 name=f"codellama/CodeLlama-{nb}-hf",
                 temperature=temperature,
+                dataset=dataset,
             )
 
         # Python only
@@ -1155,6 +909,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name=f"codellama/CodeLlama-{nb}-Python-hf",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name.startswith("deepseek-coder"):
         import re
@@ -1174,7 +929,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 batch_size=batch_size,
                 name=f"deepseek-ai/deepseek-coder-{nb}b-instruct{version_suffix}",
                 temperature=temperature,
-                conversational=True,
+                direct_completion=False,
             )
         else:
             version = matches[1].split("-")[-1]
@@ -1183,27 +938,28 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
                 batch_size=batch_size,
                 name=f"deepseek-ai/deepseek-coder-{nb}b-base{version_suffix}",
                 temperature=temperature,
+                dataset=dataset,
             )
     elif name == "magicoder-s-ds-6.7b":
         return Magicoder(
             batch_size=batch_size,
             name="ise-uiuc/Magicoder-S-DS-6.7B",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name == "magicoder-s-cl-7b":
         return Magicoder(
             batch_size=batch_size,
             name="ise-uiuc/Magicoder-S-CL-7B",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name == "wizardcoder-33b-v1.1":
         return Alpaca(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-33B-V1.1",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif name == "wizardcoder-34b":
@@ -1211,7 +967,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="WizardLM/WizardCoder-Python-34B-V1.0",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif name == "wizardcoder-15b":
@@ -1219,7 +975,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="WizardLM/WizardCoder-15B-V1.0",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif name == "wizardcoder-7b":
@@ -1227,7 +983,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="WizardLM/WizardCoder-Python-7B-V1.0",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif name == "mistral-7b-codealpaca":
@@ -1236,12 +992,14 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="Nondzu/Mistral-7B-codealpaca-lora",
             temperature=temperature,
             dtype="float16",
+            dataset=dataset,
         )
     elif name == "zephyr-7b":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="HuggingFaceH4/zephyr-7b-beta",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "codebooga-34b":
         return HFTorchDecoder(
@@ -1249,40 +1007,49 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="oobabooga/CodeBooga-34B-v0.1",
             temperature=temperature,
             dtype="float16",
+            dataset=dataset,
         )
     elif name == "code-13b":
         return Code(
-            batch_size=batch_size, name="ajibawa-2023/Code-13B", temperature=temperature
+            batch_size=batch_size,
+            name="ajibawa-2023/Code-13B",
+            temperature=temperature,
+            dataset=dataset,
         )
     elif name == "code-33b":
         return Code(
             batch_size=batch_size,
             name="ajibawa-2023/Code-33B",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "phind-code-llama-34b-v2":
         return VLlmDecoder(
             batch_size=batch_size,
             name="Phind/Phind-CodeLlama-34B-v2",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "python-code-33b":
         return Code(
             batch_size=batch_size,
             name="ajibawa-2023/Python-Code-33B",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "python-code-13b":
         return Code(
             batch_size=batch_size,
             name="ajibawa-2023/Python-Code-13B",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "mistral-7b":
         return HFTorchDecoder(
             batch_size=batch_size,
             name="mistralai/Mistral-7B-v0.1",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "dolphin-2.6":
         return ChatML(
@@ -1296,7 +1063,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="upstage/SOLAR-10.7B-Instruct-v1.0",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif name == "mistral-hermes-codepro-7b":
@@ -1313,20 +1080,21 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             temperature=temperature,
             dtype="float16",
             trust_remote_code=True,
+            dataset=dataset,
         )
     elif name == "openchat":
         return OpenChat(
             batch_size=batch_size,
             name="openchat/openchat-3.5-0106",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name == "speechless-codellama-34b":
         return Alpaca(
             batch_size=batch_size,
             name="uukuguy/speechless-codellama-34b-v2.0",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif name == "speechless-mistral-7b":
@@ -1334,7 +1102,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="uukuguy/speechless-code-mistral-7b-v1.0",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif name == "speechless-coder-ds-6.7b":
@@ -1342,7 +1110,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="uukuguy/speechless-coder-ds-6.7b",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif name == "speechless-coding-7b-16k-tora":
@@ -1350,14 +1118,14 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="uukuguy/speechless-coding-7b-16k-tora",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name == "code-millenials-34b":
         return Alpaca(
             batch_size=batch_size,
             name="budecosystem/code-millenials-34b",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif name == "xdan-l1-chat":
@@ -1365,7 +1133,7 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name="xDAN-AI/xDAN-L1-Chat-dpo-qlora-v1",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name == "stable-code-3b":
         return HFTorchDecoder(
@@ -1373,26 +1141,28 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             name="stabilityai/stable-code-3b",
             temperature=temperature,
             trust_remote_code=True,
+            dataset=dataset,
         )
     elif name == "xwincoder-34b":
         return XwinCoder(
             batch_size=batch_size,
             name="Xwin-LM/XwinCoder-34B",
             temperature=temperature,
+            dataset=dataset,
         )
     elif name == "zyte-1b":
         return Zyte(
             batch_size=batch_size,
             name="aihub-app/zyte-1B",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name == "white-rabbit-neo-33b-v1":
         return WhiteRabbitNeo(
             batch_size=batch_size,
             name="whiterabbitneo/WhiteRabbitNeo-33B-v-1",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             dtype="float16",
         )
     elif "codegemma" in name:
@@ -1403,28 +1173,28 @@ def make_model(name: str, batch_size: int = 1, temperature: float = 0.8):
             batch_size=batch_size,
             name=f"TechxGenus/CodeGemma-{nb}b",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name == "opencodeinterpreter-ds-6.7b":
         return OpenCodeInterpreterDecoder(
             batch_size=batch_size,
             name="m-a-p/OpenCodeInterpreter-DS-6.7B",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name == "opencodeinterpreter-ds-33b":
         return OpenCodeInterpreterDecoder(
             batch_size=batch_size,
             name="m-a-p/OpenCodeInterpreter-DS-33B",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
     elif name == "mistral-large-latest":
         return MistralChatDecoder(
             batch_size=batch_size,
             name="mistral-large-latest",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
 
     raise ValueError(f"Invalid model name: {name}")
