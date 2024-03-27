@@ -156,7 +156,7 @@ def unsafe_execute(
 
                         if dataset == "humaneval":
                             if "find_zero" == entry_point:
-                                assert _poly(*out, inp) <= atol
+                                assert _poly(*inp, out) <= atol
                         # ============== special oracles ================= #
                         # ================================================ #
 

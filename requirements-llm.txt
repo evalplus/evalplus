@@ -4,3 +4,4 @@ accelerate
 vllm
 anthropic
 mistralai
+stop-sequencer
