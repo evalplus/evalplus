@@ -1264,7 +1264,31 @@ def make_model(
             batch_size=batch_size,
             name="ajibawa-2023/OpenHermes-2.5-Code-290k-13B",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
         )
+    elif "gemma" in name:
+        import re
+
+        pattern = re.compile(r"gemma-(\d+)b(-it)?")
+        matches = pattern.findall(name)
+        nb = float(matches[0])
+        if nb.is_integer():
+            nb = int(nb)
+        if "it" in name:
+            return Alpaca(
+                batch_size=batch_size,
+                name=f"google/gemma-{nb}b-it",
+                temperature=temperature,
+                direct_completion=False,
+                dtype="float16",
+            )
+        else:
+            return VLlmDecoder(
+                batch_size=batch_size,
+                name=f"goolge/gemma-{nb}b",
+                temperature=temperature,
+                dataset=dataset,
+                direct_completion=True,
+            )
 
     raise ValueError(f"Invalid model name: {name}")
