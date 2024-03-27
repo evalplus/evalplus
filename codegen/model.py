@@ -743,6 +743,22 @@ ASSISTANT:```python"""
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
+class GemmaInstruct(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["<end_of_turn>"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""\
+<start_of_turn>user
+{prompt}<end_of_turn>
+<start_of_turn>model"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 def make_model(
     name: str, batch_size: int = 1, temperature: float = 0.8, dataset: str = None
 ):
@@ -1276,7 +1292,7 @@ def make_model(
         if nb.is_integer():
             nb = int(nb)
         if "it" in name:
-            return Alpaca(
+            return GemmaInstruct(
                 batch_size=batch_size,
                 name=f"google/gemma-{nb}b-it",
                 temperature=temperature,
