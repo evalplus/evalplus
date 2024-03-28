@@ -83,7 +83,7 @@ def main():
     )
     parser.add_argument("--chatgpt_len", required=True, type=int)
     parser.add_argument("--mut_len", required=True, type=int)
-    parser.add_argument("--output", type=int, help="Output .jsonl path")
+    parser.add_argument("--output", type=str, help="Output .jsonl path")
     args = parser.parse_args()
 
     problems = None
@@ -100,7 +100,7 @@ def main():
         problems = get_mbpp_plus(err_incomplete=False)
         args.output = args.output or "MbppPlusInput.jsonl"
 
-    assert os.path.isfile(args.output), f"{args.output} already exists!"
+    assert not os.path.isfile(args.output), f"{args.output} already exists!"
     input_generation(args, problems)
 
 
