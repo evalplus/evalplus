@@ -195,6 +195,7 @@ def evaluate(flags):
                     flags.gt_time_limit_factor,
                 )
                 futures.append(executor.submit(check_correctness, *args))
+                print(check_correctness(flags.dataset))
                 completion_id[task_id] += 1
                 n_samples += 1
 
