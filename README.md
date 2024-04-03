@@ -225,7 +225,7 @@ To use these tools, please first install the repository from GitHub:
 ```bash
 git clone https://github.com/evalplus/evalplus.git
 cd evalplus
-pip install -r requirements-tools.txt
+pip install -r tools/requirements.txt
 ```
 
 ### Code generation
