@@ -19,25 +19,7 @@
     <a href="#-acknowledgement">🙏Acknowledgement</a>
 </p>
 
-> [!Important]
-> <div align="center">
-> <b>
-> 📢 Who is the best LLM coder? Take a look at <a href="https://evalplus.github.io/leaderboard.html">the EvalPlus leaderboard 🏆</a>! 📢
-> </b>
-> <br>
-> <b>
-> 🤗 Request for independent model evaluation is <a href="https://github.com/evalplus/evalplus/issues/new/choose">open</a>!
-> </b>
-> </div>
-
 ## About
-
-> [!Warning]
-> <div align="center">
-> <b>
-> 🚨 Evaluating LLM-generated code over datasets with "3 test-cases" is **NOT** enough! 🚨
-> </b>
-> </div>
 
 EvalPlus is a rigorous evaluation framework for LLM4Code, with:
 
@@ -45,11 +27,11 @@ EvalPlus is a rigorous evaluation framework for LLM4Code, with:
 * ✨ **MBPP+**: 35x more tests than the original MBPP!
 * ✨ **Evaluation framework**: our packages/images/tools can easily and safely evaluate LLMs on above benchmarks.
 
-Why EvalPlus? What does using EvalPlus datasets bring to you?
+Why EvalPlus?
 
-* ✨ **Reliable ranking**: See [our leaderboard](https://evalplus.github.io/leaderboard.html) for the latest LLM ranking before and after rigorous evaluation.
+* ✨ **Precise evaluation & ranking**: See [our leaderboard](https://evalplus.github.io/leaderboard.html) for latest LLM rankings before & after rigorous evaluation.
 * ✨ **Coding rigorousness**: Look at the score differences! esp. before and after using EvalPlus tests! Less drop is better as it means more rigorousness and less laxity in code generation; while a big drop means the generated code tends to be fragile.
-* ✨**Pre-generated samples**: EvalPlus accelerates LLM4Code research by open-sourcing [LLM-generated samples](#-LLM-generated-code) for vairous models -- no need to re-run the expensive benchmarks!
+* ✨ **Pre-generated samples**: EvalPlus accelerates LLM4Code research by open-sourcing [LLM-generated samples](#-LLM-generated-code) for vairous models -- no need to re-run the expensive benchmarks!
 
 Want to know more details? Read our [**NeurIPS'23 paper**](https://openreview.net/forum?id=1qvx610Cu7) [![](https://img.shields.io/badge/Paper-NeurIPS'23-a55fed.svg)](https://openreview.net/forum?id=1qvx610Cu7) as well as our [**Google Slides**](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs)!
 
@@ -139,7 +121,7 @@ docker run -v $(pwd):/app ganler/evalplus:latest --dataset [humaneval|mbpp] --sa
 evalplus.evaluate --dataset [humaneval|mbpp] --samples samples.jsonl
 ```
 
-> [!Warning]
+> [!Tip]
 >
 > Do you use a very slow machine?
 >
@@ -211,7 +193,7 @@ Here are some tips to speed up the evaluation:
 </div>
 </details>
 
-> [!Note]
+> [!Tip]
 >
 > 🚀 **Try out `HumanEvalPlus-Mini`!** which selects a *minimal* set of additional tests with the highest quality, achieving almost the same effectiveness of the full version. Just add a **`--mini`** flag, it can run 23+% faster! (even faster if you evaluate all tests without fail-stop with `--test-details`).
 >
@@ -246,6 +228,15 @@ cd evalplus
 pip install -r requirements-tools.txt
 ```
 
+### Code generation
+
+We have configured the code generation of a wide range of LLMs (see support details in [odegen/models.py](https://github.com/evalplus/evalplus/blob/master/codegen/model.py)).
+Example to run greedy generation on StarCoderBase-7B:
+
+```shell
+python codegen/generate.py --model starcoderbase-7b --bs 1 --temperature 0 --n_samples 1 --resume --greedy --root [result_path] --dataset [mbpp|humaneval]
+```
+
 ### Syntax checker for LLM-generated code
 
 Check LLM-produced code and answer the following questions:
@@ -261,7 +252,7 @@ python tools/checker.py --samples samples.jsonl --dataset [humaneval|mbpp]
 # --samples can also be a directory organized as: ${SAMPLE_DIR}/${TASK_ID}/{SAMPLE_ID}.py
 ```
 
-### Post code sanitizer
+### Post-processing generated code
 
 LLM-generated code may contain some syntax errors.
 But some of them can be easily fixable by doing simple post-processing.
@@ -284,21 +275,9 @@ You should now further check the validity of sanitized code with `tools/checker.
 Sometimes (e.g., Chat models) there might be some natural language lines that impact the compilation.
 You might use `--rm-prefix-lines` to cut those NL lines with a prefix (e.g., `--rm-prefix-lines "Here's"`).
 
-### Render `pass@k` results to `rich` and LaTeX tables
+### Test input generation using EvalPlus
 
-```shell
-python tools/render.py --type /path/to/[model]-[??]b # NOTE: no `_temp_[??]`
-```
-
-![](./gallary/render.gif)
-
-### Perform test input generation from scratch (TBD)
-
-
-### Name convention
-
-- `evalplus` is the package name.
-- `${DATASET}_plus` is the name of dataset applied with `evalplus`.
+Please check `evalplus/inputgen.py`.
 
 ## 📜 Citation
 
