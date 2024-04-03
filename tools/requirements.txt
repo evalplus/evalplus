@@ -4,3 +4,5 @@ matplotlib
 tqdm
 numpy
 termcolor
+black
+astor
