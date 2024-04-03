@@ -6,3 +6,4 @@ numpy
 tqdm
 termcolor
 fire
+tree_sitter_languages
