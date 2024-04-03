@@ -754,9 +754,13 @@ class GemmaInstruct(VLlmDecoder):
     ) -> List[str]:
         prompt = f"""\
 <start_of_turn>user
-{prompt}<end_of_turn>
+Complete the python code below
+```python
+{prompt}
+```<end_of_turn>
 <start_of_turn>model
-```python"""
+```python
+"""
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
@@ -1288,7 +1292,7 @@ def make_model(
         import re
 
         pattern = re.compile(r"gemma-(\d+)b(-it)?")
-        matches = pattern.findall(name)
+        matches = pattern.findall(name)[0]
         nb = float(matches[0])
         if nb.is_integer():
             nb = int(nb)
