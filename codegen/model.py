@@ -747,7 +747,7 @@ class GemmaInstruct(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
-        self.eos += ["<end_of_turn>"]
+        self.eos += ["<end_of_turn>", "\n```"]
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -755,7 +755,8 @@ class GemmaInstruct(VLlmDecoder):
         prompt = f"""\
 <start_of_turn>user
 {prompt}<end_of_turn>
-<start_of_turn>model"""
+<start_of_turn>model
+```python"""
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
