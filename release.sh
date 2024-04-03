@@ -18,6 +18,8 @@ if [ -z "$version" ]; then
   exit 1
 fi
 
+export PYTHONPATH=$PWD pytest tests
+
 git tag $version
 
 # docker build
@@ -31,4 +33,5 @@ python3 -m build
 python3 -m twine upload dist/*
 
 # git push
+git push
 git push --tags
