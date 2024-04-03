@@ -107,6 +107,31 @@ write_jsonl("samples.jsonl", samples)
 > Only one of `solution` and `completion` is required. If both are provided, `solution` will be used.
 > We also accept solutions in the form of directory, i.e., `--samples ${SAMPLE_DIR}` where `${SAMPLE_DIR}` is organized as: `${SAMPLE_DIR}/${TASK_ID}/{SAMPLE_ID}.py` (`${TASK_ID} = task_id.replace("/", "_")`).
 
+### Code post-processing
+
+LLM-generated text may not be compilable code for including natural language lines or incomplete extra code.
+We provide a tool namely `evalplus.sanitize` to clean up the code:
+
+```shell
+# 💡 If you are storing codes in jsonl:
+evalplus.sanitize --samples samples.jsonl --dataset [humaneval|mbpp]
+# Sanitized code will be produced to `samples-sanitized.jsonl`
+
+# 💡 If you are storing codes in directories:
+evalplus.sanitize --samples /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval|mbpp]
+# Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
+```
+
+Note that the post-processing may not be perfect, you are suggested to use `evalplus.syncheck` to check the code validity before and after sanitization, which will print erroneous code snippets:
+
+```shell
+# 💡 If you are storing codes in jsonl:
+evalplus.syncheck --samples samples.jsonl --dataset [humaneval|mbpp]
+
+# 💡 If you are storing codes in directories:
+evalplus.syncheck --samples /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval|mbpp]
+```
+
 ### Code evaluation
 
 You are strongly recommended to use a sandbox such as [docker](https://docs.docker.com/get-docker/):
@@ -236,44 +261,6 @@ Example to run greedy generation on StarCoderBase-7B:
 ```shell
 python codegen/generate.py --model starcoderbase-7b --bs 1 --temperature 0 --n_samples 1 --resume --greedy --root [result_path] --dataset [mbpp|humaneval]
 ```
-
-### Syntax checker for LLM-generated code
-
-Check LLM-produced code and answer the following questions:
-
-1. Is the generation entirely done for all samples / all problems in the dataset?
-2. Are LLM-generated code compilable? (if no, something could be wrong and you'd better check)
-
-```shell
-# Set PYTHONPATH to run local Python files
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-
-python tools/checker.py --samples samples.jsonl --dataset [humaneval|mbpp]
-# --samples can also be a directory organized as: ${SAMPLE_DIR}/${TASK_ID}/{SAMPLE_ID}.py
-```
-
-### Post-processing generated code
-
-LLM-generated code may contain some syntax errors.
-But some of them can be easily fixable by doing simple post-processing.
-This tool will make the LLM-generated code more clean/compilable by doing certain post-processing such as trimming with more magical EOFs and some garbage non-code tokens.
-
-```shell
-# Set PYTHONPATH to run local Python files
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-
-# 💡 If you are storing codes in jsonl:
-python tools/sanitize.py --samples samples.jsonl --dataset [humaneval|mbpp]
-# Sanitized code will be produced to `samples-sanitized.jsonl`
-
-# 💡 If you are storing codes in directories:
-python tools/sanitize.py --samples /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval|mbpp]
-# Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
-```
-
-You should now further check the validity of sanitized code with `tools/checker.py`.
-Sometimes (e.g., Chat models) there might be some natural language lines that impact the compilation.
-You might use `--rm-prefix-lines` to cut those NL lines with a prefix (e.g., `--rm-prefix-lines "Here's"`).
 
 ### Test input generation using EvalPlus
 

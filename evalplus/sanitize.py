@@ -4,9 +4,21 @@
 """
 
 import ast
+import os
+import pathlib
 import re
 import traceback
 from typing import List, Optional
+
+from tqdm import tqdm
+
+from evalplus.data import (
+    get_human_eval_plus,
+    get_mbpp_plus,
+    load_solutions,
+    write_directory,
+    write_jsonl,
+)
 
 
 def syntax_check(code, verbose=False):
@@ -19,7 +31,9 @@ def syntax_check(code, verbose=False):
         return False
 
 
-def remove_unindented_lines(code, protect_before, execeptions, trim_tails):
+def remove_unindented_lines(
+    code: str, protect_before: str, execeptions: List[str], trim_tails: List[str]
+) -> str:
     lines = code.splitlines()
     cut_idx = []
     cut_enabled = False
@@ -111,3 +125,88 @@ def sanitize(
             includes.append(fn)
     new_code = "\ndef ".join(includes)
     return new_code.strip()
+
+
+def main(
+    samples: str,
+    dataset: str = "humaneval",
+    eofs: List[str] = [],
+    inplace: bool = False,
+    rm_prefix_lines: str = None,
+    debug_task: str = None,
+):
+    # task_id -> entry_point
+    entry_point = {}
+
+    if dataset == "humaneval":
+        dataset = get_human_eval_plus()
+    elif dataset == "mbpp":
+        dataset = get_mbpp_plus()
+
+    for task_id, problem in dataset.items():
+        entry_point[task_id] = problem["entry_point"]
+
+    # make a new folder with "-sanitized" suffix
+    is_folder = os.path.isdir(samples)
+    target_path = pathlib.Path(samples)
+    if not inplace:
+        if is_folder:
+            new_name = target_path.name + "-sanitized"
+        else:
+            new_name = target_path.name.replace(".jsonl", "-sanitized.jsonl")
+        target_path = target_path.parent / new_name
+    target_path = str(target_path)
+
+    nsan = 0
+    ntotal = 0
+
+    new_solutions = []
+
+    for solution in tqdm(load_solutions(samples)):
+        task_id = solution["task_id"]
+        dbg_identifier = solution["_identifier"]
+        if debug_task is not None and task_id != debug_task:
+            continue
+
+        ntotal += 1
+        if "solution" in solution:
+            old_code = solution["solution"]
+        else:
+            assert "completion" in solution
+            old_code = dataset[task_id]["prompt"] + "\n" + solution["completion"]
+
+        old_code = old_code.strip()
+
+        new_code = sanitize(
+            old_code=old_code,
+            entry_point=entry_point[task_id],
+            rm_prefix_lines=rm_prefix_lines,
+            eofs=eofs,
+        ).strip()
+
+        # if changed, print the message
+        if new_code != old_code:
+            msg = "Sanitized: " + dbg_identifier
+            if is_folder:
+                msg += " -> " + dbg_identifier.replace(samples, target_path)
+            print(msg)
+            nsan += 1
+
+        new_solutions.append({"task_id": task_id, "solution": new_code})
+
+    if is_folder:
+        write_directory(target_path, new_solutions)
+    else:
+        write_jsonl(target_path, new_solutions)
+
+    if nsan > 0:
+        print(f"Sanitized {nsan} out of {ntotal} files.")
+    else:
+        print(f"All files seems valid -- no files are sanitized.")
+    print(f"Check the sanitized files at {target_path}")
+
+
+if __name__ == "__main__":
+    from fire import Fire
+
+    Fire(main)

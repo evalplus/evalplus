@@ -5,3 +5,4 @@ multipledispatch
 numpy
 tqdm
 termcolor
+fire
