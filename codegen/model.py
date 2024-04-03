@@ -1298,15 +1298,16 @@ def make_model(
                 name=f"google/gemma-{nb}b-it",
                 temperature=temperature,
                 direct_completion=False,
-                dtype="float16",
+                dtype="bfloat16",
             )
         else:
             return VLlmDecoder(
                 batch_size=batch_size,
-                name=f"goolge/gemma-{nb}b",
+                name=f"google/gemma-{nb}b",
                 temperature=temperature,
                 dataset=dataset,
                 direct_completion=True,
+                dtype="bfloat16",
             )
 
     raise ValueError(f"Invalid model name: {name}")
