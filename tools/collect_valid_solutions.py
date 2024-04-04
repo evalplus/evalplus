@@ -4,7 +4,7 @@ import multiprocessing
 import os
 import re
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import astor
 import black
@@ -16,9 +16,9 @@ from evalplus.data import (
     get_mbpp_plus,
     get_mbpp_plus_hash,
 )
-from evalplus.eval import PASS, untrusted_check
+from evalplus.eval import PASS
+from evalplus.evalperf import check_solution
 from evalplus.evaluate import get_groundtruth
-from evalplus.perf.config import EVALUATION_TIMEOUT_SECOND_PER_TEST
 
 
 def find_calls(source, functors, skip_main_fn=True):
@@ -125,42 +125,26 @@ def deduplicate(solutions: List[str]) -> List[str]:
     return list(deduplicated)
 
 
-def check_solution(
-    index: int, solution: str, dataset: str, problem: Dict, expected_output: List
-) -> Tuple:
-    result = untrusted_check(
-        dataset,
-        solution,
-        problem["base_input"] + list(problem["plus_input"]),
-        problem["entry_point"],
-        expected_output["base"] + expected_output["plus"],
-        problem["atol"],
-        expected_output["base_time"] + expected_output["plus_time"],
-        fast_check=True,
-        min_time_limit=EVALUATION_TIMEOUT_SECOND_PER_TEST,
-        gt_time_limit_factor=4.0,
-    )
-    return index, result, solution
-
-
 def test_solutions(
-    dataset: str, solutions: List[str], problem: Dict, expected_output: List
+    dataset: str, solutions: List[str], task: Dict, expected_output: List
 ) -> List[str]:
     """Test solutions, return functionally correct solutions"""
     n_workers = max(1, multiprocessing.cpu_count() // 2)
-    correct_solutions = []
+    correct_solution_ids = []
 
     with ProcessPoolExecutor(max_workers=n_workers) as executor:
         futures = [
-            executor.submit(check_solution, solution, dataset, problem, expected_output)
-            for solution in solutions
+            executor.submit(
+                check_solution, index, solution, dataset, task, expected_output
+            )
+            for index, solution in enumerate(solutions)
         ]
         for future in as_completed(futures):
-            result, solution = future.result()
+            index, result, _ = future.result()
             if result[0] == PASS:
-                correct_solutions.append(solution)
+                correct_solution_ids.append(index)
 
-    return correct_solutions
+    return [solutions[i] for i in correct_solution_ids]
 
 
 def main(sample_dir: str, dataset: str = "humaneval", debug_task: str = None):
