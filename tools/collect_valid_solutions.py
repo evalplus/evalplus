@@ -16,6 +16,7 @@ from evalplus.data import (
     get_mbpp_plus,
     get_mbpp_plus_hash,
 )
+from evalplus.eval import PASS
 from evalplus.evalperf import check_solution
 from evalplus.evaluate import get_groundtruth
 
@@ -129,19 +130,21 @@ def test_solutions(
 ) -> List[str]:
     """Test solutions, return functionally correct solutions"""
     n_workers = max(1, multiprocessing.cpu_count() // 2)
-    correct_solutions = []
+    correct_solution_ids = []
 
     with ProcessPoolExecutor(max_workers=n_workers) as executor:
         futures = [
-            executor.submit(check_solution, solution, dataset, task, expected_output)
-            for solution in solutions
+            executor.submit(
+                check_solution, index, solution, dataset, task, expected_output
+            )
+            for index, solution in enumerate(solutions)
         ]
         for future in as_completed(futures):
-            result, solution = future.result()
+            index, result, _ = future.result()
             if result[0] == PASS:
-                correct_solutions.append(solution)
+                correct_solution_ids.append(index)
 
-    return correct_solutions
+    return [solutions[i] for i in correct_solution_ids]
 
 
 def main(sample_dir: str, dataset: str = "humaneval", debug_task: str = None):
