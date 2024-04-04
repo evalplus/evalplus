@@ -12,10 +12,10 @@ from evalplus.perf.config import CURATION_TIMEOUT_PER_TEST_SECOND
 from evalplus.perf.profile import are_profiles_broken, profile
 
 
-def main(solutions: str, output: str, pe_inputs: str = None):
+def main(solutions: str, output_profiled_solutions: str, pe_inputs: str = None):
     assert solutions.endswith(".jsonl")
     assert pe_inputs is None or pe_inputs.endswith(".jsonl")
-    assert output.endswith(".jsonl")
+    assert output_profiled_solutions.endswith(".jsonl")
 
     evalplus = get_human_eval_plus(noextreme=True)
     mbppplus = get_mbpp_plus(noextreme=True)
@@ -101,7 +101,7 @@ def main(solutions: str, output: str, pe_inputs: str = None):
                 else [pe_input]
             )
 
-        with open(output, "a") as f:
+        with open(output_profiled_solutions, "a") as f:
             f.write(
                 json.dumps(
                     {
