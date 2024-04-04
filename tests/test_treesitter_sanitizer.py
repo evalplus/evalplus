@@ -1,8 +1,4 @@
-import sys
-
-sys.path.append("../tools/_experimental")
-
-from treesitter_sanitizer import code_extract, sanitize
+from tools._experimental.treesitter_sanitizer import code_extract, sanitize
 
 
 def test_code_extract():
