@@ -1,5 +1,5 @@
-# base env: py38 ubuntu20.04
-FROM python:3.8-slim-buster
+# Better use newer Python as generated code can use new features
+FROM python:3.10-slim
 
 # install git
 RUN apt-get update && apt-get install -y git

@@ -147,6 +147,28 @@ Can you complete the following Python function?
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 
 
+class Mixtral(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""<s>[INST]Please complete and solve the following Python function in a markdown block.
+```python
+{prompt}
+```
+[/INST]
+```python
+"""
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
 class CodeLlamaInstruct70B(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         kwargs["direct_completion"] = False
@@ -1124,6 +1146,12 @@ def make_model(
             name="cognitivecomputations/dolphin-2.6-mixtral-8x7b",
             temperature=temperature,
             max_new_tokens=512 + 256,
+        )
+    elif name == "mixtral-8x7b-instruct":
+        return Mixtral(
+            batch_size=batch_size,
+            name="mistralai/Mixtral-8x7B-Instruct-v0.1",
+            temperature=temperature,
         )
     elif name == "solar-10.7b-instruct":
         return Solar(

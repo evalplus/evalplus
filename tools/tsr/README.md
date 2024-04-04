@@ -8,7 +8,7 @@ Use the following command to install necessary dependencies:
 
 ```bash
 # in $EVALPLUS_ROOT
-pip install -r requirements-tsr.txt
+pip install -r tools/tsr/requirements.txt
 ```
 
 ## Usage
