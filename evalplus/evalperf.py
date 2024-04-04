@@ -260,6 +260,8 @@ def main(
     assert (
         profile_n_correct <= max_n_samples
     ), "profile_n_correct should be no more than max_n_samples"
+    assert dataset.endswith(".jsonl") and os.path.isfile(dataset)
+    assert samples.endswith(".jsonl") and os.path.isfile(samples)
 
     console = Console()  # printer
 
@@ -277,13 +279,6 @@ def main(
         raw_data = [json.loads(l) for l in f]
         tasks = {task["task_id"]: task for task in raw_data}
 
-    # load model's solutions
-    assert samples.endswith(".jsonl") and os.path.isfile(samples)
-    samples = {
-        task["task_id"]: task["solution"][:max_n_samples]
-        for task in stream_jsonl(samples)
-    }
-
     # setup max CPU threads
     max_workers = max(1, multiprocessing.cpu_count() // 4)
     if max_parallelism is not None:
@@ -292,6 +287,7 @@ def main(
     model_name = os.path.basename(samples).replace(".jsonl", "")
     result_path = os.path.join(output_dir, f"{(model_name + '_results')}.json")
 
+    # resume results
     eval_results = {}
     if not i_just_wanna_run and os.path.exists(result_path):
         eval_results = json.load(open(result_path, "r"))
@@ -300,6 +296,12 @@ def main(
             tasks.pop(evaluated_task, None)
 
         console.print(f"Resumed {len(eval_results)} results from {result_path}")
+
+    # load model's solutions
+    samples = {
+        task["task_id"]: task["solution"][:max_n_samples]
+        for task in stream_jsonl(samples)
+    }
 
     # log all tasks
     console.print(f"{len(tasks)} tasks to evaluate :: result path: {result_path}")

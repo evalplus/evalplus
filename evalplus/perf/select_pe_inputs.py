@@ -62,6 +62,7 @@ def main(solutions: str, output_profiled_solutions: str, pe_inputs: str = None):
                 canonical_solution,
                 task["entry_point"],
                 [inp],
+                timeout_second_per_test=CURATION_TIMEOUT_PER_TEST_SECOND,
             )
             if are_profiles_broken(costs):
                 continue
