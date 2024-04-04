@@ -15,6 +15,10 @@ from evalplus.eval.utils import (
 from evalplus.perf.config import MEMORY_LIMIT_GB, PROFILE_ROUNDS
 
 
+def are_profiles_broken(profiles) -> bool:
+    return not all(isinstance(profile, (float, int)) for profile in profiles)
+
+
 def physical_runtime_profiler(function, test_inputs) -> float:
     start = perf_counter()
     for test_input in test_inputs:
