@@ -7,3 +7,4 @@ tqdm
 termcolor
 fire
 openai
+tree_sitter_languages
