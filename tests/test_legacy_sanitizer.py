@@ -1,6 +1,6 @@
 import pytest
 
-from evalplus.sanitize import sanitize
+from evalplus.lecacy_sanitize import sanitize
 
 
 def test_inline_fn():

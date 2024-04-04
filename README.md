@@ -114,15 +114,18 @@ We provide a tool namely `evalplus.sanitize` to clean up the code:
 
 ```shell
 # 💡 If you are storing codes in jsonl:
-evalplus.sanitize --samples samples.jsonl --dataset [humaneval|mbpp]
+evalplus.sanitize --samples samples.jsonl
 # Sanitized code will be produced to `samples-sanitized.jsonl`
 
 # 💡 If you are storing codes in directories:
-evalplus.sanitize --samples /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval|mbpp]
+evalplus.sanitize --samples /path/to/vicuna-[??]b_temp_[??]
 # Sanitized code will be produced to `/path/to/vicuna-[??]b_temp_[??]-sanitized`
 ```
 
-Note that the post-processing may not be perfect, you are suggested to use `evalplus.syncheck` to check the code validity before and after sanitization, which will print erroneous code snippets:
+<details><summary>🔎 Checking the compilability of post-processed code<i>:: click to expand ::</i></summary>
+<div>
+
+To double-check the post-processing results, you can use `evalplus.syncheck` to check the code validity before and after sanitization, which will print erroneous code snippets and why they are wrong:
 
 ```shell
 # 💡 If you are storing codes in jsonl:
@@ -131,6 +134,9 @@ evalplus.syncheck --samples samples.jsonl --dataset [humaneval|mbpp]
 # 💡 If you are storing codes in directories:
 evalplus.syncheck --samples /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval|mbpp]
 ```
+
+</div>
+</details>
 
 ### Code evaluation
 

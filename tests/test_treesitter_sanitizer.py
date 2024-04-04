@@ -1,4 +1,4 @@
-from tools._experimental.treesitter_sanitizer import code_extract, sanitize
+from evalplus.sanitize import code_extract, sanitize
 
 
 def test_code_extract():
