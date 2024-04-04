@@ -9,18 +9,18 @@ def test_code_extract():
     test_simple = r"""Here is some python code generated
 import numpy as np
 Sorry, I made a mistake, let me try again
-from numpy import sin, cos
+from numpy import sin, cos, tan
 
 def f(x):
-    return np.tan(x)
+    return tan(x)
 As you can observe from above
     """
     assert (
         code_extract(test_simple)
-        == r"""from numpy import sin, cos
+        == r"""from numpy import sin, cos, tan
 
 def f(x):
-    return np.tan(x)"""
+    return tan(x)"""
     )
 
     test_empty_lines = r"""import numpy as np
@@ -28,15 +28,15 @@ def f(x):
 
 import pandas
 Sorry, let me try again
-from numpy import sin, cos
+from numpy import sin, cos, tan
 def f(x):
-    return np.tan(x)
+    return tan(x)
 """
     assert (
         code_extract(test_empty_lines)
-        == r"""from numpy import sin, cos
+        == r"""from numpy import sin, cos, tan
 def f(x):
-    return np.tan(x)"""
+    return tan(x)"""
     )
 
 
