@@ -622,6 +622,8 @@ class Speechless(HFTorchDecoder):
             self.extra_eos = ["</s>"]
         elif "uukuguy/speechless-coder-ds-6.7b" == name:
             self.extra_eos = ["<｜end▁of▁sentence｜>"]
+        elif "uukuguy/speechless-sparsetral-16x7b-MoE" == name:
+            self.extra_eos = ["</s>"]
         else:
             raise ValueError(f"Invalid model name: {name}")
         self.eos = self.eos + self.extra_eos
@@ -728,7 +730,6 @@ class CodeGemma(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -736,6 +737,51 @@ class CodeGemma(VLlmDecoder):
         prompt = f"""### Instruction
 {prompt}
 ### Response
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class OpenHermes(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        # simple change for codegen
+        prompt = f"""
+This is a conversation with your helpful AI assistant. AI assistant can generate Code in various Programming Languages along with necessary explanation. It can generate Story, Blogs .....
+
+Context
+You are a helpful AI assistant.
+
+USER: complete the python code below
+```python
+{prompt}
+```
+ASSISTANT:```python"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class GemmaInstruct(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["<end_of_turn>", "\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""\
+<start_of_turn>user
+Complete the python code below
+```python
+{prompt}
+```<end_of_turn>
+<start_of_turn>model
+```python
 """
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
@@ -865,6 +911,21 @@ def make_model(
         return HFTorchDecoder(
             batch_size=batch_size,
             name="EleutherAI/gpt-j-6B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "starcoder2-15b-oci":
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name="TokenBender/starcoder2_15B_OCI",
+            temperature=temperature,
+            dtype="float16",
+            dataset=dataset,
+        )
+    elif name.startswith("starcoder2"):
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name=f"bigcode/{name}",
             temperature=temperature,
             dataset=dataset,
         )
@@ -1045,6 +1106,12 @@ def make_model(
             temperature=temperature,
             dataset=dataset,
         )
+    elif name == "code-290k-6.7b-instruct":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Code-290k-6.7B-Instruct",
+            temperature=temperature,
+        )
     elif name == "phind-code-llama-34b-v2":
         return VLlmDecoder(
             batch_size=batch_size,
@@ -1133,6 +1200,14 @@ def make_model(
             direct_completion=False,
             dtype="float16",
         )
+    elif name == "speechless-thoughts-mistral-7b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-thoughts-mistral-7b",
+            temperature=temperature,
+            conversational=True,
+            dtype="float16",
+        )
     elif name == "speechless-coder-ds-6.7b":
         return Speechless(
             batch_size=batch_size,
@@ -1147,6 +1222,14 @@ def make_model(
             name="uukuguy/speechless-coding-7b-16k-tora",
             temperature=temperature,
             direct_completion=False,
+        )
+    elif name == "speechless-sparsetral-16x7b-moe":
+        return Speechless(
+            batch_size=batch_size,
+            name="uukuguy/speechless-sparsetral-16x7b-MoE",
+            temperature=temperature,
+            conversational=True,
+            trust_remote_code=True,
         )
     elif name == "code-millenials-34b":
         return Alpaca(
@@ -1194,6 +1277,8 @@ def make_model(
             dtype="float16",
         )
     elif "codegemma" in name:
+        import re
+
         pattern = re.compile(r"codegemma-(\d+)b")
         matches = pattern.findall(name)
         nb = int(matches[0])
@@ -1224,5 +1309,37 @@ def make_model(
             temperature=temperature,
             direct_completion=False,
         )
+    elif name == "open-hermes-2.5-code-290k-13b":
+        return OpenHermes(
+            batch_size=batch_size,
+            name="ajibawa-2023/OpenHermes-2.5-Code-290k-13B",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif "gemma" in name:
+        import re
+
+        pattern = re.compile(r"gemma-(\d+)b(-it)?")
+        matches = pattern.findall(name)[0]
+        nb = float(matches[0])
+        if nb.is_integer():
+            nb = int(nb)
+        if "it" in name:
+            return GemmaInstruct(
+                batch_size=batch_size,
+                name=f"google/gemma-{nb}b-it",
+                temperature=temperature,
+                direct_completion=False,
+                dtype="bfloat16",
+            )
+        else:
+            return VLlmDecoder(
+                batch_size=batch_size,
+                name=f"google/gemma-{nb}b",
+                temperature=temperature,
+                dataset=dataset,
+                direct_completion=True,
+                dtype="bfloat16",
+            )
 
     raise ValueError(f"Invalid model name: {name}")
