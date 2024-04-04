@@ -212,7 +212,7 @@ def g(x):
     )
 
 
-def test_entrypoint_chain():
+def test_entrypoint_variable():
     icode = r"""Following is the code snippet:
 ```python
 import numpy as np
