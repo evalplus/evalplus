@@ -116,7 +116,7 @@ def sanitize(
     return new_code.strip()
 
 
-def main(
+def script(
     samples: str,
     eofs: List[str] = [],
     inplace: bool = False,
@@ -190,7 +190,11 @@ def main(
     print(f"Check the sanitized files at {target_path}")
 
 
-if __name__ == "__main__":
+def main():
     from fire import Fire
 
-    Fire(main)
+    Fire(script)
+
+
+if __name__ == "__main__":
+    main()

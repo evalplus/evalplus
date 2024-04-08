@@ -12,7 +12,7 @@ from evalplus.perf.config import CURATION_TIMEOUT_PER_TEST_SECOND
 from evalplus.perf.profile import are_profiles_broken, profile
 
 
-def main(solutions: str, output_profiled_solutions: str, pe_inputs: str = None):
+def script(solutions: str, output_profiled_solutions: str, pe_inputs: str = None):
     assert solutions.endswith(".jsonl")
     assert pe_inputs is None or pe_inputs.endswith(".jsonl")
     assert output_profiled_solutions.endswith(".jsonl")
@@ -116,7 +116,11 @@ def main(solutions: str, output_profiled_solutions: str, pe_inputs: str = None):
             )
 
 
-if __name__ == "__main__":
+def main():
     from fire import Fire
 
-    Fire(main)
+    Fire(script)
+
+
+if __name__ == "__main__":
+    main()

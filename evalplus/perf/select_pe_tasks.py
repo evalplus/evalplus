@@ -8,7 +8,6 @@ from datetime import datetime
 from typing import List
 
 import numpy as np
-from fire import Fire
 from rich.console import Console
 from rich.syntax import Syntax
 from termcolor import colored
@@ -125,7 +124,7 @@ def brief_list_repr(lst, head_count=4, tail_count=4):
         return f"[{head}, ..., {tail}]"
 
 
-def main(
+def script(
     profiled_solutions: str,
     output_dataset: str = f"evalperf-{datetime.now():%Y%m%d}.jsonl",
     debug_tasks: List[str] = [],
@@ -231,5 +230,11 @@ def main(
             f.write(json.dumps(item) + "\n")
 
 
+def main():
+    from fire import Fire
+
+    Fire(script)
+
+
 if __name__ == "__main__":
-    Fire(main)
+    main()

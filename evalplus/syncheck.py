@@ -21,7 +21,9 @@ def syntax_check(code, verbose=False):
         return False
 
 
-def main(samples: str, dataset: str, nsample_check: int = None, verbose: bool = False):
+def script(
+    samples: str, dataset: str, nsample_check: int = None, verbose: bool = False
+):
     # List[Dict{"task_id", "solution"}]
     solutions = load_solutions(samples)
 
@@ -106,7 +108,11 @@ def main(samples: str, dataset: str, nsample_check: int = None, verbose: bool = 
         print(colored(f" ::::: All {ncode} code are compilable!", "green"))
 
 
-if __name__ == "__main__":
+def main():
     from fire import Fire
 
-    Fire(main)
+    Fire(script)
+
+
+if __name__ == "__main__":
+    main()

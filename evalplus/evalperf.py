@@ -247,7 +247,7 @@ def worker_on_one_task(
     }
 
 
-def main(
+def script(
     samples: str,
     dataset: str,
     output_dir: str,
@@ -361,7 +361,11 @@ def main(
         f.write(json.dumps(eval_results))
 
 
-if __name__ == "__main__":
+def main():
     from fire import Fire
 
-    Fire(main)
+    Fire(script)
+
+
+if __name__ == "__main__":
+    main()

@@ -176,7 +176,7 @@ def sanitize(code: str, entrypoint: Optional[str] = None) -> str:
     return sanitized_output[:-1]
 
 
-def main(samples: str, inplace: bool = False, debug_task: str = None):
+def script(samples: str, inplace: bool = False, debug_task: str = None):
     # task_id -> entry_point
     entry_point = {}
     # merge two datasets
@@ -239,7 +239,11 @@ def main(samples: str, inplace: bool = False, debug_task: str = None):
     print(f"Check the sanitized files at {target_path}")
 
 
-if __name__ == "__main__":
+def main():
     from fire import Fire
 
-    Fire(main)
+    Fire(script)
+
+
+if __name__ == "__main__":
+    main()

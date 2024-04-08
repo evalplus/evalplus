@@ -147,7 +147,7 @@ def test_solutions(
     return [solutions[i] for i in correct_solution_ids]
 
 
-def main(sample_dir: str, dataset: str = "humaneval", debug_task: str = None):
+def script(sample_dir: str, dataset: str = "humaneval", debug_task: str = None):
     assert dataset in ["humaneval", "mbpp"]
     if dataset == "humaneval":
         problems = get_human_eval_plus(noextreme=True)
@@ -191,7 +191,11 @@ def main(sample_dir: str, dataset: str = "humaneval", debug_task: str = None):
             )
 
 
-if __name__ == "__main__":
+def main():
     from fire import Fire
 
-    Fire(main)
+    Fire(script)
+
+
+if __name__ == "__main__":
+    main()
