@@ -76,9 +76,11 @@ def get_call_graph(
 
 def get_function_dependency(entrypoint: str, call_graph: Dict[str, str]) -> Set[str]:
     queue = [entrypoint]
-    visited = set([entrypoint])
-    while len(queue) != 0:
+    visited = {entrypoint}
+    while queue:
         current = queue.pop(0)
+        if current not in call_graph:
+            continue
         for neighbour in call_graph[current]:
             if not (neighbour in visited):
                 visited.add(neighbour)
