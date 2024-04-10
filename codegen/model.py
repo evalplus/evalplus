@@ -440,7 +440,10 @@ class Magicoder(VLlmDecoder):
         prompt = f"""You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
 
 @@ Instruction
+Write a solution to the following problem:
+```python
 {prompt}
+```
 
 @@ Response
 ```python
