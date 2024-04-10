@@ -444,7 +444,7 @@ class Magicoder(VLlmDecoder):
 
 @@ Response
 ```python
-        """
+{prompt}"""
 
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
