@@ -108,9 +108,9 @@ def unsafe_execute(
     time_limits,
     atol,
     fast_check,
-    stat: Value,
-    details: Array,
-    progress: Value,
+    stat,  # Value
+    details,  # Array
+    progress,  # Value
 ):
     with create_tempdir():
         # These system calls are needed when cleaning up tempdir.
