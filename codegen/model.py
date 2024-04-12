@@ -430,7 +430,6 @@ Please complete the following Python function in a markdown style code block:
 
 class Magicoder(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -1031,14 +1030,16 @@ def make_model(
             batch_size=batch_size,
             name="ise-uiuc/Magicoder-S-DS-6.7B",
             temperature=temperature,
-            direct_completion=False,
+            direct_completion=True,
+            dataset=dataset,
         )
     elif name == "magicoder-s-cl-7b":
         return Magicoder(
             batch_size=batch_size,
             name="ise-uiuc/Magicoder-S-CL-7B",
             temperature=temperature,
-            direct_completion=False,
+            direct_completion=True,
+            dataset=dataset,
         )
     elif name == "wizardcoder-33b-v1.1":
         return Alpaca(
