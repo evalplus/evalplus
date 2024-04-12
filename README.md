@@ -261,7 +261,7 @@ pip install -r tools/requirements.txt
 
 ### Code generation
 
-We have configured the code generation of a wide range of LLMs (see support details in [odegen/models.py](https://github.com/evalplus/evalplus/blob/master/codegen/model.py)).
+We have configured the code generation of a wide range of LLMs (see support details in [codegen/models.py](https://github.com/evalplus/evalplus/blob/master/codegen/model.py)).
 Example to run greedy generation on StarCoderBase-7B:
 
 ```shell
