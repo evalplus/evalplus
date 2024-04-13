@@ -13,6 +13,9 @@ MBPP_OUTPUT_SET_EQ_TASKS = [
     "common_in_nested_lists",  # Mbpp/111
     "extract_singly",  # Mbpp/140
     "larg_nnum",  # Mbpp/232
+    "intersection_array",  # Mbpp/249
+    "find_dissimilar",  # Mbpp/579
+    "Diff",  # Mbpp/769
 ]
 
 

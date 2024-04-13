@@ -25,7 +25,6 @@ from evalplus.data import (
 from evalplus.data.mbpp import mbpp_serialize_inputs
 from evalplus.data.utils import CACHE_DIR
 from evalplus.eval import (
-    FAIL,
     PASS,
     compatible_eval_result,
     estimate_pass_at_k,
