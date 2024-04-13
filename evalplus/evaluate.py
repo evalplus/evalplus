@@ -267,24 +267,6 @@ def evaluate(flags):
                     }
                 )
 
-    if os.path.isfile(result_path) and flags.i_just_wanna_run:
-        decision = ""
-        while decision.lower() not in ["y", "n"]:
-            print(f"{result_path} already exists. Press [Y/N] to overwrite or exit...")
-            decision = input()
-
-        if decision.lower() == "y":
-            # mv the file to a backup
-            new_path = result_path + ".bak"
-            while os.path.isfile(new_path):
-                new_path += ".bak"
-            os.rename(result_path, new_path)
-            print(f"Backup {result_path} to {new_path}")
-
-    if not os.path.isfile(result_path):
-        with open(result_path, "w") as f:
-            json.dump(results, f)
-
     # Calculate pass@k.
     total = np.array([len(r) for r in results["eval"].values()])
     base_correct = []
@@ -322,6 +304,25 @@ def evaluate(flags):
         }
         for k, v in pass_at_k.items():
             cprint(f"{k}:\t{v:.3f}", "green")
+
+    # save results
+    if os.path.isfile(result_path) and flags.i_just_wanna_run:
+        decision = ""
+        while decision.lower() not in ["y", "n"]:
+            print(f"{result_path} already exists. Press [Y/N] to overwrite or exit...")
+            decision = input()
+
+        if decision.lower() == "y":
+            # mv the file to a backup
+            new_path = result_path + ".bak"
+            while os.path.isfile(new_path):
+                new_path += ".bak"
+            os.rename(result_path, new_path)
+            print(f"Backup {result_path} to {new_path}")
+
+    if not os.path.isfile(result_path):
+        with open(result_path, "w") as f:
+            json.dump(results, f)
 
 
 def main():
