@@ -54,6 +54,10 @@ def assertion(out, exp, atol):
         assert exact_match
 """
 
+SET_EQ_TASKS = [2, 249, 500, 579, 769]
+NOT_NONE_TASKS = [737, 787, 794]
+MISSING_IMPORT_TASKS = [300]
+
 
 def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
     # dataset size optimization for large outputs
@@ -69,6 +73,28 @@ def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
     # default settings
     imports = set()
     aux_fn = ASSERTION_FN
+
+    # ================================================ #
+    # ============== special oracles ================= #
+
+    if task_id in SET_EQ_TASKS:
+        aux_fn = aux_fn.replace(
+            "exact_match = out == exp", "exact_match = set(out) == set(exp)"
+        )
+    elif task_id in NOT_NONE_TASKS:
+        aux_fn = aux_fn.replace(
+            "exact_match = out == exp",
+            """
+    if isinstance(out, bool):
+        exact_match = out == exp
+    else:
+        exact_match = exp == (out is not None)""",
+        )
+    elif task_id in MISSING_IMPORT_TASKS:
+        aux_fn = "from math import inf\n" + aux_fn
+
+    # ============== special oracles ================= #
+    # ================================================ #
 
     # inf exists in inputs/results
     if entry_point in ("zero_count", "minimum"):
