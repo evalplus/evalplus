@@ -728,24 +728,9 @@ Please implement this function in a Python markdown code block starting with "``
         return HFTorchDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
-class CodeGemma(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        prompt = f"""### Instruction
-{prompt}
-### Response
-"""
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
-
-
 class OpenHermes(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
         self.eos += ["\n```"]
 
@@ -1209,7 +1194,6 @@ def make_model(
             batch_size=batch_size,
             name="uukuguy/speechless-thoughts-mistral-7b",
             temperature=temperature,
-            conversational=True,
             dtype="float16",
         )
     elif name == "speechless-coder-ds-6.7b":
@@ -1232,7 +1216,7 @@ def make_model(
             batch_size=batch_size,
             name="uukuguy/speechless-sparsetral-16x7b-MoE",
             temperature=temperature,
-            conversational=True,
+            direct_completion=False,
             trust_remote_code=True,
         )
     elif name == "code-millenials-34b":
@@ -1280,18 +1264,6 @@ def make_model(
             direct_completion=False,
             dtype="float16",
         )
-    elif "codegemma" in name:
-        import re
-
-        pattern = re.compile(r"codegemma-(\d+)b")
-        matches = pattern.findall(name)
-        nb = int(matches[0])
-        return CodeGemma(
-            batch_size=batch_size,
-            name=f"TechxGenus/CodeGemma-{nb}b",
-            temperature=temperature,
-            direct_completion=False,
-        )
     elif name == "opencodeinterpreter-ds-6.7b":
         return OpenCodeInterpreterDecoder(
             batch_size=batch_size,
@@ -1320,18 +1292,11 @@ def make_model(
             temperature=temperature,
             direct_completion=False,
         )
-    elif "gemma" in name:
-        import re
-
-        pattern = re.compile(r"gemma-(\d+)b(-it)?")
-        matches = pattern.findall(name)[0]
-        nb = float(matches[0])
-        if nb.is_integer():
-            nb = int(nb)
-        if "it" in name:
+    elif "codegemma" in name or "gemma" in name:
+        if name.endswith("it"):
             return GemmaInstruct(
                 batch_size=batch_size,
-                name=f"google/gemma-{nb}b-it",
+                name=f"google/{name}",
                 temperature=temperature,
                 direct_completion=False,
                 dtype="bfloat16",
@@ -1339,7 +1304,7 @@ def make_model(
         else:
             return VLlmDecoder(
                 batch_size=batch_size,
-                name=f"google/gemma-{nb}b",
+                name=f"google/{name}",
                 temperature=temperature,
                 dataset=dataset,
                 direct_completion=True,
