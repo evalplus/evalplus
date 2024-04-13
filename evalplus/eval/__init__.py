@@ -29,7 +29,11 @@ from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 
-from evalplus.eval._special_oracle import MBPP_OUTPUT_NOT_NONE_TASKS, _poly
+from evalplus.eval._special_oracle import (
+    MBPP_OUTPUT_NOT_NONE_TASKS,
+    MBPP_OUTPUT_SET_EQ_TASKS,
+    _poly,
+)
 from evalplus.eval.utils import (
     create_tempdir,
     reliability_guard,
@@ -129,53 +133,56 @@ def unsafe_execute(
             with swallow_io():
                 exec(code, exec_globals)
                 fn = exec_globals[entry_point]
-                for i, inp in enumerate(inputs):
-                    try:
-                        with time_limit(time_limits[i]):
+
+            for i, inp in enumerate(inputs):
+                try:
+                    with time_limit(time_limits[i]):
+                        with swallow_io():
                             out = fn(*inp)
 
-                        exp = expected[i]
-                        exact_match = out == exp
+                    exp = expected[i]
+                    exact_match = out == exp
 
-                        # ================================================ #
-                        # ============== special oracles ================= #
-                        if dataset == "mbpp":
-                            if (
-                                "are_equivalent" == entry_point
-                            ):  # Mbpp/164 special oracle
-                                exact_match = exact_match or True
-                            elif "sum_div" == entry_point:  # Mbpp/295 special oracle
-                                exact_match = exact_match or out == 0
-                            elif entry_point in MBPP_OUTPUT_NOT_NONE_TASKS:
-                                # exp is True  if not None
-                                #        False if None
-                                if isinstance(out, bool):
-                                    exact_match = out == exp
-                                else:
-                                    exact_match = exp == (out is not None)
+                    # ================================================ #
+                    # ============== special oracles ================= #
+                    if dataset == "mbpp":
+                        if "are_equivalent" == entry_point:  # Mbpp/164 special oracle
+                            exact_match = exact_match or True
+                        elif "sum_div" == entry_point:  # Mbpp/295 special oracle
+                            exact_match = exact_match or out == 0
+                        elif entry_point in MBPP_OUTPUT_SET_EQ_TASKS:
+                            exact_match = set(out) == set(exp)
+                        elif entry_point in MBPP_OUTPUT_NOT_NONE_TASKS:
+                            # exp is True  if not None
+                            #        False if None
+                            if isinstance(out, bool):
+                                exact_match = out == exp
+                            else:
+                                exact_match = exp == (out is not None)
 
-                        if dataset == "humaneval":
-                            if "find_zero" == entry_point:
-                                assert _poly(*inp, out) <= atol
-                        # ============== special oracles ================= #
-                        # ================================================ #
+                    if dataset == "humaneval":
+                        if "find_zero" == entry_point:
+                            assert _poly(*inp, out) <= atol
+                    # ============== special oracles ================= #
+                    # ================================================ #
 
-                        if atol == 0 and is_floats(exp):
-                            atol = 1e-6  # enforce atol for float comparison
-                        if not exact_match and atol != 0:
-                            np.testing.assert_allclose(out, exp, atol=atol)
-                        else:
-                            assert exact_match
-                    except BaseException:
-                        if fast_check:
-                            raise
+                    if atol == 0 and is_floats(exp):
+                        atol = 1e-6  # enforce atol for float comparison
+                    if not exact_match and atol != 0:
+                        np.testing.assert_allclose(out, exp, atol=atol)
+                    else:
+                        assert exact_match
+                except BaseException:
+                    if fast_check:
+                        raise
 
-                        details[i] = False
-                        progress.value += 1
-                        continue
-
-                    details[i] = True
+                    details[i] = False
                     progress.value += 1
+                    continue
+
+                details[i] = True
+                progress.value += 1
+
             stat.value = _SUCCESS
         except BaseException:
             stat.value = _FAILED
