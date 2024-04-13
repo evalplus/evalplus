@@ -4,7 +4,10 @@ import json
 import multiprocessing
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from traceback import print_exc
 
+from rich.console import Console
+from rich.syntax import Syntax
 from tqdm import tqdm
 
 from evalplus.data.mbpp import (
@@ -14,11 +17,15 @@ from evalplus.data.mbpp import (
     get_mbpp_plus_hash,
 )
 from evalplus.eval import is_floats
-from evalplus.eval._special_oracle import MBPP_OUTPUT_NOT_NONE_TASKS
+from evalplus.eval._special_oracle import (
+    MBPP_OUTPUT_NOT_NONE_TASKS,
+    MBPP_OUTPUT_SET_EQ_TASKS,
+)
 from evalplus.evaluate import get_groundtruth
 
 MBPP_TEST_TEMPLATE = """\
-{imports}
+import numpy as np
+from math import inf
 
 {aux_fn}
 
@@ -29,6 +36,9 @@ for i, (inp, exp) in enumerate(zip(inputs, results)):
 """
 
 MBPP_CROSSCHECK_TEMPLATE = """\
+import numpy as np
+from math import inf
+
 {aux_fn}
 
 {ref_func}
@@ -39,19 +49,15 @@ for i, inp in enumerate(inputs):
 """
 
 ASSERTION_FN = f"""\
-import numpy as np
-
 {inspect.getsource(is_floats)}
 
 def assertion(out, exp, atol):
-    exact_match = out == exp
-
     if atol == 0 and is_floats(exp):
         atol = 1e-6
-    if not exact_match and atol != 0:
+    if out != exp and atol != 0:
         np.testing.assert_allclose(out, exp, atol=atol)
     else:
-        assert exact_match
+        assert out == exp, f"out: {{out}}, exp: {{exp}}"
 """
 
 
@@ -67,15 +73,38 @@ def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
         )
 
     # default settings
-    imports = set()
     aux_fn = ASSERTION_FN
 
-    # inf exists in inputs/results
-    if entry_point in ("zero_count", "minimum"):
-        imports.add("from math import inf")
+    # ================================================ #
+    # ============== special oracles ================= #
+
+    if entry_point in MBPP_OUTPUT_SET_EQ_TASKS:
+        aux_fn = f"""\
+{inspect.getsource(is_floats)}
+
+def assertion(out, exp, atol):
+    if atol == 0 and is_floats(exp):
+        atol = 1e-6
+    out = set(out)
+    exp = set(exp)
+    if out != exp and atol != 0:
+        np.testing.assert_allclose(out, exp, atol=atol)
+    else:
+        assert out == exp, f"out: {{out}}, exp: {{exp}}"
+"""
+    elif entry_point in MBPP_OUTPUT_NOT_NONE_TASKS:
+        aux_fn = f"""\
+def assertion(out, exp, atol):
+    if isinstance(out, bool):
+        exact_match = out == exp
+    else:
+        exact_match = exp == (out is not None)
+"""
+
+    # ============== special oracles ================= #
+    # ================================================ #
 
     test_code = MBPP_TEST_TEMPLATE.format(
-        imports="\n".join(imports),
         aux_fn=aux_fn,
         inputs=inputs,
         results=results,
@@ -108,6 +137,7 @@ def main():
     parser.add_argument("--debug-tasks", nargs="+", default=[], type=int)
 
     args = parser.parse_args()
+    console = Console()
 
     if hasattr(sys, "set_int_max_str_digits"):
         sys.set_int_max_str_digits(int(10e8))
@@ -176,6 +206,30 @@ def main():
             task_id, test_code = future.result()
             # syntax check of test_code
             ast.parse(test_code)
+            # ground-truth check
+            task = plus_problems[f"Mbpp/{task_id}"]
+            exec_code = (
+                task["prompt"] + "\n" + task["canonical_solution"] + "\n" + test_code
+            )
+
+            # run the code in a subprocess
+            def test():
+                try:
+                    exec(exec_code, globals())
+                except Exception:
+                    print_exc()
+                    raise
+
+            p = multiprocessing.Process(target=test)
+            p.start()
+            p.join(timeout=20)
+            assert not p.is_alive(), f"Timeout for Mbpp/{task_id}!"
+            p.terminate()
+            p.join()
+            if p.exitcode != 0:
+                console.print(Syntax(exec_code, "python", line_numbers=True))
+                raise RuntimeError(f"Error for Mbpp/{task_id}")
+
             id2bytes[task_id] = len(test_code.encode("utf-8"))
             compatible_problems[task_id]["test"] = test_code
 
@@ -191,7 +245,7 @@ def main():
             print("--- debugging:", problem["task_id"])
             print('"""\n' + problem["prompt"] + '\n"""\n' + problem["code"])
             test_code = problem["test"]
-            if True or len(test_code) <= 2048 + 512:
+            if len(test_code) <= 1024:
                 print(test_code)
             else:
                 print(problem["test"][:1024], "...")
