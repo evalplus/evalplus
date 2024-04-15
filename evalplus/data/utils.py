@@ -90,7 +90,7 @@ def stream_jsonl(filename: str) -> Iterable[Dict]:
 
 def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
     """We accept two formats of inputs.
-    + `sample.jsonl` which is the format from HumanEval, i.e., {task_id, completion}.
+    + `sample.jsonl` which is the format from HumanEval, i.e., {task_id, completion or solution}.
     + A folder which contains sub-folders named after the task_id. Each sub-folder
     contains samples named in `[?].py` where `?` is the solution id starting with 0.
     Different from `sample.jsonl`, the solutions must be complete (with prompt prefix).
@@ -99,6 +99,16 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
     # if it is a file
     if os.path.isfile(sample_path):
         for i, sample in enumerate(stream_jsonl(sample_path)):
+            assert (
+                "completion" in sample or "solution" in sample
+            ), "No completion or solution found in sample!"
+            assert "solution" not in sample or isinstance(
+                sample["solution"], str
+            ), "Solution must be a string! If you have multiple solutions, please repeat the task_id."
+            assert "completion" not in sample or isinstance(
+                sample["completion"], str
+            ), "Completion must be a string! If you have multiple solutions, please repeat the task_id."
+
             sample["_identifier"] = (
                 sample["task_id"] + f" (line {i+1} in {sample_path})"
             )
