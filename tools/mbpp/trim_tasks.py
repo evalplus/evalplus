@@ -16,23 +16,25 @@ def find_links(task_id: str, text: str) -> list:
 def main(args):
     console = Console()
     plus_problems = get_mbpp_plus(mini=False)
+
+    removed = []
+
     for task_id, task in plus_problems.items():
+        # trim tasks with links in prompt
         prompt = task["prompt"]
         matches = find_links(task_id, prompt)
         if matches:
-            console.print(f"Task: {task_id} found {len(matches)} links")
-            for match in matches:
-                console.print(f"Before: \n{prompt}")
-                prompt = prompt.replace(match, "")
-                console.print(f"After: \n{prompt}")
-                console.print("-----------------")
-            task["prompt"] = prompt
+            console.print(f"Removed {task_id} for having links in prompt.")
+            removed.append(task_id)
+
+    console.print(f"Totally removed {len(removed)} tasks with links in prompt.")
 
     with open(args.output_path, "w") as f:
         for task_id, task in plus_problems.items():
-            task["base_input"] = mbpp_serialize_inputs(task_id, task["base_input"])
-            task["plus_input"] = mbpp_serialize_inputs(task_id, task["plus_input"])
-            f.write(json.dumps(task) + "\n")
+            if task_id not in removed:
+                task["base_input"] = mbpp_serialize_inputs(task_id, task["base_input"])
+                task["plus_input"] = mbpp_serialize_inputs(task_id, task["plus_input"])
+                f.write(json.dumps(task) + "\n")
 
 
 if __name__ == "__main__":
