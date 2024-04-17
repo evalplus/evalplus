@@ -13,7 +13,7 @@ from evalplus.data.utils import (
     stream_jsonl,
 )
 
-MBPP_PLUS_VERSION = "v0.1.0"
+MBPP_PLUS_VERSION = "v0.2.0"
 MBPP_OVERRIDE_PATH = os.environ.get("MBPP_OVERRIDE_PATH", None)
 
 

@@ -35,6 +35,13 @@ Why EvalPlus?
 
 Want to know more details? Read our [**NeurIPS'23 paper**](https://openreview.net/forum?id=1qvx610Cu7) [![](https://img.shields.io/badge/Paper-NeurIPS'23-a55fed.svg)](https://openreview.net/forum?id=1qvx610Cu7) as well as our [**Google Slides**](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs)!
 
+> [!Important]
+>
+> 🚧 **MBPP+ update (`v0.1.0` to `v0.2.0`)**:
+> We recently improved and stablized MBPP+ dataset by removing some tasks whose `test_list` is wrong (brought by the original MBPP dataset itself) which are reasonable to solve.
+> In `v0.1.0` MBPP+ has 399 tasks while the new `v0.2.0` has 378 tasks.
+> We also improved the oracle. Therefore, **using `v0.2.0` you might expect ~4pp pass@1 improvement** for both base and plus tests.
+
 ## 🔥 Quick Start
 
 To get started, please first setup the environment:

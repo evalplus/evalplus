@@ -175,6 +175,11 @@ def evaluate(flags):
             print("Reading samples...")
             for sample in tqdm(load_solutions(flags.samples)):
                 task_id = sample["task_id"]
+                if task_id not in problems:
+                    warn(
+                        f"Task {task_id} is found in the samples but not found in the dataset"
+                    )
+                    continue
                 solution = (
                     sample["solution"]
                     if "solution" in sample
