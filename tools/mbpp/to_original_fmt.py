@@ -55,7 +55,7 @@ def assertion(out, exp, atol):
     if atol == 0 and is_floats(exp):
         atol = 1e-6
     if out != exp and atol != 0:
-        assert np.all_close(out, exp, atol=atol)
+        assert np.allclose(out, exp, rtol=1e-07, atol=atol)
     else:
         assert out == exp, f"out: {{out}}, exp: {{exp}}"
 """
