@@ -169,7 +169,9 @@ def unsafe_execute(
                     if atol == 0 and is_floats(exp):
                         atol = 1e-6  # enforce atol for float comparison
                     if not exact_match and atol != 0:
-                        np.testing.assert_allclose(out, exp, atol=atol)
+                        # explicitly set rtol=1e-07
+                        # to match `np.testing.assert_allclose`'s default values
+                        assert np.allclose(out, exp, rtol=1e-07, atol=atol)
                     else:
                         assert exact_match
                 except BaseException:
