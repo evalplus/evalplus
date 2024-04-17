@@ -50,7 +50,7 @@ def assertion(out, exp, atol):
     if atol == 0 and is_floats(exp):
         atol = 1e-6
     if not exact_match and atol != 0:
-        np.testing.assert_allclose(out, exp, atol=atol)
+        assert np.allclose(out, exp, rtol=1e-07, atol=atol)
     else:
         assert exact_match
 """
