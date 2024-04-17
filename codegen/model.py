@@ -787,6 +787,27 @@ Complete the python code below
 """
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
+class Artigenz(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
+
+@@ Instruction
+Here is a Python programming problem to solve:
+{prompt}
+Please implement this function in a Python.
+
+@@ Response
+```python
+{prompt}
+"""
+
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 def make_model(
     name: str, batch_size: int = 1, temperature: float = 0.8, dataset: str = None
@@ -1319,6 +1340,14 @@ def make_model(
             name="ajibawa-2023/OpenHermes-2.5-Code-290k-13B",
             temperature=temperature,
             direct_completion=False,
+        )
+    elif name == "artigenz-coder-ds-6.7b":
+        return Artigenz(
+            batch_size=batch_size,
+            name="Artigenz/Artigenz-Coder-DS-6.7B",
+            temperature=temperature,
+            direct_completion=True,
+            dataset=dataset,
         )
     elif "gemma" in name:
         import re
