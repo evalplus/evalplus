@@ -205,6 +205,10 @@ def script(samples: str, inplace: bool = False, debug_task: str = None):
 
     for solution in tqdm(load_solutions(samples)):
         task_id = solution["task_id"]
+        if task_id not in dataset:
+            print(f"Skiping {task_id} as it does not existing in the latest EvalPlus dataset.")
+            continue
+
         function_name = entry_point[task_id] if task_id in entry_point else None
         dbg_identifier = solution["_identifier"]
         if debug_task is not None and task_id != debug_task:
