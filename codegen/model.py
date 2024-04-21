@@ -199,6 +199,41 @@ class CodeLlamaInstruct70B(VLlmDecoder):
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 
 
+# some random words which serves as the splitter
+_MAGIC_SPLITTER_ = "-[[]]-this-is-really-our-highest-priority-[[]]-"
+
+
+class GeneralChatVllmDecoder(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```\n"]
+        self.tokenizer = AutoTokenizer.from_pretrained(self.name)
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""\
+Please provide a self-contained Python script that solves the following problem in a markdown code block:
+```
+{prompt.strip()}
+```
+"""
+        response = f"""\
+Below is a self-contained Python script that solves the problem:
+```python
+{_MAGIC_SPLITTER_}
+```
+"""
+        input = self.tokenizer.apply_chat_template(
+            [
+                {"role": "user", "content": prompt},
+                {"role": "assistant", "content": response},
+            ],
+            tokenize=False,
+        ).split(_MAGIC_SPLITTER_)[0]
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
 class CodeLlamaInstructSmall(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         kwargs["direct_completion"] = False
@@ -787,6 +822,7 @@ Complete the python code below
 """
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
+
 class Artigenz(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
@@ -808,6 +844,7 @@ Please implement this function in a Python.
 """
 
         return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
 
 def make_model(
     name: str, batch_size: int = 1, temperature: float = 0.8, dataset: str = None
@@ -1365,6 +1402,7 @@ def make_model(
                 direct_completion=False,
                 dtype="bfloat16",
             )
+
         else:
             return VLlmDecoder(
                 batch_size=batch_size,
@@ -1374,5 +1412,21 @@ def make_model(
                 direct_completion=True,
                 dtype="bfloat16",
             )
+    elif name == "meta-llama-3-70b-instruct":
+        return GeneralChatVllmDecoder(
+            batch_size=batch_size,
+            name="meta-llama/Meta-Llama-3-70B-Instruct",
+            temperature=temperature,
+            direct_completion=False,
+            dataset=dataset,
+        )
+    elif name == "mixtral-8x22b-instruct-v0.1":
+        return GeneralChatVllmDecoder(
+            batch_size=batch_size,
+            name="mistralai/Mixtral-8x22B-Instruct-v0.1",
+            temperature=temperature,
+            direct_completion=False,
+            dataset=dataset,
+        )
 
     raise ValueError(f"Invalid model name: {name}")
