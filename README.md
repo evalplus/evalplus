@@ -38,11 +38,16 @@ Want to know more details? Read our [**NeurIPS'23 paper**](https://openreview.ne
 > [!Important]
 >
 > 🚧 **MBPP+ update (`v0.1.0` to `v0.2.0`)**:
-> We recently improved and stablized MBPP+ dataset by removing some tasks whose `test_list` is wrong (brought by the original MBPP dataset itself) which are reasonable to solve.
+> We recently improved and stablized MBPP+ dataset by removing some tasks whose `test_list` is wrong (brought by the original MBPP dataset itself) to make it more reasonable to solve.
 > In `v0.1.0` MBPP+ has 399 tasks while the new `v0.2.0` has 378 tasks.
 > We also improved the oracle. Therefore, **using `v0.2.0` you might expect ~4pp pass@1 improvement** for both base and plus tests.
 
 ## 🔥 Quick Start
+
+> [!Tip]
+>
+> EvalPlus ❤️ [bigcode-evaluation-harness](https://github.com/bigcode-project/bigcode-evaluation-harness)!
+> HumanEval+ and MBPP+ have been integrated to bigcode-evaluation-harness that you can also run EvalPlus datasets there!
 
 To get started, please first setup the environment:
 
