@@ -134,6 +134,7 @@ class GeneralChatVllmDecoder(VLlmDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
+        print(prompt)
         prompt = f"""\
 Please provide a self-contained Python script that solves the following problem in a markdown code block:
 ```
@@ -1052,11 +1053,11 @@ def make_model(
             dataset=dataset,
         )
     elif name == "octocoder":
-        return GeneralChatVllmDecoder(
+        return VLlmDecoder(
             batch_size=batch_size,
             name="bigcode/octocoder",
             temperature=temperature,
-            direct_completion=False,
+            direct_completion=True,
             dataset=dataset,
         )
 

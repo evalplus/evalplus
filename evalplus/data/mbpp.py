@@ -197,7 +197,7 @@ def get_mbpp_plus_hash(mini=False, noextreme=False, version="default") -> str:
     Returns:
         str: The hash of MbppPlus
     """
-    plus_path = _ready_mbpp_plus_path(mini=mini, noextreme=noextreme, version="default")
+    plus_path = _ready_mbpp_plus_path(mini=mini, noextreme=noextreme, version=version)
     with open(plus_path, "rb") as f:
         plus = f.read()
     return hashlib.md5(plus).hexdigest()
