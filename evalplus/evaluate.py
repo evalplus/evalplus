@@ -143,15 +143,19 @@ def evaluate(flags):
         results = compatible_eval_result(results)
     else:
         if flags.dataset == "humaneval":
-            problems = get_human_eval_plus(mini=flags.mini, noextreme=flags.noextreme)
+            problems = get_human_eval_plus(
+                mini=flags.mini, noextreme=flags.noextreme, version=flags.version
+            )
             dataset_hash = get_human_eval_plus_hash(
-                mini=flags.mini, noextreme=flags.noextreme
+                mini=flags.mini, noextreme=flags.noextreme, version=flags.version
             )
             expected_output = get_groundtruth(problems, dataset_hash, [])
         elif flags.dataset == "mbpp":
-            problems = get_mbpp_plus(mini=flags.mini, noextreme=flags.noextreme)
+            problems = get_mbpp_plus(
+                mini=flags.mini, noextreme=flags.noextreme, version=flags.version
+            )
             dataset_hash = get_mbpp_plus_hash(
-                mini=flags.mini, noextreme=flags.noextreme
+                mini=flags.mini, noextreme=flags.noextreme, version=flags.version
             )
             expected_output = get_groundtruth(
                 problems,
@@ -344,6 +348,9 @@ def main():
     parser.add_argument("--mini", action="store_true")
     parser.add_argument(
         "--noextreme", action="store_true", help="Omit extreme test inputs"
+    )
+    parser.add_argument(
+        "--version", default="default", type=str, help="Version of the dataset"
     )
     args = parser.parse_args()
 

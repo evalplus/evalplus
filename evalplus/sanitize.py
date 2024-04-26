@@ -178,11 +178,13 @@ def sanitize(code: str, entrypoint: Optional[str] = None) -> str:
     return sanitized_output[:-1]
 
 
-def script(samples: str, inplace: bool = False, debug_task: str = None):
+def script(
+    samples: str, inplace: bool = False, debug_task: str = None, mbpp_version="default"
+):
     # task_id -> entry_point
     entry_point = {}
     # merge two datasets
-    dataset = {**get_human_eval_plus(), **get_mbpp_plus()}
+    dataset = {**get_human_eval_plus(), **get_mbpp_plus(version=mbpp_version)}
 
     for task_id, problem in dataset.items():
         entry_point[task_id] = problem["entry_point"]
@@ -206,7 +208,9 @@ def script(samples: str, inplace: bool = False, debug_task: str = None):
     for solution in tqdm(load_solutions(samples)):
         task_id = solution["task_id"]
         if task_id not in dataset:
-            print(f"Skiping {task_id} as it does not existing in the latest EvalPlus dataset.")
+            print(
+                f"Skiping {task_id} as it does not existing in the latest EvalPlus dataset."
+            )
             continue
 
         function_name = entry_point[task_id] if task_id in entry_point else None

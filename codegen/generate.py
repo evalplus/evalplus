@@ -35,7 +35,9 @@ def construct_contract_prompt(prompt: str, contract_type: str, contract: str) ->
         return prompt + contract
 
 
-def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
+def code_generate(
+    args, workdir: PathLike, model: DecoderBase, id_range=None, version="default"
+):
     with Progress(
         TextColumn(
             f"{args.dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"
@@ -48,11 +50,11 @@ def code_generate(args, workdir: PathLike, model: DecoderBase, id_range=None):
         if args.dataset == "humaneval":
             from evalplus.data import get_human_eval_plus
 
-            dataset = get_human_eval_plus()
+            dataset = get_human_eval_plus(version=version)
         elif args.dataset == "mbpp":
             from evalplus.data import get_mbpp_plus
 
-            dataset = get_mbpp_plus()
+            dataset = get_mbpp_plus(version=version)
 
         for task_id, task in p.track(dataset.items()):
             if id_range is not None:
@@ -130,6 +132,7 @@ def main():
     parser.add_argument("--greedy", action="store_true")
     # id_range is list
     parser.add_argument("--id-range", default=None, nargs="+", type=int)
+    parser.add_argument("--version", default="default", type=str)
     args = parser.parse_args()
 
     if args.greedy and (args.temperature != 0 or args.bs != 1 or args.n_samples != 1):
@@ -167,7 +170,9 @@ def main():
     with open(os.path.join(workdir, "args.txt"), "w") as f:
         f.write(str(args))
 
-    code_generate(args, workdir=workdir, model=model, id_range=args.id_range)
+    code_generate(
+        args, workdir=workdir, model=model, id_range=args.id_range, version=args.version
+    )
 
 
 if __name__ == "__main__":
