@@ -134,7 +134,6 @@ class GeneralChatVllmDecoder(VLlmDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        print(prompt)
         prompt = f"""\
 Please provide a self-contained Python script that solves the following problem in a markdown code block:
 ```
