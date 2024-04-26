@@ -120,85 +120,6 @@ class VLlmDecoder(DecoderBase):
         return gen_strs
 
 
-# chatml format
-class ChatML(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if do_sample:
-            assert self.temperature > 0, "Temperature must be greater than 0!"
-
-        input = f"""<|im_start|>system
-You are an intelligent programming assistant to produce Python algorithmic solutions<|im_end|>
-<|im_start|>user
-Can you complete the following Python function?
-```python
-{prompt}
-```
-<|im_end|>
-<|im_start|>assistant
-```python
-"""
-        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
-
-
-class Mixtral(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if do_sample:
-            assert self.temperature > 0, "Temperature must be greater than 0!"
-
-        input = f"""<s>[INST]Please complete and solve the following Python function in a markdown block.
-```python
-{prompt}
-```
-[/INST]
-```python
-"""
-        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
-
-
-class CodeLlamaInstruct70B(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if do_sample:
-            assert self.temperature > 0, "Temperature must be greater than 0!"
-
-        input = f"""'<s>Source: system
-
- You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
- <step> Source: user
-
- Provide a self-contained Python script that solves the following problem:
-```python
-{prompt}
-```
- <step> Source: assistant
-
- Here is a Python script that solves the problem:
-```python
-"""
-
-        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
-
-
 # some random words which serves as the splitter
 _MAGIC_SPLITTER_ = "-[[]]-this-is-really-our-highest-priority-[[]]-"
 
@@ -207,6 +128,7 @@ class GeneralChatVllmDecoder(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
         self.eos += ["\n```\n"]
+        print(f"EOS strings: {self.eos}")
         self.tokenizer = AutoTokenizer.from_pretrained(self.name)
 
     def codegen(
@@ -219,7 +141,7 @@ Please provide a self-contained Python script that solves the following problem 
 ```
 """
         response = f"""\
-Below is a self-contained Python script that solves the problem:
+Below is a Python script with a self-contained function that solves the problem and passes correpsonding tests:
 ```python
 {_MAGIC_SPLITTER_}
 ```
@@ -232,144 +154,6 @@ Below is a self-contained Python script that solves the problem:
             tokenize=False,
         ).split(_MAGIC_SPLITTER_)[0]
         return VLlmDecoder.codegen(self, input, do_sample, num_samples)
-
-
-class CodeLlamaInstructSmall(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if do_sample:
-            assert self.temperature > 0, "Temperature must be greater than 0!"
-
-        input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```:
-```python
-{prompt}
-```
-[/INST]
-```python
-"""
-
-        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
-
-
-# zyte format
-class Zyte(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if do_sample:
-            assert self.temperature > 0, "Temperature must be greater than 0!"
-
-        input = f"""<|system|>You are an intelligent programming assistant to produce Python algorithmic solutions</s>
-<|user|>Can you complete the following Python function?
-```python
-{prompt}
-```
-</s>
-<|assistant|>
-```python
-"""
-        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
-
-
-class OpenChat(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if do_sample:
-            assert self.temperature > 0, "Temperature must be greater than 0!"
-
-        input = f"""GPT4 Correct User: Can you complete the following Python function?
-```python
-{prompt}
-```
-<|end_of_turn|>GPT4 Correct Assistant:
-```python
-"""
-        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
-
-
-class Solar(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        if do_sample:
-            assert self.temperature > 0, "Temperature must be greater than 0!"
-
-        input = f"""<s> ### User:
-Can you solve and complete the Python function below?
-```python
-{prompt}
-```
-
-### Assistant:
-Sure!
-```python
-"""
-        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
-
-
-class Alpaca(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        prompt = f"""Below is an instruction that describes a task. Write a response that appropriately completes request.
-
-### Instruction:
-Create a Python script for this problem:
-{prompt}
-
-### Response:
-```python
-"""
-
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
-
-
-class WhiteRabbitNeo(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        prompt = f"""You code like a superhero!
-USER:
-Create a Python script to solve this problem:
-```python
-{prompt}
-```
-ASSISTANT:
-```python
-"""
-
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
 class HFTorchDecoder(DecoderBase):
@@ -439,28 +223,6 @@ class HFTorchDecoder(DecoderBase):
                     min_index = min(min_index, output.index(eos))
             outputs.append(output[:min_index].replace("\t", "    "))
         return outputs
-
-
-class DeepSeekInstruct(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        prompt = f"""You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.
-### Instruction:
-Please complete the following Python function in a markdown style code block:
-```python
-{prompt}
-```
-### Response:
-```python
-"""
-
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
 class Magicoder(VLlmDecoder):
@@ -696,133 +458,6 @@ class CodeT5P(DecoderBase):
         return HFTorchDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
-class Code(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        prompt = f"""This is a conversation with your helpful AI assistant. AI assistant can generate Python Code along with necessary explanation.
-
-Context
-You are a helpful AI assistant.
-
-USER:
-```python
-{prompt}
-```
-ASSISTANT:
-```python
-"""
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
-
-
-class XwinCoder(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        prompt = f"""<system>: You are an AI coding assistant that helps people with programming. Write a response that appropriately completes the user's request.
-<user>: Complete the following code for me and return a fully runable code.
-```python
-{prompt}
-```
-<AI>:
-```python
-"""
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
-
-
-class OpenCodeInterpreterDecoder(HFTorchDecoder):
-    def __init__(self, name: str, **kwargs):
-        super().__init__(name=name, **kwargs)
-        self.skip_special_tokens = True
-        self.eos += ["<|EOT|>", "\n```\n", "\nif "]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        prompt = f"""You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
-
-@@ Instruction
-Here is a Python programming problem to solve:
-```python
-{prompt}
-```
-Please implement this function in a Python markdown code block starting with "```python" and follow the function/input/output formats.
-
-@@ Response
-"""
-        return HFTorchDecoder.codegen(self, prompt, do_sample, num_samples)
-
-
-class CodeGemma(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        prompt = f"""### Instruction
-{prompt}
-### Response
-"""
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
-
-
-class OpenHermes(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["conversational"] = True
-        super().__init__(name, **kwargs)
-        self.eos += ["\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        # simple change for codegen
-        prompt = f"""
-This is a conversation with your helpful AI assistant. AI assistant can generate Code in various Programming Languages along with necessary explanation. It can generate Story, Blogs .....
-
-Context
-You are a helpful AI assistant.
-
-USER: complete the python code below
-```python
-{prompt}
-```
-ASSISTANT:```python"""
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
-
-
-class GemmaInstruct(VLlmDecoder):
-    def __init__(self, name: str, **kwargs) -> None:
-        kwargs["direct_completion"] = False
-        super().__init__(name, **kwargs)
-        self.eos += ["<end_of_turn>", "\n```"]
-
-    def codegen(
-        self, prompt: str, do_sample: bool = True, num_samples: int = 200
-    ) -> List[str]:
-        prompt = f"""\
-<start_of_turn>user
-Complete the python code below
-```python
-{prompt}
-```<end_of_turn>
-<start_of_turn>model
-```python
-"""
-        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
-
-
 class Artigenz(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
@@ -1022,14 +657,14 @@ def make_model(
             nb = name.split("-")[2]
             assert nb.endswith("b")
             if nb == "70b":
-                return CodeLlamaInstruct70B(
+                return GeneralChatVllmDecoder(
                     batch_size=batch_size,
                     name=f"codellama/CodeLlama-70B-Instruct-hf",
                     temperature=temperature,
                     direct_completion=False,
                 )
             else:
-                return CodeLlamaInstructSmall(
+                return GeneralChatVllmDecoder(
                     batch_size=batch_size,
                     name=f"codellama/CodeLlama-{nb}-Instruct-hf",
                     temperature=temperature,
@@ -1068,7 +703,7 @@ def make_model(
             # if version is specified, use it
             version = matches[1].split("-")[-1]
             version_suffix = f"-{version}" if version.startswith("v") else ""
-            return DeepSeekInstruct(
+            return GeneralChatVllmDecoder(
                 batch_size=batch_size,
                 name=f"deepseek-ai/deepseek-coder-{nb}b-instruct{version_suffix}",
                 temperature=temperature,
@@ -1100,7 +735,7 @@ def make_model(
             dataset=dataset,
         )
     elif name == "wizardcoder-33b-v1.1":
-        return Alpaca(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-33B-V1.1",
             temperature=temperature,
@@ -1108,7 +743,7 @@ def make_model(
             dtype="float16",
         )
     elif name == "wizardcoder-34b":
-        return Alpaca(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-Python-34B-V1.0",
             temperature=temperature,
@@ -1116,7 +751,7 @@ def make_model(
             dtype="float16",
         )
     elif name == "wizardcoder-15b":
-        return Alpaca(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-15B-V1.0",
             temperature=temperature,
@@ -1124,7 +759,7 @@ def make_model(
             dtype="float16",
         )
     elif name == "wizardcoder-7b":
-        return Alpaca(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="WizardLM/WizardCoder-Python-7B-V1.0",
             temperature=temperature,
@@ -1155,21 +790,21 @@ def make_model(
             dataset=dataset,
         )
     elif name == "code-13b":
-        return Code(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="ajibawa-2023/Code-13B",
             temperature=temperature,
             dataset=dataset,
         )
     elif name == "code-33b":
-        return Code(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="ajibawa-2023/Code-33B",
             temperature=temperature,
             dataset=dataset,
         )
     elif name == "code-290k-6.7b-instruct":
-        return Code(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="ajibawa-2023/Code-290k-6.7B-Instruct",
             temperature=temperature,
@@ -1182,14 +817,14 @@ def make_model(
             dataset=dataset,
         )
     elif name == "python-code-33b":
-        return Code(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="ajibawa-2023/Python-Code-33B",
             temperature=temperature,
             dataset=dataset,
         )
     elif name == "python-code-13b":
-        return Code(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="ajibawa-2023/Python-Code-13B",
             temperature=temperature,
@@ -1203,20 +838,20 @@ def make_model(
             dataset=dataset,
         )
     elif name == "dolphin-2.6":
-        return ChatML(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="cognitivecomputations/dolphin-2.6-mixtral-8x7b",
             temperature=temperature,
             max_new_tokens=512 + 256,
         )
     elif name == "mixtral-8x7b-instruct":
-        return Mixtral(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="mistralai/Mixtral-8x7B-Instruct-v0.1",
             temperature=temperature,
         )
     elif name == "solar-10.7b-instruct":
-        return Solar(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="upstage/SOLAR-10.7B-Instruct-v1.0",
             temperature=temperature,
@@ -1224,7 +859,7 @@ def make_model(
             dtype="float16",
         )
     elif name == "mistral-hermes-codepro-7b":
-        return ChatML(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="beowolx/MistralHermes-CodePro-7B-v1",
             temperature=temperature,
@@ -1240,14 +875,14 @@ def make_model(
             dataset=dataset,
         )
     elif name == "openchat":
-        return OpenChat(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="openchat/openchat-3.5-0106",
             temperature=temperature,
             direct_completion=False,
         )
     elif name == "speechless-codellama-34b":
-        return Alpaca(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="uukuguy/speechless-codellama-34b-v2.0",
             temperature=temperature,
@@ -1255,7 +890,7 @@ def make_model(
             dtype="float16",
         )
     elif name == "speechless-mistral-7b":
-        return Alpaca(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="uukuguy/speechless-code-mistral-7b-v1.0",
             temperature=temperature,
@@ -1263,7 +898,7 @@ def make_model(
             dtype="float16",
         )
     elif name == "speechless-thoughts-mistral-7b":
-        return Alpaca(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="uukuguy/speechless-thoughts-mistral-7b",
             temperature=temperature,
@@ -1271,7 +906,7 @@ def make_model(
             dtype="float16",
         )
     elif name == "speechless-coder-ds-6.7b":
-        return Speechless(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="uukuguy/speechless-coder-ds-6.7b",
             temperature=temperature,
@@ -1279,14 +914,14 @@ def make_model(
             dtype="float16",
         )
     elif name == "speechless-coding-7b-16k-tora":
-        return Speechless(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="uukuguy/speechless-coding-7b-16k-tora",
             temperature=temperature,
             direct_completion=False,
         )
     elif name == "speechless-sparsetral-16x7b-moe":
-        return Speechless(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="uukuguy/speechless-sparsetral-16x7b-MoE",
             temperature=temperature,
@@ -1294,7 +929,7 @@ def make_model(
             trust_remote_code=True,
         )
     elif name == "code-millenials-34b":
-        return Alpaca(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="budecosystem/code-millenials-34b",
             temperature=temperature,
@@ -1302,7 +937,7 @@ def make_model(
             dtype="float16",
         )
     elif name == "xdan-l1-chat":
-        return Alpaca(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="xDAN-AI/xDAN-L1-Chat-dpo-qlora-v1",
             temperature=temperature,
@@ -1317,48 +952,36 @@ def make_model(
             dataset=dataset,
         )
     elif name == "xwincoder-34b":
-        return XwinCoder(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="Xwin-LM/XwinCoder-34B",
             temperature=temperature,
             dataset=dataset,
         )
     elif name == "zyte-1b":
-        return Zyte(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="aihub-app/zyte-1B",
             temperature=temperature,
             direct_completion=False,
         )
     elif name == "white-rabbit-neo-33b-v1":
-        return WhiteRabbitNeo(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="whiterabbitneo/WhiteRabbitNeo-33B-v-1",
             temperature=temperature,
             direct_completion=False,
             dtype="float16",
         )
-    elif "codegemma" in name:
-        import re
-
-        pattern = re.compile(r"codegemma-(\d+)b")
-        matches = pattern.findall(name)
-        nb = int(matches[0])
-        return CodeGemma(
-            batch_size=batch_size,
-            name=f"TechxGenus/CodeGemma-{nb}b",
-            temperature=temperature,
-            direct_completion=False,
-        )
     elif name == "opencodeinterpreter-ds-6.7b":
-        return OpenCodeInterpreterDecoder(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="m-a-p/OpenCodeInterpreter-DS-6.7B",
             temperature=temperature,
             direct_completion=False,
         )
     elif name == "opencodeinterpreter-ds-33b":
-        return OpenCodeInterpreterDecoder(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="m-a-p/OpenCodeInterpreter-DS-33B",
             temperature=temperature,
@@ -1372,7 +995,7 @@ def make_model(
             direct_completion=False,
         )
     elif name == "open-hermes-2.5-code-290k-13b":
-        return OpenHermes(
+        return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="ajibawa-2023/OpenHermes-2.5-Code-290k-13B",
             temperature=temperature,
@@ -1395,7 +1018,7 @@ def make_model(
         if nb.is_integer():
             nb = int(nb)
         if "it" in name:
-            return GemmaInstruct(
+            return GeneralChatVllmDecoder(
                 batch_size=batch_size,
                 name=f"google/gemma-{nb}b-it",
                 temperature=temperature,
@@ -1404,7 +1027,7 @@ def make_model(
             )
 
         else:
-            return VLlmDecoder(
+            return GeneralChatVllmDecoder(
                 batch_size=batch_size,
                 name=f"google/gemma-{nb}b",
                 temperature=temperature,
@@ -1424,6 +1047,14 @@ def make_model(
         return GeneralChatVllmDecoder(
             batch_size=batch_size,
             name="mistralai/Mixtral-8x22B-Instruct-v0.1",
+            temperature=temperature,
+            direct_completion=False,
+            dataset=dataset,
+        )
+    elif name == "octocoder":
+        return GeneralChatVllmDecoder(
+            batch_size=batch_size,
+            name="bigcode/octocoder",
             temperature=temperature,
             direct_completion=False,
             dataset=dataset,
