@@ -1,6 +1,6 @@
-import argparse
 import os
 from os import PathLike
+from typing import List
 
 from model import DecoderBase, make_model
 from rich.progress import (
@@ -35,23 +35,28 @@ def construct_contract_prompt(prompt: str, contract_type: str, contract: str) ->
         return prompt + contract
 
 
-def code_generate(
-    args, workdir: PathLike, model: DecoderBase, id_range=None, version="default"
+def codegen(
+    workdir: PathLike,
+    model: DecoderBase,
+    dataset: str,
+    greedy=False,
+    n_samples=1,
+    id_range=None,
+    version="default",
+    resume=True,
 ):
     with Progress(
-        TextColumn(
-            f"{args.dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"
-        ),
+        TextColumn(f"{dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"),
         BarColumn(),
         MofNCompleteColumn(),
         TextColumn("•"),
         TimeElapsedColumn(),
     ) as p:
-        if args.dataset == "humaneval":
+        if dataset == "humaneval":
             from evalplus.data import get_human_eval_plus
 
             dataset = get_human_eval_plus(version=version)
-        elif args.dataset == "mbpp":
+        elif dataset == "mbpp":
             from evalplus.data import get_mbpp_plus
 
             dataset = get_mbpp_plus(version=version)
@@ -65,12 +70,10 @@ def code_generate(
                     continue
 
             p_name = task_id.replace("/", "_")
-            if args.contract_type != "none" and task["contract"] == "":
-                continue
             os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
             log = f"Codegen: {p_name} @ {model}"
             n_existing = 0
-            if args.resume:
+            if resume:
                 # count existing .py files
                 n_existing = len(
                     [
@@ -82,18 +85,15 @@ def code_generate(
                 if n_existing > 0:
                     log += f" (resuming from {n_existing})"
 
-            nsamples = args.n_samples - n_existing
+            nsamples = n_samples - n_existing
             p.console.print(log)
 
-            sidx = args.n_samples - nsamples
-            while sidx < args.n_samples:
-                model.dataset = args.dataset
+            sidx = n_samples - nsamples
+            while sidx < n_samples:
                 outputs = model.codegen(
-                    construct_contract_prompt(
-                        task["prompt"], args.contract_type, task["contract"]
-                    ).strip(),
-                    do_sample=not args.greedy,
-                    num_samples=args.n_samples - sidx,
+                    task["prompt"],
+                    do_sample=not greedy,
+                    num_samples=n_samples - sidx,
                 )
                 assert outputs, "No outputs from model!"
                 for impl in outputs:
@@ -103,7 +103,7 @@ def code_generate(
                             "w",
                             encoding="utf-8",
                         ) as f:
-                            if model.direct_completion:
+                            if model.is_direct_completion():
                                 f.write(task["prompt"] + impl)
                             else:
                                 f.write(impl)
@@ -112,68 +112,65 @@ def code_generate(
                     sidx += 1
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", required=True, type=str)
-    parser.add_argument("--bs", default=1, type=int)
-    parser.add_argument("--temperature", default=0.0, type=float)
-    parser.add_argument(
-        "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
-    )
-    parser.add_argument("--root", type=str, required=True)
-    parser.add_argument("--n_samples", default=1, type=int)
-    parser.add_argument("--resume", action="store_true")
-    parser.add_argument(
-        "--contract-type",
-        default="none",
-        type=str,
-        choices=["none", "code", "docstring"],
-    )
-    parser.add_argument("--greedy", action="store_true")
-    # id_range is list
-    parser.add_argument("--id-range", default=None, nargs="+", type=int)
-    parser.add_argument("--version", default="default", type=str)
-    args = parser.parse_args()
+def main(
+    model: str,
+    dataset: str,
+    root: str,
+    bs: int = 1,
+    n_samples: int = 1,
+    temperature: float = 0.0,
+    resume: bool = True,
+    greedy: bool = False,
+    id_range: List = None,
+    version: str = "default",
+    backend: str = "vllm",
+    base_url: str = None,
+    tp: int = 1,
+):
+    assert dataset in ["humaneval", "mbpp"], f"Invalid dataset {dataset}"
+    assert backend in ["vllm", "hf", "openai"]
 
-    if args.greedy and (args.temperature != 0 or args.bs != 1 or args.n_samples != 1):
-        args.temperature = 0
-        args.bs = 1
-        args.n_samples = 1
+    if greedy and (temperature != 0 or bs != 1 or n_samples != 1):
+        temperature = 0
+        bs = 1
+        n_samples = 1
         print("Greedy decoding ON (--greedy): setting bs=1, n_samples=1, temperature=0")
 
-    if args.id_range is not None:
-        assert len(args.id_range) == 2, "id_range must be a list of length 2"
-        assert args.id_range[0] < args.id_range[1], "id_range must be increasing"
-        args.id_range = tuple(args.id_range)
+    if id_range is not None:
+        assert len(id_range) == 2, "id_range must be a list of length 2"
+        assert id_range[0] < id_range[1], "id_range must be increasing"
+        id_range = tuple(id_range)
 
     # Make project dir
-    os.makedirs(args.root, exist_ok=True)
+    os.makedirs(root, exist_ok=True)
     # Make dataset dir
-    os.makedirs(os.path.join(args.root, args.dataset), exist_ok=True)
+    os.makedirs(os.path.join(root, dataset), exist_ok=True)
     # Make dir for codes generated by each model
-    args.model = args.model.lower()
-    model = make_model(
-        name=args.model,
-        batch_size=args.bs,
-        temperature=args.temperature,
-        dataset=args.dataset,
+    model_runner = make_model(
+        model=model,
+        backend=backend,
+        batch_size=bs,
+        temperature=temperature,
+        dataset=dataset,
+        base_url=base_url,
+        tp=tp,
     )
-    workdir = os.path.join(
-        args.root,
-        args.dataset,
-        args.model
-        + f"_temp_{args.temperature}"
-        + ("" if args.contract_type == "none" else f"-contract-{args.contract_type}"),
-    )
+    identifier = model.replace("/", "--") + f"_{backend}_temp_{temperature}"
+    workdir = os.path.join(root, dataset, identifier)
     os.makedirs(workdir, exist_ok=True)
-
-    with open(os.path.join(workdir, "args.txt"), "w") as f:
-        f.write(str(args))
-
-    code_generate(
-        args, workdir=workdir, model=model, id_range=args.id_range, version=args.version
+    codegen(
+        workdir=workdir,
+        dataset=dataset,
+        greedy=greedy,
+        model=model_runner,
+        n_samples=n_samples,
+        resume=resume,
+        id_range=id_range,
+        version=version,
     )
 
 
 if __name__ == "__main__":
-    main()
+    from fire import Fire
+
+    Fire(main)

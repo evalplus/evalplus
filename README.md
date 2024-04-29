@@ -273,11 +273,17 @@ pip install -r tools/requirements.txt
 
 ### Code generation
 
-We have configured the code generation of a wide range of LLMs (see support details in [codegen/models.py](https://github.com/evalplus/evalplus/blob/master/codegen/model.py)).
-Example to run greedy generation on StarCoderBase-7B:
+You can use `codegen/generate.py` to performance code generation.
+We currently support following backends:
+
+* `vllm`: Set `--model` as Hugging Face model ID such as `microsoft/Phi-3-mini-128k-instruct`
+* `hf`: HuggingFace Transformers; same way to setup `--model`
+* `openai`: Configure `OPENAI_API_KEY`; one can configure `--base-url`
+* `anthropic`: Configure `ANTHROPIC_API_KEY`
+* `mistral`: Configure `MISTRAL_API_KEY`
 
 ```shell
-python codegen/generate.py --model starcoderbase-7b --bs 1 --temperature 0 --n_samples 1 --resume --greedy --root [result_path] --dataset [mbpp|humaneval]
+python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm]
 ```
 
 ### Test input generation using EvalPlus
