@@ -1,6 +1,6 @@
 name: "🤗 Model Evaluation Request"
 description: Request EvalPlus maintainers to evaluate your model independently and update it on our leaderboard.
-title: "🤗 [REQUEST] - <MODEL_NAME>"
+title: "🤗 [REQUEST] - FILL_THE_MODEL_NAME_HERE"
 labels: ["model eval"]
 body:
   - type: textarea
@@ -19,27 +19,22 @@ body:
       placeholder: https://huggingface.co/[???]/[???]
     validations:
       required: true
-  - type: dropdown
-    id: dtype
-    attributes:
-      label: "Data type"
-      description: What is the intended data type for running the model?
-      multiple: false
-      options:
-        - "float16"
-        - "bfloat16"
-        - "float32"
-        - "None of above: specify the details in the 'Other context' section"
-    validations:
-      required: true
   - type: textarea
     id: other
     attributes:
-      label: "Additional instructions (Optional)"
+      label: "Additional information (Optional)"
       description: Special steps indicating how to run the model with preferably scripts/codes.
       placeholder: What data type precision should be used? What is the minimal hardware requirement? Can it be accelerated by tools such as vLLM?
     validations:
       required: false
+  - type: textarea
+    id: decomtamination
+    attributes:
+      label: "Decontamination"
+      description: How does the authors avoid contamination for their training data? 
+      placeholder: Please clarify the decontamination steps and quantify it, e.g., N-gram match of ground-truth code in the training dataset. 
+    validations:
+      required: true
   - type: dropdown
     id: author
     attributes:
@@ -51,12 +46,23 @@ body:
         - "No"
     validations:
       required: true
+  - type: dropdown
+    id: data
+    attributes:
+      label: "Data"
+      description: "Is the training/fine-tuning data available in public?"
+      multiple: false
+      options:
+        - "Yes (If so please specify in 'Additional information')"
+        - "No"
+    validations:
+      required: true
   - type: checkboxes
     id: security
     attributes:
       label: "Security"
       options:
-        - label: "I confirm that the model is safe to run which does not contain any malicious code or content."
+        - label: "I confirm that the model is safe to run which is not designed to produce malicious code or content."
           required: true
   - type: checkboxes
     id: integrity
