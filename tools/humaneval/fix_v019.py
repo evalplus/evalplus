@@ -3,7 +3,6 @@ from tools.humaneval.fix_utils import check_id, debug_output, evolve, replay_con
 
 def fix(data):
     # https://github.com/evalplus/evalplus/issues/180
-
     check_id(data, 1)
     replay_contract(data, 1)
 
