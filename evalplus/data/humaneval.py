@@ -11,7 +11,7 @@ from evalplus.data.utils import (
     stream_jsonl,
 )
 
-HUMANEVAL_PLUS_VERSION = "v0.1.9"
+HUMANEVAL_PLUS_VERSION = "v0.1.10"
 HUMANEVAL_OVERRIDE_PATH = os.environ.get("HUMANEVAL_OVERRIDE_PATH", None)
 
 
