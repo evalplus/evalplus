@@ -31,8 +31,8 @@ body:
     id: decomtamination
     attributes:
       label: "Decontamination"
-      description: How does the authors avoid contamination for their training data? 
-      placeholder: Please clarify the decontamination steps and quantify it, e.g., N-gram match of ground-truth code in the training dataset. 
+      description: How does the authors avoid contamination for their training data?
+      placeholder: Please clarify the decontamination steps and quantify it, e.g., N-gram match of ground-truth code in the training dataset.
     validations:
       required: true
   - type: dropdown
