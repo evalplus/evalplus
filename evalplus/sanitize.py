@@ -173,7 +173,7 @@ def sanitize(code: str, entrypoint: Optional[str] = None) -> str:
 
     for pair in definition_nodes:
         name, node = pair
-        if not (name in variable_names) and entrypoint and not (name in reacheable):
+        if entrypoint and not (name in reacheable):
             continue
         sanitized_output += code_bytes[node.start_byte : node.end_byte] + b"\n"
     return sanitized_output[:-1].decode("utf8")
