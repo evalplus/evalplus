@@ -123,8 +123,9 @@ def has_return_statement(node: Node) -> bool:
 
 def sanitize(code: str, entrypoint: Optional[str] = None) -> str:
     code = code_extract(code)
+    code_bytes = bytes(code, "utf8")
     parser = get_parser("python")
-    tree = parser.parse(bytes(code, "utf8"))
+    tree = parser.parse(code_bytes)
     class_names = set()
     function_names = set()
     variable_names = set()
@@ -165,17 +166,17 @@ def sanitize(code: str, entrypoint: Optional[str] = None) -> str:
         call_graph = get_call_graph(definition_nodes, class_names, function_names)
         reacheable = get_function_dependency(entrypoint, call_graph)
 
-    sanitized_output = ""
+    sanitized_output = b""
 
     for node in import_nodes:
-        sanitized_output += code[node.start_byte : node.end_byte] + "\n"
+        sanitized_output += code_bytes[node.start_byte : node.end_byte] + b"\n"
 
     for pair in definition_nodes:
         name, node = pair
-        if not (name in variable_names) and entrypoint and not (name in reacheable):
+        if entrypoint and not (name in reacheable):
             continue
-        sanitized_output += code[node.start_byte : node.end_byte] + "\n"
-    return sanitized_output[:-1]
+        sanitized_output += code_bytes[node.start_byte : node.end_byte] + b"\n"
+    return sanitized_output[:-1].decode("utf8")
 
 
 def script(
