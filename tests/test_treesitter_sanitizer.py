@@ -233,8 +233,10 @@ class h():
 def d(x):
     return g(x)
 
-
+# Some tests
 assert g(0) == 1
+print(g(123))
+ret = g(321)
 ```
 """
 

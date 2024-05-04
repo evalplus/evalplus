@@ -44,34 +44,21 @@ def code_extract(text: str) -> str:
     return "\n".join(lines[longest_line_pair[0] : longest_line_pair[1] + 1])
 
 
-def get_callee_name(
-    node: Node, class_names: Set[str], function_names: Set[str]
-) -> Optional[str]:
-    for child in node.children:
-        if child.type == ATTRIBUTE_TYPE:
-            name = child.children[0].text.decode("utf8")
-            if name in class_names:
-                return name
-        elif child.type == IDENTIFIER_TYPE:
-            name = child.text.decode("utf8")
-            if name in function_names or name in class_names:
-                return name
+def get_deps(nodes: List[Tuple[str, Node]]) -> Dict[str, Set[str]]:
 
+    def dfs_get_deps(node: Node, deps: Set[str]) -> None:
+        for child in node.children:
+            if child.type == IDENTIFIER_TYPE:
+                deps.add(child.text.decode("utf8"))
+            else:
+                dfs_get_deps(child, deps)
 
-def get_call_graph(
-    nodes: List[Tuple[str, Node]], class_names: Set[str], function_names: Set[str]
-) -> Dict[str, str]:
-    call_graph = {}
+    name2deps = {}
     for name, node in nodes:
-        function_calls = []
-        traverse_nodes = traverse_tree(node)
-        for node in traverse_nodes:
-            if node.type == "call":
-                callee_name = get_callee_name(node, class_names, function_names)
-                if callee_name:
-                    function_calls.append(callee_name)
-        call_graph[name] = function_calls
-    return call_graph
+        deps = set()
+        dfs_get_deps(node, deps)
+        name2deps[name] = deps
+    return name2deps
 
 
 def get_function_dependency(entrypoint: str, call_graph: Dict[str, str]) -> Set[str]:
@@ -163,8 +150,8 @@ def sanitize(code: str, entrypoint: Optional[str] = None) -> str:
                 variable_names.add(name)
 
     if entrypoint:
-        call_graph = get_call_graph(definition_nodes, class_names, function_names)
-        reacheable = get_function_dependency(entrypoint, call_graph)
+        name2deps = get_deps(definition_nodes)
+        reacheable = get_function_dependency(entrypoint, name2deps)
 
     sanitized_output = b""
 
