@@ -4,6 +4,9 @@ from abc import ABC, abstractmethod
 from typing import List
 from warnings import warn
 
+# Communism
+os.environ["HF_HOME"] = os.environ.get("HF_HOME", "/JawTitan/huggingface/")
+
 import openai
 
 try:
@@ -22,7 +25,7 @@ except ImportError:
 
 import torch
 from stop_sequencer import StopSequencer
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer
 
 try:
     from vllm import LLM, SamplingParams
@@ -41,45 +44,6 @@ EOS = [
 ]
 
 
-def extra_eos_for_direct_completion(dataset) -> List[str]:
-    if dataset.lower() == "humaneval":
-        return ["\ndef ", "\nclass ", "\nimport ", "\nfrom ", "\nassert "]
-    elif dataset.lower() == "mbpp":
-        return ['\n"""', "\nassert"]
-    raise ValueError(f"Unknown dataset: {dataset}")
-
-
-# some random words which serves as the splitter
-_MAGIC_SPLITTER_ = "-[[]]-this-is-really-our-highest-priority-[[]]-"
-
-
-def make_chat_prompt(prompt: str, tokenizer: AutoTokenizer) -> str:
-    # directly return prompt if it does not have a tokenizer.chat_template
-    if tokenizer.chat_template is None:
-        return prompt
-
-    prompt = f"""\
-Please provide a self-contained Python script that solves the following problem in a markdown code block:
-```
-{prompt.strip()}
-```
-"""
-    response = f"""\
-Below is a Python script with a self-contained function that solves the problem and passes correpsonding tests:
-```python
-{_MAGIC_SPLITTER_}
-```
-"""
-    prompt = tokenizer.apply_chat_template(
-        [
-            {"role": "user", "content": prompt},
-            {"role": "assistant", "content": response},
-        ],
-        tokenize=False,
-    ).split(_MAGIC_SPLITTER_)[0]
-    return prompt
-
-
 class DecoderBase(ABC):
     def __init__(
         self,
@@ -87,8 +51,10 @@ class DecoderBase(ABC):
         batch_size: int = 1,
         temperature: float = 0.8,
         max_new_tokens: int = 512,
+        direct_completion: bool = True,
         dtype: str = "bfloat16",  # default
         trust_remote_code: bool = False,
+        dataset: str = None,
     ) -> None:
         print("Initializing a decoder model: {} ...".format(name))
         self.name = name
@@ -97,17 +63,20 @@ class DecoderBase(ABC):
         self.eos = EOS
         self.skip_special_tokens = False
         self.max_new_tokens = max_new_tokens
+        self.direct_completion = direct_completion
         self.dtype = dtype
         self.trust_remote_code = trust_remote_code
+
+        if direct_completion:
+            if dataset.lower() == "humaneval":
+                self.eos += ["\ndef ", "\nclass ", "\nimport ", "\nfrom ", "\nassert "]
+            elif dataset.lower() == "mbpp":
+                self.eos += ['\n"""', "\nassert"]
 
     @abstractmethod
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        pass
-
-    @abstractmethod
-    def is_direct_completion(self) -> bool:
         pass
 
     def __repr__(self) -> str:
@@ -117,23 +86,17 @@ class DecoderBase(ABC):
         return self.name
 
 
-class VllmDecoder(DecoderBase):
-    def __init__(self, name: str, dataset: str, tp: int, **kwargs) -> None:
+class VLlmDecoder(DecoderBase):
+    def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
 
         kwargs = {
-            "tensor_parallel_size": int(os.getenv("VLLM_N_GPUS", tp)),
+            "tensor_parallel_size": int(os.getenv("VLLM_N_GPUS", "1")),
             "dtype": self.dtype,
             "trust_remote_code": self.trust_remote_code,
         }
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.name)
-        if self.tokenizer.chat_template is None:
-            self.eos += extra_eos_for_direct_completion(dataset)
         self.llm = LLM(model=name, max_model_len=2048, **kwargs)
-
-    def is_direct_completion(self) -> bool:
-        return self.tokenizer.chat_template is None
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -157,21 +120,225 @@ class VllmDecoder(DecoderBase):
         return gen_strs
 
 
-class GeneralVllmDecoder(VllmDecoder):
+# chatml format
+class ChatML(VLlmDecoder):
     def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
         super().__init__(name, **kwargs)
-        self.eos += ["\n```\n"]
-        print(f"EOS strings: {self.eos}")
+        self.eos += ["\n```"]
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        prompt = make_chat_prompt(prompt, self.tokenizer)
-        return VllmDecoder.codegen(self, prompt, do_sample, num_samples)
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""<|im_start|>system
+You are an intelligent programming assistant to produce Python algorithmic solutions<|im_end|>
+<|im_start|>user
+Can you complete the following Python function?
+```python
+{prompt}
+```
+<|im_end|>
+<|im_start|>assistant
+```python
+"""
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
 
 
-class HfTorchDecoder(DecoderBase):
-    def __init__(self, name: str, dataset: str, **kwargs):
+class Mixtral(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""<s>[INST]Please complete and solve the following Python function in a markdown block.
+```python
+{prompt}
+```
+[/INST]
+```python
+"""
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
+class CodeLlamaInstruct70B(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""'<s>Source: system
+
+ You are a helpful and honest code assistant expert in Python. Please, provide all answers to programming questions in Python.
+ <step> Source: user
+
+ Provide a self-contained Python script that solves the following problem:
+```python
+{prompt}
+```
+ <step> Source: assistant
+
+ Here is a Python script that solves the problem:
+```python
+"""
+
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
+class CodeLlamaInstructSmall(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""[INST] Write code to solve the following coding problem that obeys the constraints and passes the example test cases. Please wrap your code answer using ```:
+```python
+{prompt}
+```
+[/INST]
+```python
+"""
+
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
+# zyte format
+class Zyte(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""<|system|>You are an intelligent programming assistant to produce Python algorithmic solutions</s>
+<|user|>Can you complete the following Python function?
+```python
+{prompt}
+```
+</s>
+<|assistant|>
+```python
+"""
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
+class OpenChat(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""GPT4 Correct User: Can you complete the following Python function?
+```python
+{prompt}
+```
+<|end_of_turn|>GPT4 Correct Assistant:
+```python
+"""
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
+class Solar(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+
+        input = f"""<s> ### User:
+Can you solve and complete the Python function below?
+```python
+{prompt}
+```
+
+### Assistant:
+Sure!
+```python
+"""
+        return VLlmDecoder.codegen(self, input, do_sample, num_samples)
+
+
+class Alpaca(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""Below is an instruction that describes a task. Write a response that appropriately completes request.
+
+### Instruction:
+Create a Python script for this problem:
+{prompt}
+
+### Response:
+```python
+"""
+
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class WhiteRabbitNeo(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""You code like a superhero!
+USER:
+Create a Python script to solve this problem:
+```python
+{prompt}
+```
+ASSISTANT:
+```python
+"""
+
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class HFTorchDecoder(DecoderBase):
+    def __init__(self, name: str, **kwargs):
         super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -185,14 +352,8 @@ class HfTorchDecoder(DecoderBase):
         print(f"{kwargs = }")
 
         self.tokenizer = AutoTokenizer.from_pretrained(name)
-        if self.tokenizer.chat_template is None:
-            self.eos += extra_eos_for_direct_completion(dataset)
-
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
         self.model = self.model.to(self.device)
-
-    def is_direct_completion(self) -> bool:
-        return self.tokenizer.chat_template is not None
 
     @torch.inference_mode()
     def codegen(
@@ -245,24 +406,56 @@ class HfTorchDecoder(DecoderBase):
         return outputs
 
 
-class GenenralHfTorchDecoder(HfTorchDecoder):
-    def __init__(self, name: str, **kwargs):
-        super().__init__(name=name, **kwargs)
-        self.eos += ["\n```\n"]
-        print(f"EOS strings: {self.eos}")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.name)
+class DeepSeekInstruct(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        prompt = make_chat_prompt(prompt, self.tokenizer)
-        return HfTorchDecoder.codegen(self, prompt, do_sample, num_samples)
+        prompt = f"""You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.
+### Instruction:
+Please complete the following Python function in a markdown style code block:
+```python
+{prompt}
+```
+### Response:
+```python
+"""
+
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class Magicoder(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
+
+@@ Instruction
+Write a solution to the following problem:
+```python
+{prompt}
+```
+
+@@ Response
+```python
+{prompt}"""
+
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
 class OpenAIChatDecoder(DecoderBase):
-    def __init__(self, name: str, base_url=None, **kwargs) -> None:
+    def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
-        self.client = openai.OpenAI(base_url=base_url)
+        self.client = openai.OpenAI()
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -308,9 +501,6 @@ class OpenAIChatDecoder(DecoderBase):
 
         return outputs
 
-    def is_direct_completion(self) -> bool:
-        return False
-
 
 class MistralChatDecoder(DecoderBase):
     def __init__(self, name: str, **kwargs) -> None:
@@ -349,17 +539,11 @@ class MistralChatDecoder(DecoderBase):
 
         return outputs
 
-    def is_direct_completion(self) -> bool:
-        return False
-
 
 class AnthropicDecoder(DecoderBase, ABC):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
         self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_KEY"))
-
-    def is_direct_completion(self) -> bool:
-        return False
 
 
 class AnthropicMessageDecoder(AnthropicDecoder):
@@ -394,46 +578,771 @@ class AnthropicMessageDecoder(AnthropicDecoder):
         return outputs
 
 
+class IncoderDecoder(HFTorchDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.infill_ph = "<|mask:0|>"
+        self.extra_end = "<|mask:1|><|mask:0|>"
+        self.extra_eos = [
+            "<|endofmask|>",
+            "<|/ file",
+            "</cell>",
+            "</text>",
+            "</code>",
+            "<|",
+            "</CODE>",
+        ]
+        self.eos = self.eos + self.extra_eos
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        input = prompt + self.infill_ph + self.extra_end
+        return HFTorchDecoder.codegen(self, input, do_sample, num_samples)
+
+
+class Codegen2Decoder(HFTorchDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.infill_ph = "<mask_1>"
+        # taken from: https://huggingface.co/Salesforce/codegen2-16B
+        self.extra_end = "<|endoftext|><sep><mask_1>"
+        self.extra_eos = ["<eom>"]
+        self.eos = self.eos + self.extra_eos
+
+    @torch.inference_mode()
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        input = prompt + self.infill_ph + self.extra_end
+        return HFTorchDecoder.codegen(self, input, do_sample, num_samples)
+
+
+class Speechless(HFTorchDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        if "uukuguy/speechless-coding-7b-16k-tora" == name:
+            self.extra_eos = ["</s>"]
+        elif "uukuguy/speechless-coder-ds-6.7b" == name:
+            self.extra_eos = ["<｜end▁of▁sentence｜>"]
+        elif "uukuguy/speechless-sparsetral-16x7b-MoE" == name:
+            self.extra_eos = ["</s>"]
+        else:
+            raise ValueError(f"Invalid model name: {name}")
+        self.eos = self.eos + self.extra_eos
+
+
+class CodeT5P(DecoderBase):
+    def __init__(self, name: str, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        assert name in {
+            "Salesforce/codet5p-2b",
+            "Salesforce/codet5p-6b",
+            "Salesforce/codet5p-16b",
+            "Salesforce/instructcodet5p-16b",
+        }
+        self.tokenizer = AutoTokenizer.from_pretrained(name)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(
+            name,
+            trust_remote_code=True,  # False for 220m and 770m models
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+        )
+        self.model.eval()
+        self.model.to(self.device)
+
+        self.skip_special_tokens = True
+
+    @torch.inference_mode()
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = prompt.replace("    ", "\t")
+        return HFTorchDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class Code(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""This is a conversation with your helpful AI assistant. AI assistant can generate Python Code along with necessary explanation.
+
+Context
+You are a helpful AI assistant.
+
+USER:
+```python
+{prompt}
+```
+ASSISTANT:
+```python
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class XwinCoder(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""<system>: You are an AI coding assistant that helps people with programming. Write a response that appropriately completes the user's request.
+<user>: Complete the following code for me and return a fully runable code.
+```python
+{prompt}
+```
+<AI>:
+```python
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class OpenCodeInterpreterDecoder(HFTorchDecoder):
+    def __init__(self, name: str, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.skip_special_tokens = True
+        self.eos += ["<|EOT|>", "\n```\n", "\nif "]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""You are an exceptionally intelligent coding assistant that consistently delivers accurate and reliable responses to user instructions.
+
+@@ Instruction
+Here is a Python programming problem to solve:
+```python
+{prompt}
+```
+Please implement this function in a Python markdown code block starting with "```python" and follow the function/input/output formats.
+
+@@ Response
+"""
+        return HFTorchDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class CodeGemma(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""### Instruction
+{prompt}
+### Response
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class OpenHermes(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["conversational"] = True
+        super().__init__(name, **kwargs)
+        self.eos += ["\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        # simple change for codegen
+        prompt = f"""
+This is a conversation with your helpful AI assistant. AI assistant can generate Code in various Programming Languages along with necessary explanation. It can generate Story, Blogs .....
+
+Context
+You are a helpful AI assistant.
+
+USER: complete the python code below
+```python
+{prompt}
+```
+ASSISTANT:```python"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
+class GemmaInstruct(VLlmDecoder):
+    def __init__(self, name: str, **kwargs) -> None:
+        kwargs["direct_completion"] = False
+        super().__init__(name, **kwargs)
+        self.eos += ["<end_of_turn>", "\n```"]
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        prompt = f"""\
+<start_of_turn>user
+Complete the python code below
+```python
+{prompt}
+```<end_of_turn>
+<start_of_turn>model
+```python
+"""
+        return VLlmDecoder.codegen(self, prompt, do_sample, num_samples)
+
+
 def make_model(
-    model: str,
-    backend: str,
-    dataset: str,
-    batch_size: int = 1,
-    temperature: float = 0.0,
-    tp=1,
-    base_url=None,
+    name: str, batch_size: int = 1, temperature: float = 0.8, dataset: str = None
 ):
-    if backend == "vllm":
-        return GeneralVllmDecoder(
-            name=model,
+    if name == "codegen-2b":
+        return HFTorchDecoder(
             batch_size=batch_size,
+            name="Salesforce/codegen-2B-mono",
             temperature=temperature,
-            dataset=dataset,
-            tp=tp,
-        )
-    elif backend == "hf":
-        return GenenralHfTorchDecoder(
-            name=model,
-            batch_size=batch_size,
-            temperature=temperature,
+            dtype="float16",
             dataset=dataset,
         )
-    elif backend == "openai":
+    elif name == "codegen-6b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen-6B-mono",
+            temperature=temperature,
+            dtype="float16",
+            dataset=dataset,
+        )
+    elif name == "codegen-16b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen-16B-mono",
+            temperature=temperature,
+            dtype="float16",
+            dataset=dataset,
+        )
+    elif name == "codegen2-1b":
+        return Codegen2Decoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen2-1B",
+            temperature=temperature,
+            trust_remote_code=True,
+            dataset=dataset,
+        )
+    elif name == "codegen2-3b":
+        return Codegen2Decoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen2-3_7B",
+            temperature=temperature,
+            trust_remote_code=True,
+            dataset=dataset,
+        )
+    elif name == "codegen2-7b":
+        return Codegen2Decoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen2-7B",
+            temperature=temperature,
+            trust_remote_code=True,
+            dataset=dataset,
+        )
+    elif name == "codegen2-16b":
+        warn(
+            "codegen2-16b checkpoint is `unfinished` at this point (05/11/2023) according to their paper. "
+            "So it might not make sense to use it."
+        )
+        return Codegen2Decoder(
+            batch_size=batch_size,
+            name="Salesforce/codegen2-16B",
+            temperature=temperature,
+            trust_remote_code=True,
+            dataset=dataset,
+        )
+    elif name == "polycoder":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="NinedayWang/PolyCoder-2.7B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "santacoder":
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name="bigcode/santacoder",
+            temperature=temperature,
+            trust_remote_code=True,
+            dataset=dataset,
+        )
+    elif name == "incoder-1b":
+        return IncoderDecoder(
+            batch_size=batch_size,
+            name="facebook/incoder-1B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "incoder-6b":
+        return IncoderDecoder(
+            batch_size=batch_size,
+            name="facebook/incoder-6B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "stablelm-7b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="StabilityAI/stablelm-base-alpha-7b",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name.startswith("gpt-3.5-") or name.startswith("gpt-4-"):
         return OpenAIChatDecoder(
-            name=model,
             batch_size=batch_size,
+            name=name,
             temperature=temperature,
-            base_url=base_url,
+            direct_completion=False,
         )
-    elif backend == "mistral":
-        return MistralChatDecoder(
-            name=model,
-            batch_size=batch_size,
-            temperature=temperature,
-        )
-    elif backend == "anthropic":
+    elif name.startswith("claude"):
         return AnthropicMessageDecoder(
-            name=model,
             batch_size=batch_size,
+            name=name,
+            temperature=temperature,
+            direct_completion=False,
+            dataset=dataset,
+        )
+    elif name == "gptneo-2b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="EleutherAI/gpt-neo-2.7B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "gpt-j":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="EleutherAI/gpt-j-6B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "starcoder2-15b-oci":
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name="TokenBender/starcoder2_15B_OCI",
+            temperature=temperature,
+            dtype="float16",
+            dataset=dataset,
+        )
+    elif name.startswith("starcoder2"):
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name=f"bigcode/{name}",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name.startswith("starcoder"):
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name=f"bigcode/{name}",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "codet5p-2b":
+        return CodeT5P(
+            batch_size=batch_size,
+            name="Salesforce/codet5p-2b",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "codet5p-6b":
+        return CodeT5P(
+            batch_size=batch_size,
+            name="Salesforce/codet5p-6b",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "codet5p-16b":
+        return CodeT5P(
+            batch_size=batch_size,
+            name="Salesforce/codet5p-16b",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name.startswith("code-llama-"):
+        if name.endswith("instruct"):
+            nb = name.split("-")[2]
+            assert nb.endswith("b")
+            if nb == "70b":
+                return CodeLlamaInstruct70B(
+                    batch_size=batch_size,
+                    name=f"codellama/CodeLlama-70B-Instruct-hf",
+                    temperature=temperature,
+                    direct_completion=False,
+                )
+            else:
+                return CodeLlamaInstructSmall(
+                    batch_size=batch_size,
+                    name=f"codellama/CodeLlama-{nb}-Instruct-hf",
+                    temperature=temperature,
+                    direct_completion=False,
+                )
+        assert name.endswith("b")
+        nb = name.split("-")[-1]
+
+        # Multi-lingual
+        if name.startswith("code-llama-multi"):
+            return VLlmDecoder(
+                batch_size=batch_size,
+                name=f"codellama/CodeLlama-{nb}-hf",
+                temperature=temperature,
+                dataset=dataset,
+            )
+
+        # Python only
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name=f"codellama/CodeLlama-{nb}-Python-hf",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name.startswith("deepseek-coder"):
+        import re
+
+        # format deepseek-coder-{nb}b-{base|instruct}-[v{version}]
+        pattern = re.compile(r"deepseek-coder-(\d+\.?\d*)b(.*)")
+        matches = pattern.findall(name)[0]
+        nb = float(matches[0])
+        if nb.is_integer():
+            nb = int(nb)
+
+        if "instruct" in name:
+            # if version is specified, use it
+            version = matches[1].split("-")[-1]
+            version_suffix = f"-{version}" if version.startswith("v") else ""
+            return DeepSeekInstruct(
+                batch_size=batch_size,
+                name=f"deepseek-ai/deepseek-coder-{nb}b-instruct{version_suffix}",
+                temperature=temperature,
+                direct_completion=False,
+            )
+        else:
+            version = matches[1].split("-")[-1]
+            version_suffix = f"-{version}" if version.startswith("v") else ""
+            return VLlmDecoder(
+                batch_size=batch_size,
+                name=f"deepseek-ai/deepseek-coder-{nb}b-base{version_suffix}",
+                temperature=temperature,
+                dataset=dataset,
+            )
+    elif name == "magicoder-s-ds-6.7b":
+        return Magicoder(
+            batch_size=batch_size,
+            name="ise-uiuc/Magicoder-S-DS-6.7B",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "magicoder-s-cl-7b":
+        return Magicoder(
+            batch_size=batch_size,
+            name="ise-uiuc/Magicoder-S-CL-7B",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "wizardcoder-33b-v1.1":
+        return Alpaca(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-33B-V1.1",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif name == "wizardcoder-34b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-Python-34B-V1.0",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif name == "wizardcoder-15b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-15B-V1.0",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif name == "wizardcoder-7b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="WizardLM/WizardCoder-Python-7B-V1.0",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif name == "mistral-7b-codealpaca":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="Nondzu/Mistral-7B-codealpaca-lora",
+            temperature=temperature,
+            dtype="float16",
+            dataset=dataset,
+        )
+    elif name == "zephyr-7b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="HuggingFaceH4/zephyr-7b-beta",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "codebooga-34b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="oobabooga/CodeBooga-34B-v0.1",
+            temperature=temperature,
+            dtype="float16",
+            dataset=dataset,
+        )
+    elif name == "code-13b":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Code-13B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "code-33b":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Code-33B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "code-290k-6.7b-instruct":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Code-290k-6.7B-Instruct",
             temperature=temperature,
         )
+    elif name == "phind-code-llama-34b-v2":
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name="Phind/Phind-CodeLlama-34B-v2",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "python-code-33b":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Python-Code-33B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "python-code-13b":
+        return Code(
+            batch_size=batch_size,
+            name="ajibawa-2023/Python-Code-13B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "mistral-7b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="mistralai/Mistral-7B-v0.1",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "dolphin-2.6":
+        return ChatML(
+            batch_size=batch_size,
+            name="cognitivecomputations/dolphin-2.6-mixtral-8x7b",
+            temperature=temperature,
+            max_new_tokens=512 + 256,
+        )
+    elif name == "mixtral-8x7b-instruct":
+        return Mixtral(
+            batch_size=batch_size,
+            name="mistralai/Mixtral-8x7B-Instruct-v0.1",
+            temperature=temperature,
+        )
+    elif name == "solar-10.7b-instruct":
+        return Solar(
+            batch_size=batch_size,
+            name="upstage/SOLAR-10.7B-Instruct-v1.0",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif name == "mistral-hermes-codepro-7b":
+        return ChatML(
+            batch_size=batch_size,
+            name="beowolx/MistralHermes-CodePro-7B-v1",
+            temperature=temperature,
+            max_new_tokens=512 + 256,
+        )
+    elif name == "phi-2":
+        return VLlmDecoder(
+            batch_size=batch_size,
+            name="microsoft/phi-2",
+            temperature=temperature,
+            dtype="float16",
+            trust_remote_code=True,
+            dataset=dataset,
+        )
+    elif name == "openchat":
+        return OpenChat(
+            batch_size=batch_size,
+            name="openchat/openchat-3.5-0106",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "speechless-codellama-34b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-codellama-34b-v2.0",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif name == "speechless-mistral-7b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-code-mistral-7b-v1.0",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif name == "speechless-thoughts-mistral-7b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="uukuguy/speechless-thoughts-mistral-7b",
+            temperature=temperature,
+            conversational=True,
+            dtype="float16",
+        )
+    elif name == "speechless-coder-ds-6.7b":
+        return Speechless(
+            batch_size=batch_size,
+            name="uukuguy/speechless-coder-ds-6.7b",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif name == "speechless-coding-7b-16k-tora":
+        return Speechless(
+            batch_size=batch_size,
+            name="uukuguy/speechless-coding-7b-16k-tora",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "speechless-sparsetral-16x7b-moe":
+        return Speechless(
+            batch_size=batch_size,
+            name="uukuguy/speechless-sparsetral-16x7b-MoE",
+            temperature=temperature,
+            conversational=True,
+            trust_remote_code=True,
+        )
+    elif name == "code-millenials-34b":
+        return Alpaca(
+            batch_size=batch_size,
+            name="budecosystem/code-millenials-34b",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif name == "xdan-l1-chat":
+        return Alpaca(
+            batch_size=batch_size,
+            name="xDAN-AI/xDAN-L1-Chat-dpo-qlora-v1",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "stable-code-3b":
+        return HFTorchDecoder(
+            batch_size=batch_size,
+            name="stabilityai/stable-code-3b",
+            temperature=temperature,
+            trust_remote_code=True,
+            dataset=dataset,
+        )
+    elif name == "xwincoder-34b":
+        return XwinCoder(
+            batch_size=batch_size,
+            name="Xwin-LM/XwinCoder-34B",
+            temperature=temperature,
+            dataset=dataset,
+        )
+    elif name == "zyte-1b":
+        return Zyte(
+            batch_size=batch_size,
+            name="aihub-app/zyte-1B",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "white-rabbit-neo-33b-v1":
+        return WhiteRabbitNeo(
+            batch_size=batch_size,
+            name="whiterabbitneo/WhiteRabbitNeo-33B-v-1",
+            temperature=temperature,
+            direct_completion=False,
+            dtype="float16",
+        )
+    elif "codegemma" in name:
+        import re
+
+        pattern = re.compile(r"codegemma-(\d+)b")
+        matches = pattern.findall(name)
+        nb = int(matches[0])
+        return CodeGemma(
+            batch_size=batch_size,
+            name=f"TechxGenus/CodeGemma-{nb}b",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "opencodeinterpreter-ds-6.7b":
+        return OpenCodeInterpreterDecoder(
+            batch_size=batch_size,
+            name="m-a-p/OpenCodeInterpreter-DS-6.7B",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "opencodeinterpreter-ds-33b":
+        return OpenCodeInterpreterDecoder(
+            batch_size=batch_size,
+            name="m-a-p/OpenCodeInterpreter-DS-33B",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "mistral-large-latest":
+        return MistralChatDecoder(
+            batch_size=batch_size,
+            name="mistral-large-latest",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif name == "open-hermes-2.5-code-290k-13b":
+        return OpenHermes(
+            batch_size=batch_size,
+            name="ajibawa-2023/OpenHermes-2.5-Code-290k-13B",
+            temperature=temperature,
+            direct_completion=False,
+        )
+    elif "gemma" in name:
+        import re
+
+        pattern = re.compile(r"gemma-(\d+)b(-it)?")
+        matches = pattern.findall(name)[0]
+        nb = float(matches[0])
+        if nb.is_integer():
+            nb = int(nb)
+        if "it" in name:
+            return GemmaInstruct(
+                batch_size=batch_size,
+                name=f"google/gemma-{nb}b-it",
+                temperature=temperature,
+                direct_completion=False,
+                dtype="bfloat16",
+            )
+        else:
+            return VLlmDecoder(
+                batch_size=batch_size,
+                name=f"google/gemma-{nb}b",
+                temperature=temperature,
+                dataset=dataset,
+                direct_completion=True,
+                dtype="bfloat16",
+            )
+
+    raise ValueError(f"Invalid model name: {name}")
