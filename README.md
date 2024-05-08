@@ -163,6 +163,11 @@ docker run -v $(pwd):/app ganler/evalplus:latest --dataset [humaneval|mbpp] --sa
 ```bash
 evalplus.evaluate --dataset [humaneval|mbpp] --samples samples.jsonl
 ```
+when you already download the dataset [MbppPlus.jsonl.gz|HumanEvalPlus.jsonl.gz]:
+```bash
+HUMANEVAL_OVERRIDE_PATH="the local path of HumanEvalPlus.jsonl.gz" evalplus.evaluate --dataset humaneval --samples samples.jsonl
+```
+
 
 > [!Tip]
 >
@@ -285,6 +290,12 @@ We currently support following backends:
 ```shell
 python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm]
 ```
+when you already download the dataset [MbppPlus.jsonl.gz|HumanEvalPlus.jsonl.gz]:
+```shell
+HUMANEVAL_OVERRIDE_PATH="the local path of HumanEvalPlus.jsonl.gz" python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset humaneval --backend [vllm]
+MBPP_OVERRIDE_PATH="the local path of MbppPlus.jsonl.gz" python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset mbpp --backend [vllm]
+```
+
 
 ### Test input generation using EvalPlus
 
