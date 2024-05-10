@@ -163,12 +163,10 @@ docker run -v $(pwd):/app ganler/evalplus:latest --dataset [humaneval|mbpp] --sa
 ```bash
 evalplus.evaluate --dataset [humaneval|mbpp] --samples samples.jsonl
 ```
-when you already download the dataset [MbppPlus.jsonl.gz|HumanEvalPlus.jsonl.gz]:
+To use a user-defined dataset locally, you can set `HUMANEVAL_OVERRIDE_PATH` or `MBPP_OVERRIDE_PATH`:
 ```bash
-HUMANEVAL_OVERRIDE_PATH="the local path of HumanEvalPlus.jsonl.gz" evalplus.evaluate --dataset humaneval --samples samples.jsonl
+HUMANEVAL_OVERRIDE_PATH="/path/to/HumanEvalPlus.jsonl.gz" evalplus.evaluate --dataset humaneval --samples samples.jsonl
 ```
-
-
 > [!Tip]
 >
 > Do you use a very slow machine?
@@ -290,11 +288,12 @@ We currently support following backends:
 ```shell
 python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm]
 ```
-when you already download the dataset [MbppPlus.jsonl.gz|HumanEvalPlus.jsonl.gz]:
+To perform code generation using user-defined tasks and datasets:
 ```shell
-HUMANEVAL_OVERRIDE_PATH="the local path of HumanEvalPlus.jsonl.gz" python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset humaneval --backend [vllm]
-MBPP_OVERRIDE_PATH="the local path of MbppPlus.jsonl.gz" python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset mbpp --backend [vllm]
-```
+# Override HumanEval datasets
+HUMANEVAL_OVERRIDE_PATH="/path/to/HumanEvalPlus.jsonl.gz" python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset humaneval --backend [vllm|hf|openai]
+# Override MBPP datasets
+MBPP_OVERRIDE_PATH="/path/to/MbppPlus.jsonl.gz" python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset mbpp --backend [vllm|hf|openai]
 
 
 ### Test input generation using EvalPlus
