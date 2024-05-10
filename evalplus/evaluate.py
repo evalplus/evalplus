@@ -241,8 +241,8 @@ def evaluate(flags):
                             inputs[i] for i in range(len(details)) if not details[i]
                         ]
 
-                    # esle => simply return the only and the last fail test
-                    return [inputs[len(details)]]
+                    # else => simply return the only and the last fail test
+                    return [inputs[len(details) - 1]]
 
                 base_stat, base_details = res["base"]
                 base_fail_tests = get_failed_tests(
