@@ -96,7 +96,7 @@ def is_floats(x) -> bool:
     # check if it is float; List[float]; Tuple[float]
     if isinstance(x, float):
         return True
-    if isinstance(x, (list, tuple)):
+    if isinstance(x, (list, tuple)) and x:
         return all(isinstance(i, float) for i in x)
     if isinstance(x, np.ndarray):
         return x.dtype == np.float64 or x.dtype == np.float32
