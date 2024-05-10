@@ -96,7 +96,7 @@ def is_floats(x) -> bool:
     # check if it is float; List[float]; Tuple[float]
     if isinstance(x, float):
         return True
-    if isinstance(x, (list, tuple)):
+    if isinstance(x, (list, tuple)) and x:
         return all(isinstance(i, float) for i in x)
     if isinstance(x, np.ndarray):
         return x.dtype == np.float64 or x.dtype == np.float32
@@ -171,6 +171,9 @@ def unsafe_execute(
                     if not exact_match and atol != 0:
                         # explicitly set rtol=1e-07
                         # to match `np.testing.assert_allclose`'s default values
+                        assert type(out) == type(exp)
+                        if isinstance(exp, (list, tuple)):
+                            assert len(out) == len(exp)
                         assert np.allclose(out, exp, rtol=1e-07, atol=atol)
                     else:
                         assert exact_match
