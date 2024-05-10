@@ -175,11 +175,10 @@ def unsafe_execute(
                     else:
                         assert exact_match
                 except BaseException:
-                    if fast_check:
-                        raise
-
                     details[i] = False
                     progress.value += 1
+                    if fast_check:
+                        raise
                     continue
 
                 details[i] = True
