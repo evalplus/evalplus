@@ -288,12 +288,15 @@ We currently support following backends:
 ```shell
 python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm]
 ```
+
 To perform code generation using user-defined tasks and datasets:
+
 ```shell
 # Override HumanEval datasets
 HUMANEVAL_OVERRIDE_PATH="/path/to/HumanEvalPlus.jsonl.gz" python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset humaneval --backend [vllm|hf|openai]
 # Override MBPP datasets
 MBPP_OVERRIDE_PATH="/path/to/MbppPlus.jsonl.gz" python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset mbpp --backend [vllm|hf|openai]
+```
 
 
 ### Test input generation using EvalPlus
