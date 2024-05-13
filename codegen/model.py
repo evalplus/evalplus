@@ -65,7 +65,7 @@ Please provide a self-contained Python script that solves the following problem 
 ```
 """
     response = f"""\
-Below is a Python script with a self-contained function that solves the problem and passes correpsonding tests:
+Below is a Python script with a self-contained function that solves the problem and passes corresponding tests:
 ```python
 {_MAGIC_SPLITTER_}
 ```
