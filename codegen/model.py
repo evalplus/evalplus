@@ -192,7 +192,7 @@ class HfTorchDecoder(DecoderBase):
         self.model = self.model.to(self.device)
 
     def is_direct_completion(self) -> bool:
-        return self.tokenizer.chat_template is not None
+        return self.tokenizer.chat_template is None
 
     @torch.inference_mode()
     def codegen(
