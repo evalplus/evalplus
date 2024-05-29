@@ -1,3 +1,4 @@
+import json
 import os
 from os import PathLike
 from typing import List
@@ -36,7 +37,7 @@ def construct_contract_prompt(prompt: str, contract_type: str, contract: str) ->
 
 
 def codegen(
-    workdir: PathLike,
+    target_path: PathLike,
     model: DecoderBase,
     dataset: str,
     greedy=False,
@@ -45,6 +46,15 @@ def codegen(
     version="default",
     resume=True,
 ):
+    task2nexist = {}
+    if resume and target_path.endswith(".jsonl") and os.path.isfile(target_path):
+        with open(target_path, "r") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                task_id = json.loads(line)["task_id"]
+                task2nexist[task2nexist] = task2nexist.get(task_id, 0) + 1
+
     with Progress(
         TextColumn(f"{dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"),
         BarColumn(),
@@ -69,26 +79,26 @@ def codegen(
                     p.console.print(f"Skipping {task_id} as it is not in {id_range}")
                     continue
 
-            p_name = task_id.replace("/", "_")
-            os.makedirs(os.path.join(workdir, p_name), exist_ok=True)
-            log = f"Codegen: {p_name} @ {model}"
-            n_existing = 0
-            if resume:
-                # count existing .py files
-                n_existing = len(
+            if not target_path.endswith(".jsonl"):
+                p_name = task_id.replace("/", "_")
+                os.makedirs(os.path.join(target_path, p_name), exist_ok=True)
+                task2nexist[task_id] = len(
                     [
                         f
-                        for f in os.listdir(os.path.join(workdir, p_name))
+                        for f in os.listdir(os.path.join(target_path, p_name))
                         if f.endswith(".py")
                     ]
                 )
-                if n_existing > 0:
-                    log += f" (resuming from {n_existing})"
 
-            nsamples = n_samples - n_existing
+            n_more_samples = n_samples
+            log = f"Codegen: {task_id} @ {model}"
+            if resume and task2nexist.get(task_id, 0) > 0:
+                log += f" (resuming from {task2nexist[task_id]})"
+                n_more_samples -= task2nexist[task_id]
+
             p.console.print(log)
 
-            sidx = n_samples - nsamples
+            sidx = n_samples - n_more_samples
             while sidx < n_samples:
                 outputs = model.codegen(
                     task["prompt"],
@@ -97,18 +107,22 @@ def codegen(
                 )
                 assert outputs, "No outputs from model!"
                 for impl in outputs:
-                    try:
+                    solution = (
+                        task["prompt"] + impl if model.is_direct_completion() else impl
+                    )
+                    if target_path.endswith(".jsonl"):
+                        with open(target_path, "a") as f:
+                            f.write(
+                                json.dumps({"task_id": task_id, "solution": solution})
+                                + "\n"
+                            )
+                    else:
                         with open(
-                            os.path.join(workdir, p_name, f"{sidx}.py"),
+                            os.path.join(target_path, p_name, f"{sidx}.py"),
                             "w",
                             encoding="utf-8",
                         ) as f:
-                            if model.is_direct_completion():
-                                f.write(task["prompt"] + impl)
-                            else:
-                                f.write(impl)
-                    except UnicodeEncodeError:
-                        continue
+                            f.write(solution)
                     sidx += 1
 
 
@@ -127,6 +141,7 @@ def main(
     base_url: str = None,
     tp: int = 1,
     evalperf_type: str = None,  # This is for EvalPerf
+    jsonl_fmt: bool = False,
 ):
     assert dataset in ["humaneval", "mbpp"], f"Invalid dataset {dataset}"
     assert backend in ["vllm", "hf", "openai"]
@@ -182,10 +197,14 @@ def main(
     identifier = model.replace("/", "--") + f"_{backend}_temp_{temperature}"
     if evalperf_type:
         identifier += f"-{evalperf_type}"
-    workdir = os.path.join(root, dataset, identifier)
-    os.makedirs(workdir, exist_ok=True)
+
+    target_path = os.path.join(root, dataset, identifier)
+    if jsonl_fmt:
+        target_path += ".jsonl"
+    else:
+        os.makedirs(target_path, exist_ok=True)
     codegen(
-        workdir=workdir,
+        target_path=target_path,
         dataset=dataset,
         greedy=greedy,
         model=model_runner,
