@@ -53,7 +53,7 @@ def codegen(
                 if not line.strip():
                     continue
                 task_id = json.loads(line)["task_id"]
-                task2nexist[task2nexist] = task2nexist.get(task_id, 0) + 1
+                task2nexist[task_id] = task2nexist.get(task_id, 0) + 1
 
     with Progress(
         TextColumn(f"{dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"),
