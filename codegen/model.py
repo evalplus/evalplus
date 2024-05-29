@@ -53,31 +53,39 @@ def extra_eos_for_direct_completion(dataset) -> List[str]:
 _MAGIC_SPLITTER_ = "-[[]]-this-is-really-our-highest-priority-[[]]-"
 
 
-def make_chat_prompt(prompt: str, tokenizer: AutoTokenizer) -> str:
+def make_chat_prompt(
+    task_prompt: str,
+    instruction_prefix: str,
+    response_prefix: str,
+    tokenizer: AutoTokenizer,
+) -> str:
     # directly return prompt if it does not have a tokenizer.chat_template
     if tokenizer.chat_template is None:
-        return prompt
+        return task_prompt
 
-    prompt = f"""\
-Please provide a self-contained Python script that solves the following problem in a markdown code block:
+    assert instruction_prefix is not None, "Instruction prefix is required!"
+    assert response_prefix is not None, "Response prefix is required!"
+
+    task_prompt = f"""\
+{instruction_prefix}
 ```
-{prompt.strip()}
+{task_prompt.strip()}
 ```
 """
     response = f"""\
-Below is a Python script with a self-contained function that solves the problem and passes corresponding tests:
+{response_prefix}
 ```python
 {_MAGIC_SPLITTER_}
 ```
 """
-    prompt = tokenizer.apply_chat_template(
+    task_prompt = tokenizer.apply_chat_template(
         [
-            {"role": "user", "content": prompt},
+            {"role": "user", "content": task_prompt},
             {"role": "assistant", "content": response},
         ],
         tokenize=False,
     ).split(_MAGIC_SPLITTER_)[0]
-    return prompt
+    return task_prompt
 
 
 class DecoderBase(ABC):
@@ -89,6 +97,8 @@ class DecoderBase(ABC):
         max_new_tokens: int = 512,
         dtype: str = "bfloat16",  # default
         trust_remote_code: bool = False,
+        instruction_prefix: str = None,
+        response_prefix: str = None,
     ) -> None:
         print("Initializing a decoder model: {} ...".format(name))
         self.name = name
@@ -99,6 +109,8 @@ class DecoderBase(ABC):
         self.max_new_tokens = max_new_tokens
         self.dtype = dtype
         self.trust_remote_code = trust_remote_code
+        self.instruction_prefix = instruction_prefix
+        self.response_prefix = response_prefix
 
     @abstractmethod
     def codegen(
@@ -166,7 +178,9 @@ class GeneralVllmDecoder(VllmDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        prompt = make_chat_prompt(prompt, self.tokenizer)
+        prompt = make_chat_prompt(
+            prompt, self.instruction_prefix, self.response_prefix, self.tokenizer
+        )
         return VllmDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
@@ -255,7 +269,9 @@ class GenenralHfTorchDecoder(HfTorchDecoder):
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
-        prompt = make_chat_prompt(prompt, self.tokenizer)
+        prompt = make_chat_prompt(
+            prompt, self.instruction_prefix, self.response_prefix, self.tokenizer
+        )
         return HfTorchDecoder.codegen(self, prompt, do_sample, num_samples)
 
 
@@ -271,14 +287,15 @@ class OpenAIChatDecoder(DecoderBase):
             assert self.temperature > 0, "Temperature must be positive for sampling"
         batch_size = min(self.batch_size, num_samples)
 
+        message = self.instruction_prefix
         # construct prompt
+        message += f"\n```python\n{prompt.strip()}\n```"
+
         fmt = "json_object" if self.name == "gpt-4-1106-preview" else "text"
         if fmt == "json_object":
-            message = r'Please complete the following code snippet by generating JSON like {"code": ""}'
-        else:
-            message = r"Please generate code to complete the following problem:"
-
-        message += f"\n```python\n{prompt.strip()}\n```"
+            message += (
+                r'Note: the output code should follow a JSON schema of {"code": ""}'
+            )
 
         ret = openai_request.make_auto_request(
             self.client,
@@ -337,7 +354,7 @@ class MistralChatDecoder(DecoderBase):
                 messages=[
                     ChatMessage(
                         role="user",
-                        content="Please generate code to solve the following problem in a Python markdown block:"
+                        content=self.instruction_prefix
                         + f"\n```python\n{prompt.strip()}\n```",
                     )
                 ],
@@ -381,7 +398,7 @@ class AnthropicMessageDecoder(AnthropicDecoder):
                 messages=[
                     {
                         "role": "user",
-                        "content": "Please generate code to complete the following problem wrapped in a Python markdown block:"
+                        "content": self.instruction_prefix
                         + f"\n```python\n{prompt.strip()}\n```\n",
                     }
                 ],
@@ -402,6 +419,8 @@ def make_model(
     temperature: float = 0.0,
     tp=1,
     base_url=None,
+    instruction_prefix=None,
+    response_prefix=None,
 ):
     if backend == "vllm":
         return GeneralVllmDecoder(
@@ -410,6 +429,8 @@ def make_model(
             temperature=temperature,
             dataset=dataset,
             tp=tp,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
         )
     elif backend == "hf":
         return GenenralHfTorchDecoder(
@@ -417,6 +438,8 @@ def make_model(
             batch_size=batch_size,
             temperature=temperature,
             dataset=dataset,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
         )
     elif backend == "openai":
         return OpenAIChatDecoder(
@@ -424,16 +447,22 @@ def make_model(
             batch_size=batch_size,
             temperature=temperature,
             base_url=base_url,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
         )
     elif backend == "mistral":
         return MistralChatDecoder(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
         )
     elif backend == "anthropic":
         return AnthropicMessageDecoder(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
         )
