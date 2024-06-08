@@ -6,9 +6,10 @@ def fix(data):
     # fix: https://github.com/evalplus/evalplus/issues/210
 
     check_id(data, 215, "Mbpp/459")
-    data[215]["canonical_solution"] = data[215]["canonical_solution"].replace(
-        "if c.islower()", "if not c.isupper()"
-    )
+    data[215]["canonical_solution"] = """
+def remove_uppercase(str1):
+  return ''.join(c for c in str1 if not c.isupper())
+"""
 
     return data
 
