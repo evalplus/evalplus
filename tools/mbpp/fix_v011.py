@@ -21,7 +21,7 @@ if __name__ == "__main__":
         "Mbpp/459",
     ]
     SOURCE_VERSION = "v0.2.0"
-    TARGET_VERSION = "v0.3.0"
+    TARGET_VERSION = "v0.2.1"
 
     def evolve(src_file, tgt_file):
         with open(src_file) as f:
