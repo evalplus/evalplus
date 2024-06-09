@@ -19,6 +19,32 @@ MBPP_OUTPUT_SET_EQ_TASKS = [
 ]
 
 
+# oracle for Mbpp/581
+def _surface_Area(base_edge, height):
+    """
+    Recognizes the "height" as the perpendicular distance from the base to the apex of the pyramid
+    """
+    slant_height = math.sqrt((base_edge / 2) ** 2 + height ** 2)
+    base_area = base_edge ** 2
+    lateral_area = 4 * (base_edge * slant_height) / 2
+    total_surface_area = base_area + lateral_area
+    return round(total_surface_area)
+
+# oracle for Mbpp/558
+def _digit_distance_nums(num1, num2):
+    """
+    Preprocesses the two numbers to have the same length by padding with zeros
+    """
+    str_num1, str_num2 = str(num1), str(num2)
+    max_length = max(len(str_num1), len(str_num2))
+    str_num1, str_num2 = str_num1.zfill(max_length), str_num2.zfill(max_length)
+    total_difference = 0
+    for digit1, digit2 in zip(str_num1, str_num2):
+        difference = abs(int(digit1) - int(digit2))
+        total_difference += difference
+    return total_difference
+
+
 # oracle for HumaneEval/032
 def _poly(xs: list, x: float):
     """
