@@ -11,6 +11,13 @@ def remove_uppercase(str1):
   return ''.join(c for c in str1 if not c.isupper())
 """
 
+    check_id(data, 55, "Mbpp/102")
+    data[55]["canonical_solution"] = """
+def snake_to_camel(snake_str):
+    components = snake_str.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
+"""
+
     return data
 
 
@@ -19,6 +26,7 @@ if __name__ == "__main__":
 
     TASK_INSPECT = [
         "Mbpp/459",
+        "Mbpp/102",
     ]
     SOURCE_VERSION = "v0.2.0"
     TARGET_VERSION = "v0.2.1"
