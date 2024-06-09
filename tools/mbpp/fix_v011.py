@@ -18,6 +18,17 @@ def snake_to_camel(snake_str):
     return components[0] + ''.join(x.title() for x in components[1:])
 """
 
+    check_id(data, 236, "Mbpp/559")
+    data[236]["canonical_solution"] = """
+def max_sub_array_sum(arr, n):
+    max_so_far = arr[0] if len(arr) else 0
+    max_ending_here = arr[0] if len(arr) else 0
+    for i in range(1, n):
+        max_ending_here = max(arr[i], max_ending_here + arr[i])
+        max_so_far = max(max_so_far, max_ending_here)
+    return max_so_far
+"""
+
     return data
 
 
@@ -27,6 +38,7 @@ if __name__ == "__main__":
     TASK_INSPECT = [
         "Mbpp/459",
         "Mbpp/102",
+        "Mbpp/559",
     ]
     SOURCE_VERSION = "v0.2.0"
     TARGET_VERSION = "v0.2.1"
