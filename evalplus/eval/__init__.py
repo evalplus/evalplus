@@ -33,6 +33,8 @@ from evalplus.eval._special_oracle import (
     MBPP_OUTPUT_NOT_NONE_TASKS,
     MBPP_OUTPUT_SET_EQ_TASKS,
     _poly,
+    _digit_distance_nums,
+    _surface_Area,
 )
 from evalplus.eval.utils import (
     create_tempdir,
@@ -150,6 +152,10 @@ def unsafe_execute(
                             exact_match = exact_match or True
                         elif "sum_div" == entry_point:  # Mbpp/295 special oracle
                             exact_match = exact_match or out == 0
+                        elif "surface_Area" == entry_point:  # Mbpp/581 special oracle
+                            exact_match = exact_match or abs(out - _surface_Area(*inp)) <= atol
+                        elif "digit_distance_nums" == entry_point:  # Mbpp/558 special oracle
+                            exact_match = exact_match or out == _digit_distance_nums(*inp)
                         elif entry_point in MBPP_OUTPUT_SET_EQ_TASKS:
                             exact_match = set(out) == set(exp)
                         elif entry_point in MBPP_OUTPUT_NOT_NONE_TASKS:

@@ -17,6 +17,7 @@ from evalplus.data.mbpp import (
     get_mbpp_plus_hash,
 )
 from evalplus.eval import is_floats
+from evalplus.eval._special_oracle import _surface_Area, _digit_distance_nums
 from evalplus.eval._special_oracle import (
     MBPP_OUTPUT_NOT_NONE_TASKS,
     MBPP_OUTPUT_SET_EQ_TASKS,
@@ -24,15 +25,14 @@ from evalplus.eval._special_oracle import (
 from evalplus.evaluate import get_groundtruth
 
 MBPP_TEST_TEMPLATE = """\
-import numpy as np
-from math import inf
+{imports}
 
 {aux_fn}
 
 inputs = {inputs}
 results = {results}
 for i, (inp, exp) in enumerate(zip(inputs, results)):
-    assertion({entry_point}(*inp), exp, {atol})
+    {assertion}
 """
 
 MBPP_CROSSCHECK_TEMPLATE = """\
@@ -49,15 +49,19 @@ for i, inp in enumerate(inputs):
 """
 
 ASSERTION_FN = f"""\
+import numpy as np
+
 {inspect.getsource(is_floats)}
 
 def assertion(out, exp, atol):
+    exact_match = out == exp
+
     if atol == 0 and is_floats(exp):
         atol = 1e-6
-    if out != exp and atol != 0:
+    if not exact_match and atol != 0:
         assert np.allclose(out, exp, rtol=1e-07, atol=atol)
     else:
-        assert out == exp, f"out: {{out}}, exp: {{exp}}"
+        assert exact_match, f"out: {{out}}, exp: {{exp}}"
 """
 
 
@@ -73,7 +77,9 @@ def synthesize_test_code(task_id, entry_point, inputs, results, ref_func, atol):
         )
 
     # default settings
+    imports = set(["import numpy as np", "from math import inf"])
     aux_fn = ASSERTION_FN
+    assertion = f"assertion({entry_point}(*inp), exp, {atol})"
 
     # ================================================ #
     # ============== special oracles ================= #
@@ -100,16 +106,31 @@ def assertion(out, exp, atol):
     else:
         exact_match = exp == (out is not None)
 """
+    elif entry_point == "surface_Area":
+        imports.add("import math")
+        aux_fn = inspect.getsource(_surface_Area) + "\n" + """\
+def assertion(out, exp_0, exp_1, atol):
+    assert abs(out - exp_0) <= atol or abs(out - exp_1) <= atol
+""" 
+        assertion = f"assertion(surface_Area(*inp), exp, _surface_Area(*inp), {atol})"
+
+    elif entry_point == "digit_distance_nums":
+        aux_fn = inspect.getsource(_digit_distance_nums) + "\n" + """\
+def assertion(out, exp_0, exp_1, atol):
+    assert out == exp_0 or out == exp_1
+"""
+        assertion = f"assertion(digit_distance_nums(*inp), exp, _digit_distance_nums(*inp), {atol})"
 
     # ============== special oracles ================= #
     # ================================================ #
 
     test_code = MBPP_TEST_TEMPLATE.format(
+        imports="\n".join(imports),
         aux_fn=aux_fn,
         inputs=inputs,
         results=results,
         entry_point=entry_point,
-        atol=atol,
+        assertion=assertion,
     )
 
     return task_id, test_code
