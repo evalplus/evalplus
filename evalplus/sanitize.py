@@ -4,9 +4,9 @@ import os
 import pathlib
 from typing import Dict, Generator, List, Optional, Set, Tuple
 
+import tree_sitter_python
 from tqdm import tqdm
-from tree_sitter import Node
-from tree_sitter_languages import get_parser
+from tree_sitter import Language, Node, Parser
 
 from evalplus.data import (
     get_human_eval_plus,
@@ -45,7 +45,6 @@ def code_extract(text: str) -> str:
 
 
 def get_deps(nodes: List[Tuple[str, Node]]) -> Dict[str, Set[str]]:
-
     def dfs_get_deps(node: Node, deps: Set[str]) -> None:
         for child in node.children:
             if child.type == IDENTIFIER_TYPE:
@@ -111,7 +110,7 @@ def has_return_statement(node: Node) -> bool:
 def sanitize(code: str, entrypoint: Optional[str] = None) -> str:
     code = code_extract(code)
     code_bytes = bytes(code, "utf8")
-    parser = get_parser("python")
+    parser = Parser(Language(tree_sitter_python.language()))
     tree = parser.parse(code_bytes)
     class_names = set()
     function_names = set()
