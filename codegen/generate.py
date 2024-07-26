@@ -100,15 +100,16 @@ def codegen(
 
             sidx = n_samples - n_more_samples
             while sidx < n_samples:
+                prompt = task["prompt"].strip()
                 outputs = model.codegen(
-                    task["prompt"],
+                    prompt,
                     do_sample=not greedy,
                     num_samples=n_samples - sidx,
                 )
                 assert outputs, "No outputs from model!"
                 for impl in outputs:
                     solution = (
-                        task["prompt"] + impl if model.is_direct_completion() else impl
+                        prompt + impl if model.is_direct_completion() else impl
                     )
                     if target_path.endswith(".jsonl"):
                         with open(target_path, "a") as f:
