@@ -100,7 +100,7 @@ def codegen(
 
             sidx = n_samples - n_more_samples
             while sidx < n_samples:
-                prompt = task["prompt"].strip()
+                prompt = task["prompt"].strip() + "\n"
                 outputs = model.codegen(
                     prompt,
                     do_sample=not greedy,
