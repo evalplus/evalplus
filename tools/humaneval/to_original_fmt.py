@@ -7,11 +7,9 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from tqdm import tqdm
 
-from evalplus.data.humaneval import (
-    HUMANEVAL_PLUS_VERSION,
-    get_human_eval_plus,
-    get_human_eval_plus_hash,
-)
+from evalplus.data.humaneval import (HUMANEVAL_PLUS_VERSION,
+                                     get_human_eval_plus,
+                                     get_human_eval_plus_hash)
 from evalplus.eval import is_floats
 from evalplus.eval._special_oracle import _poly
 from evalplus.evaluate import get_groundtruth

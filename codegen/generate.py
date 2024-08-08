@@ -4,13 +4,8 @@ from os import PathLike
 from typing import List
 
 from model import DecoderBase, make_model
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    TextColumn,
-    TimeElapsedColumn,
-)
+from rich.progress import (BarColumn, MofNCompleteColumn, Progress, TextColumn,
+                           TimeElapsedColumn)
 
 
 def construct_contract_prompt(prompt: str, contract_type: str, contract: str) -> str:
@@ -108,9 +103,7 @@ def codegen(
                 )
                 assert outputs, "No outputs from model!"
                 for impl in outputs:
-                    solution = (
-                        prompt + impl if model.is_direct_completion() else impl
-                    )
+                    solution = prompt + impl if model.is_direct_completion() else impl
                     if target_path.endswith(".jsonl"):
                         with open(target_path, "a") as f:
                             f.write(

@@ -3,13 +3,9 @@ import json
 import os
 from typing import Dict
 
-from evalplus.data.utils import (
-    CACHE_DIR,
-    completeness_check,
-    get_dataset_metadata,
-    make_cache,
-    stream_jsonl,
-)
+from evalplus.data.utils import (CACHE_DIR, completeness_check,
+                                 get_dataset_metadata, make_cache,
+                                 stream_jsonl)
 
 HUMANEVAL_PLUS_VERSION = "v0.1.10"
 HUMANEVAL_OVERRIDE_PATH = os.environ.get("HUMANEVAL_OVERRIDE_PATH", None)

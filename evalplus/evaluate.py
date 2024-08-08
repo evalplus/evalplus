@@ -15,21 +15,12 @@ import numpy as np
 from termcolor import cprint
 from tqdm import tqdm
 
-from evalplus.data import (
-    get_human_eval_plus,
-    get_human_eval_plus_hash,
-    get_mbpp_plus,
-    get_mbpp_plus_hash,
-    load_solutions,
-)
+from evalplus.data import (get_human_eval_plus, get_human_eval_plus_hash,
+                           get_mbpp_plus, get_mbpp_plus_hash, load_solutions)
 from evalplus.data.mbpp import mbpp_serialize_inputs
 from evalplus.data.utils import CACHE_DIR
-from evalplus.eval import (
-    PASS,
-    compatible_eval_result,
-    estimate_pass_at_k,
-    untrusted_check,
-)
+from evalplus.eval import (PASS, compatible_eval_result, estimate_pass_at_k,
+                           untrusted_check)
 from evalplus.eval._special_oracle import MBPP_OUTPUT_NOT_NONE_TASKS
 from evalplus.gen.util import trusted_exec
 

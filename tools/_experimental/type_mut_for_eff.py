@@ -7,11 +7,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from multipledispatch import dispatch
 from rich.progress import track
 
-from evalplus._experimental.evaluate_runtime import (
-    MAX_WARMUP_LIMIT,
-    RUN_REPEAT,
-    execute_for_runtime,
-)
+from evalplus._experimental.evaluate_runtime import (MAX_WARMUP_LIMIT,
+                                                     RUN_REPEAT,
+                                                     execute_for_runtime)
 from evalplus.gen.mut_gen import MutateGen
 
 MUTATE_BOUND_SIZE = 5

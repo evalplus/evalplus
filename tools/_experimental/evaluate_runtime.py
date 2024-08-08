@@ -4,13 +4,8 @@ import time
 from typing import Any, List, Union
 
 from evalplus.data import get_human_eval_plus
-from evalplus.eval.utils import (
-    TimeoutException,
-    create_tempdir,
-    reliability_guard,
-    swallow_io,
-    time_limit,
-)
+from evalplus.eval.utils import (TimeoutException, create_tempdir,
+                                 reliability_guard, swallow_io, time_limit)
 
 MAX_WARMUP_LIMIT = 5
 RUN_REPEAT = 25

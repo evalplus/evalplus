@@ -10,13 +10,8 @@ from typing import List, Optional
 
 from tqdm import tqdm
 
-from evalplus.data import (
-    get_human_eval_plus,
-    get_mbpp_plus,
-    load_solutions,
-    write_directory,
-    write_jsonl,
-)
+from evalplus.data import (get_human_eval_plus, get_mbpp_plus, load_solutions,
+                           write_directory, write_jsonl)
 from evalplus.syncheck import syntax_check
 
 

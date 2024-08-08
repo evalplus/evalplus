@@ -9,22 +9,12 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from rich.console import Console
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    TextColumn,
-    TimeElapsedColumn,
-    TimeRemainingColumn,
-)
+from rich.progress import (BarColumn, MofNCompleteColumn, Progress, TextColumn,
+                           TimeElapsedColumn, TimeRemainingColumn)
 from rich.syntax import Syntax
 
-from evalplus.data import (
-    get_human_eval_plus,
-    get_human_eval_plus_hash,
-    get_mbpp_plus,
-    get_mbpp_plus_hash,
-)
+from evalplus.data import (get_human_eval_plus, get_human_eval_plus_hash,
+                           get_mbpp_plus, get_mbpp_plus_hash)
 from evalplus.data.mbpp import mbpp_deserialize_inputs
 from evalplus.data.utils import stream_jsonl
 from evalplus.eval import PASS, estimate_pass_at_k, untrusted_check

@@ -24,11 +24,12 @@ def _surface_Area(base_edge, height):
     """
     Recognizes the "height" as the perpendicular distance from the base to the apex of the pyramid
     """
-    slant_height = math.sqrt((base_edge / 2) ** 2 + height ** 2)
-    base_area = base_edge ** 2
+    slant_height = math.sqrt((base_edge / 2) ** 2 + height**2)
+    base_area = base_edge**2
     lateral_area = 4 * (base_edge * slant_height) / 2
     total_surface_area = base_area + lateral_area
     return round(total_surface_area)
+
 
 # oracle for Mbpp/558
 def _digit_distance_nums(num1, num2):

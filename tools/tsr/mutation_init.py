@@ -7,14 +7,8 @@ from rich.progress import track
 
 from evalplus.eval.utils import swallow_io
 from evalplus.evaluate import evaluate
-from tools.tsr.utils import (
-    clean,
-    execute_cmd,
-    get_cmd_output,
-    get_problems,
-    get_task_ids,
-    to_path,
-)
+from tools.tsr.utils import (clean, execute_cmd, get_cmd_output, get_problems,
+                             get_task_ids, to_path)
 
 
 def prepare_mutants(mutation_dir: str, dataset: str):

@@ -5,13 +5,8 @@ from typing import Any, Callable, List, Optional
 
 from cirron import Collector
 
-from evalplus.eval.utils import (
-    TimeoutException,
-    create_tempdir,
-    reliability_guard,
-    swallow_io,
-    time_limit,
-)
+from evalplus.eval.utils import (TimeoutException, create_tempdir,
+                                 reliability_guard, swallow_io, time_limit)
 from evalplus.perf.config import MEMORY_LIMIT_GB, PROFILE_ROUNDS
 
 

@@ -10,12 +10,8 @@ import astor
 import black
 from tqdm import tqdm
 
-from evalplus.data import (
-    get_human_eval_plus,
-    get_human_eval_plus_hash,
-    get_mbpp_plus,
-    get_mbpp_plus_hash,
-)
+from evalplus.data import (get_human_eval_plus, get_human_eval_plus_hash,
+                           get_mbpp_plus, get_mbpp_plus_hash)
 from evalplus.eval import PASS
 from evalplus.evalperf import check_solution
 from evalplus.evaluate import get_groundtruth

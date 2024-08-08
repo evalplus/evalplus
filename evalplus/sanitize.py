@@ -8,13 +8,8 @@ import tree_sitter_python
 from tqdm import tqdm
 from tree_sitter import Language, Node, Parser
 
-from evalplus.data import (
-    get_human_eval_plus,
-    get_mbpp_plus,
-    load_solutions,
-    write_directory,
-    write_jsonl,
-)
+from evalplus.data import (get_human_eval_plus, get_mbpp_plus, load_solutions,
+                           write_directory, write_jsonl)
 from evalplus.syncheck import syntax_check
 
 CLASS_TYPE = "class_definition"

@@ -1,1 +1,0 @@
-python codegen/generate.py --model "meta-llama/Meta-Llama-3-8B-Instruct" --greedy --root llama3_mbpp --dataset mbpp --backend vllm

@@ -5,13 +5,9 @@ from typing import Dict
 
 import wget
 
-from evalplus.data.utils import (
-    CACHE_DIR,
-    completeness_check,
-    get_dataset_metadata,
-    make_cache,
-    stream_jsonl,
-)
+from evalplus.data.utils import (CACHE_DIR, completeness_check,
+                                 get_dataset_metadata, make_cache,
+                                 stream_jsonl)
 
 MBPP_PLUS_VERSION = "v0.2.0"
 MBPP_OVERRIDE_PATH = os.environ.get("MBPP_OVERRIDE_PATH", None)

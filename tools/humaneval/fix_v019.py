@@ -1,4 +1,5 @@
-from tools.humaneval.fix_utils import check_id, debug_output, evolve, replay_contract
+from tools.humaneval.fix_utils import (check_id, debug_output, evolve,
+                                       replay_contract)
 
 
 def fix(data):
