@@ -324,7 +324,7 @@ def evaluate(flags):
             json.dump(results, f)
 
 
-def main():
+def main(dataset: str = None, samples: str = None):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
@@ -343,7 +343,7 @@ def main():
     parser.add_argument(
         "--version", default="default", type=str, help="Version of the dataset"
     )
-    args = parser.parse_args()
+    args = parser.parse_args(["--dataset", dataset, "--samples", samples])
 
     evaluate(args)
 

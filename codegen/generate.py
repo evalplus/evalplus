@@ -3,7 +3,7 @@ import os
 from os import PathLike
 from typing import List
 
-from model import DecoderBase, make_model
+from codegen.model import DecoderBase, make_model
 from rich.progress import (BarColumn, MofNCompleteColumn, Progress, TextColumn,
                            TimeElapsedColumn)
 

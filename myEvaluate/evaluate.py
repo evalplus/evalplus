@@ -1,45 +1,56 @@
 from codegen.generate import main as create_inference
 from evalplus.sanitize import script as sanitize
+from evalplus.evaluate import main as evaluate_model
+from fire import Fire
 # tuple in the form of (original model path, original model name, custom model path, custom model name)
 MODELS = {
     "llama_3_instruct_8b": (
         "meta-llama/Meta-Llama-3-8B-Instruct",
-        "llama_3_instruct_8b",
         "custom_finetuned_models/llama3_instruct_dpo",
-        "llama3_finetuned",
     ),
     "llama_3_base_8b": (
         "meta-llama/Meta-Llama-3-8B",
-        "llama_3_base_8b",
-        "custom_finetuned_models/llama3_instruct_dpo",
-        "llama3_base_finetuned",
+        "custom_finetuned_models/llama3_base_dpo",
     ),
     "deepseek_coder_6.7b_instruct": (
         "meta-llama/Meta-Llama-3-8B",
-        "llama_3_base_8b",
         "custom_finetuned_models/llama3_base_dpo",
-        "llama3_base_finetuned",
+    ),
+    "mistral2_instruct": (
+        "mistralai/Mistral-7B-Instruct-v0.2",
+        "custom_finetuned_models/mistral2_instruct_dpo",
     ),
 }
-python evalplus/sanitize.py --samples "inferenced_output/llama3/mbpp/meta-llama--Meta-Llama-3-8B-Instruct_vllm_temp_0.0.jsonl"
 
-def evaluate(model_name: str):
-    original_model_path, original_model_name, custom_model_path, custom_model_name = MODELS[model_name]
+
+def evaluate(model_name: str, custom: bool, evaluate:bool):
+    original_model_path, custom_model_path = MODELS[model_name]
+    if custom:
+        model_path = custom_model_path
+    else:
+        model_path = original_model_path
+    model_path_2 = model_path.replace("/", "--")
+    
     for dataset in ["mbpp", "humaneval"]:
-        create_inference(
-            model=original_model_path,
-            greedy=True,
-            root=f"inferenced_output/{original_model_name}",
-            jsonl_fmt=True,
-            database=dataset,
-            backend="vllm"
-        )
-        create_inference(
-            model=custom_model_path,
-            greedy=True,
-            root=f"inferenced_output/{custom_model_name}",
-            jsonl_fmt=True,
-            database=dataset,
-            backend="vllm"
-        )
-        sanitize(samples=f"inferenced_output/{original_model_name}/{dataset}/{original_model_path}_vllm_temp_0.0.jsonl")
+        if not evaluate:
+            create_inference(
+                model=model_path,
+                greedy=True,
+                root=f"inferenced_output",
+                jsonl_fmt=True,
+                dataset=dataset,
+                backend="vllm"
+            )
+            sanitize(samples=f"inferenced_output/{dataset}/{model_path_2}_vllm_temp_0.0.jsonl")
+        else:
+            print(f"-----------{dataset}--------------")
+            print("---------------base-----------------")
+            ram = model_path.replace("/", "--")
+            evaluate_model(dataset=dataset, samples=f"inferenced_output/{dataset}/{ram}_vllm_temp_0.0-sanitized.jsonl")
+            print("---------------fine tuned-----------------")
+            ram = custom_model_path.replace("/", "--")
+            evaluate_model(dataset=dataset, samples=f"inferenced_output/{dataset}/{ram}_vllm_temp_0.0-sanitized.jsonl")
+
+        
+if __name__ == "__main__":
+    Fire(evaluate)
