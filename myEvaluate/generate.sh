@@ -24,3 +24,6 @@ python evalplus/sanitize.py --samples "/home/wyett/evalplus/inferenced_output/ll
 python evalplus/evaluate.py --dataset humaneval --samples "inferenced_output/llama3_finetuned/humaneval/custom_finetuned_models--llama3_instruct_dpo_vllm_temp_0.0-sanitized.jsonl"
 
 
+
+python codegen/generate.py --model "meta-llama/Meta-Llama-3-8B-Instruct" --greedy --root "inferenced_output/tmp" --jsonl_fmt --dataset mbpp --backend vllm
+python codegen/generate.py --model "meta-llama/Meta-Llama-3-8B-Instruct" --greedy --root "inferenced_output/tmp" --jsonl_fmt --dataset humaneval --backend vllm

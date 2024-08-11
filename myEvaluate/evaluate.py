@@ -20,6 +20,10 @@ MODELS = {
         "mistralai/Mistral-7B-Instruct-v0.2",
         "custom_finetuned_models/mistral2_instruct_dpo",
     ),
+    "mistral3_base": (
+        "mistralai/Mistral-7B-v0.3",
+        "custom_finetuned_models/mistral3_base_dpo",
+    ),
 }
 
 
