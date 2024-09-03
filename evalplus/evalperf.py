@@ -39,6 +39,7 @@ _REFERENCE_EXEC_TIMES = 3
 def check_solution(
     index: int, solution: str, dataset: str, task: Dict, expected_output: List
 ) -> Tuple:
+    assert isinstance(solution, str)
     result = untrusted_check(
         dataset,
         solution,
@@ -299,7 +300,7 @@ def script(
 
     # load model's solutions
     samples = {
-        task["task_id"]: task["solution"][:max_n_samples]
+        task["task_id"].replace("_", "/"): task["solution"][:max_n_samples]
         for task in stream_jsonl(samples)
     }
 

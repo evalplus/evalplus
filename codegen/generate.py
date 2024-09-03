@@ -108,9 +108,7 @@ def codegen(
                 )
                 assert outputs, "No outputs from model!"
                 for impl in outputs:
-                    solution = (
-                        prompt + impl if model.is_direct_completion() else impl
-                    )
+                    solution = prompt + impl if model.is_direct_completion() else impl
                     if target_path.endswith(".jsonl"):
                         with open(target_path, "a") as f:
                             f.write(

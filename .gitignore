@@ -171,3 +171,7 @@ MbppPlus*.gz
 evalplus/_version.py
 *mbpp.json
 *.jsonl
+*.json
+*.png
+*.pdf
+trash-bin
