@@ -25,15 +25,16 @@ import multiprocessing
 import os
 import time
 from multiprocessing import Array, Value
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+import psutil
 
 from evalplus.eval._special_oracle import (
     MBPP_OUTPUT_NOT_NONE_TASKS,
     MBPP_OUTPUT_SET_EQ_TASKS,
-    _poly,
     _digit_distance_nums,
+    _poly,
     _surface_Area,
 )
 from evalplus.eval.utils import (
@@ -94,6 +95,18 @@ _UNKNOWN = 3
 _mapping = {_SUCCESS: PASS, _FAILED: FAIL, _TIMEOUT: TIMEOUT, _UNKNOWN: None}
 
 
+def query_maximum_memory_bytes() -> Optional[int]:
+    # Disable functionalities that can make destructive changes to the test.
+    # allow only 4GB memory usage
+    maximum_memory_bytes = os.getenv(
+        "EVALPLUS_MAX_MEMORY_BYTES", 4 * 1024 * 1024 * 1024
+    )
+    maximum_memory_bytes = min(int(maximum_memory_bytes), psutil.virtual_memory().total)
+    if maximum_memory_bytes == -1:
+        return None
+    return maximum_memory_bytes
+
+
 def is_floats(x) -> bool:
     # check if it is float; List[float]; Tuple[float]
     if isinstance(x, float):
@@ -126,10 +139,7 @@ def unsafe_execute(
         rmtree = shutil.rmtree
         rmdir = os.rmdir
         chdir = os.chdir
-        # Disable functionalities that can make destructive changes to the test.
-        # allow only 4GB memory usage
-        maximum_memory_bytes = 4 * 1024 * 1024 * 1024
-        reliability_guard(maximum_memory_bytes=maximum_memory_bytes)
+        reliability_guard(maximum_memory_bytes=query_maximum_memory_bytes())
         exec_globals = {}
         try:
             with swallow_io():
@@ -153,9 +163,15 @@ def unsafe_execute(
                         elif "sum_div" == entry_point:  # Mbpp/295 special oracle
                             exact_match = exact_match or out == 0
                         elif "surface_Area" == entry_point:  # Mbpp/581 special oracle
-                            exact_match = exact_match or abs(out - _surface_Area(*inp)) <= atol
-                        elif "digit_distance_nums" == entry_point:  # Mbpp/558 special oracle
-                            exact_match = exact_match or out == _digit_distance_nums(*inp)
+                            exact_match = (
+                                exact_match or abs(out - _surface_Area(*inp)) <= atol
+                            )
+                        elif (
+                            "digit_distance_nums" == entry_point
+                        ):  # Mbpp/558 special oracle
+                            exact_match = exact_match or out == _digit_distance_nums(
+                                *inp
+                            )
                         elif entry_point in MBPP_OUTPUT_SET_EQ_TASKS:
                             exact_match = set(out) == set(exp)
                         elif entry_point in MBPP_OUTPUT_NOT_NONE_TASKS:
