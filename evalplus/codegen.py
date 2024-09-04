@@ -106,7 +106,7 @@ def codegen(
 def run_codegen(
     model: str,
     dataset: str,
-    root: str,
+    root: str = "evalplus_results",
     bs: int = 1,
     n_samples: int = 1,
     temperature: float = 0.0,
@@ -117,8 +117,8 @@ def run_codegen(
     backend: str = "vllm",
     base_url: str = None,
     tp: int = 1,
-    evalperf_type: str = None,  # This is for EvalPerf
-    jsonl_fmt: bool = False,
+    evalperf_type: str = None,  # For EvalPerf
+    jsonl_fmt: bool = True,
 ):
     assert dataset in ["humaneval", "mbpp"], f"Invalid dataset {dataset}"
     assert backend in ["vllm", "hf", "openai"]

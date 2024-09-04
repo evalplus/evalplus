@@ -1,4 +1,3 @@
-import argparse
 import json
 import multiprocessing
 import os
@@ -8,13 +7,14 @@ import time
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from warnings import warn
 
 import numpy as np
 from termcolor import cprint
 from tqdm import tqdm
 
+from evalplus.codegen import run_codegen
 from evalplus.data import (
     get_human_eval_plus,
     get_human_eval_plus_hash,
@@ -123,39 +123,54 @@ def check_correctness(
     return ret
 
 
-def evaluate(flags):
-    if flags.parallel is None:
-        n_workers = max(1, multiprocessing.cpu_count() // 2)
-    else:
-        n_workers = flags.parallel
+def evaluate(
+    dataset: str,
+    samples: Optional[str] = None,
+    base_only: bool = False,
+    parallel: Optional[int] = None,
+    i_just_wanna_run: bool = False,
+    test_details: bool = False,
+    min_time_limit: float = 1,
+    gt_time_limit_factor: float = 4.0,
+    mini: bool = False,
+    noextreme: bool = False,
+    version: str = "default",
+    **model_kwargs,
+):
+    if model_kwargs:
+        samples = run_codegen(
+            dataset=dataset,
+            **model_kwargs,
+        )
+    assert samples is not None, "No samples provided"
 
-    if os.path.isdir(flags.samples):
-        result_path = os.path.join(flags.samples, "eval_results.json")
-    else:
-        assert flags.samples.endswith(".jsonl")
-        result_path = flags.samples.replace(".jsonl", "_eval_results.json")
+    n_workers = parallel or max(1, multiprocessing.cpu_count() // 2)
 
-    if os.path.isfile(result_path) and not flags.i_just_wanna_run:
+    if os.path.isdir(samples):
+        result_path = os.path.join(samples, "eval_results.json")
+    else:
+        assert samples.endswith(".jsonl")
+        result_path = samples.replace(".jsonl", "_eval_results.json")
+
+    if os.path.isfile(result_path) and not i_just_wanna_run:
         print(f"Load from previous results from {result_path}")
         with open(result_path, "r") as f:
             results = json.load(f)
 
         results = compatible_eval_result(results)
     else:
-        if flags.dataset == "humaneval":
+        if dataset == "humaneval":
             problems = get_human_eval_plus(
-                mini=flags.mini, noextreme=flags.noextreme, version=flags.version
+                mini=mini, noextreme=noextreme, version=version
             )
             dataset_hash = get_human_eval_plus_hash(
-                mini=flags.mini, noextreme=flags.noextreme, version=flags.version
+                mini=mini, noextreme=noextreme, version=version
             )
             expected_output = get_groundtruth(problems, dataset_hash, [])
-        elif flags.dataset == "mbpp":
-            problems = get_mbpp_plus(
-                mini=flags.mini, noextreme=flags.noextreme, version=flags.version
-            )
+        elif dataset == "mbpp":
+            problems = get_mbpp_plus(mini=mini, noextreme=noextreme, version=version)
             dataset_hash = get_mbpp_plus_hash(
-                mini=flags.mini, noextreme=flags.noextreme, version=flags.version
+                mini=mini, noextreme=noextreme, version=version
             )
             expected_output = get_groundtruth(
                 problems,
@@ -177,7 +192,7 @@ def evaluate(flags):
             remainings = set()
 
             print("Reading samples...")
-            for sample in tqdm(load_solutions(flags.samples)):
+            for sample in tqdm(load_solutions(samples)):
                 task_id = sample["task_id"]
                 if task_id not in problems:
                     warn(
@@ -191,16 +206,16 @@ def evaluate(flags):
                 )
                 remainings.add(sample["_identifier"])
                 args = (
-                    flags.dataset,
+                    dataset,
                     completion_id[task_id],
                     problems[task_id],
                     solution,
                     expected_output[task_id],
-                    flags.base_only,
-                    not flags.test_details,  # fast_check
+                    base_only,
+                    not test_details,  # fast_check
                     sample["_identifier"],
-                    flags.min_time_limit,
-                    flags.gt_time_limit_factor,
+                    min_time_limit,
+                    gt_time_limit_factor,
                 )
                 futures.append(executor.submit(check_correctness, *args))
                 completion_id[task_id] += 1
@@ -236,7 +251,7 @@ def evaluate(flags):
                     if stat == PASS or not details:
                         return []
 
-                    if flags.test_details:
+                    if test_details:
                         return [
                             inputs[i] for i in range(len(details)) if not details[i]
                         ]
@@ -254,13 +269,13 @@ def evaluate(flags):
                 plus_fail_tests = []
 
                 # with plus tests
-                if not flags.base_only:
+                if not base_only:
                     plus_stat, plus_details = res["plus"]
                     plus_fail_tests = get_failed_tests(
                         plus_stat, plus_details, problems[task_id]["plus_input"]
                     )
 
-                if flags.dataset == "mbpp":
+                if dataset == "mbpp":
                     base_fail_tests = mbpp_serialize_inputs(task_id, base_fail_tests)
                     plus_fail_tests = mbpp_serialize_inputs(task_id, plus_fail_tests)
 
@@ -283,7 +298,7 @@ def evaluate(flags):
     for res in results["eval"].values():
         bc = sum([r["base_status"] == PASS for r in res])
         base_correct.append(bc)
-        if not flags.base_only:
+        if not base_only:
             new_correct.append(
                 sum(
                     [
@@ -299,12 +314,12 @@ def evaluate(flags):
         for k in [1, 10, 100]
         if total.min() >= k
     }
-    cprint(f"{flags.dataset} (base tests)", "red")
+    cprint(f"{dataset} (base tests)", "red")
     for k, v in pass_at_k.items():
         cprint(f"{k}:\t{v:.3f}", "red")
 
     if new_correct:
-        cprint(f"{flags.dataset}+ (base + extra tests)", "green")
+        cprint(f"{dataset}+ (base + extra tests)", "green")
         pass_at_k = {
             f"pass@{k}": estimate_pass_at_k(total, np.array(new_correct), k).mean()
             for k in [1, 10, 100]
@@ -314,7 +329,7 @@ def evaluate(flags):
             cprint(f"{k}:\t{v:.3f}", "green")
 
     # save results
-    if os.path.isfile(result_path) and flags.i_just_wanna_run:
+    if os.path.isfile(result_path) and i_just_wanna_run:
         decision = ""
         while decision.lower() not in ["y", "n"]:
             print(f"{result_path} already exists. Press [Y/N] to overwrite or exit...")
@@ -334,27 +349,9 @@ def evaluate(flags):
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--dataset", required=True, type=str, choices=["humaneval", "mbpp"]
-    )
-    parser.add_argument("--samples", required=True, type=str)
-    parser.add_argument("--base-only", action="store_true")
-    parser.add_argument("--parallel", default=None, type=int)
-    parser.add_argument("--i-just-wanna-run", action="store_true")
-    parser.add_argument("--test-details", action="store_true")
-    parser.add_argument("--min-time-limit", default=1, type=float)
-    parser.add_argument("--gt-time-limit-factor", default=4.0, type=float)
-    parser.add_argument("--mini", action="store_true")
-    parser.add_argument(
-        "--noextreme", action="store_true", help="Omit extreme test inputs"
-    )
-    parser.add_argument(
-        "--version", default="default", type=str, help="Version of the dataset"
-    )
-    args = parser.parse_args()
+    from fire import Fire
 
-    evaluate(args)
+    Fire(evaluate)
 
 
 if __name__ == "__main__":
