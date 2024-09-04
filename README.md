@@ -54,7 +54,7 @@ To quickly perform code generation and evaluation on HumanEval+:
 pip install "evalplus[vllm]" --upgrade
 evalplus.evaluate --model "deepseek-ai/deepseek-coder-6.7b-instruct" \
                   --dataset [humaneval|mbpp]                         \
-                  --backend [vllm|hf|openai|anthropic|mistral]       \
+                  --backend [vllm|hf|openai|anthropic|google]        \
                   --greedy
 ```
 

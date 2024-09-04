@@ -11,16 +11,16 @@
 - `mistral`: Configure `MISTRAL_API_KEY`
 
 ```shell
-evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm|hf|openai|anthropic|mistral]
+evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm|hf|openai|anthropic|google]
 ```
 
 To perform code generation using user-defined tasks and datasets:
 
 ```shell
 # Override HumanEval datasets
-HUMANEVAL_OVERRIDE_PATH="/path/to/HumanEvalPlus.jsonl.gz" evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset humaneval --backend [vllm|hf|openai|anthropic|mistral]
+HUMANEVAL_OVERRIDE_PATH="/path/to/HumanEvalPlus.jsonl.gz" evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset humaneval --backend [vllm|hf|openai|anthropic|google]
 # Override MBPP datasets
-MBPP_OVERRIDE_PATH="/path/to/MbppPlus.jsonl.gz" evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset mbpp --backend [vllm|hf|openai|anthropic|mistral]
+MBPP_OVERRIDE_PATH="/path/to/MbppPlus.jsonl.gz" evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset mbpp --backend [vllm|hf|openai|anthropic|google]
 ```
 
 ## Customized Code Generation
