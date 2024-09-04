@@ -3,7 +3,6 @@ import os
 from os import PathLike
 from typing import List
 
-from model import DecoderBase, make_model
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -12,28 +11,7 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-
-def construct_contract_prompt(prompt: str, contract_type: str, contract: str) -> str:
-    if contract_type == "none":
-        return prompt
-    elif contract_type == "docstring":
-        # embed within the docstring
-        sep = ""
-        if '"""' in prompt:
-            sep = '"""'
-        elif "'''" in prompt:
-            sep = "'''"
-        assert sep != ""
-        l = prompt.split(sep)
-        contract = "\n".join([x.split("#")[0] for x in contract.splitlines()])
-        l[1] = (
-            l[1] + contract + "\n" + " " * (len(contract) - len(contract.lstrip()) - 1)
-        )
-        return sep.join(l)
-    elif contract_type == "code":
-        # at the beginning of the function
-        contract = "\n".join([x.split("#")[0] for x in contract.splitlines()])
-        return prompt + contract
+from evalplus.provider import DecoderBase, make_model
 
 
 def codegen(
@@ -125,7 +103,7 @@ def codegen(
                     sidx += 1
 
 
-def main(
+def run_codegen(
     model: str,
     dataset: str,
     root: str,
@@ -213,8 +191,14 @@ def main(
         version=version,
     )
 
+    return target_path
 
-if __name__ == "__main__":
+
+def main():
     from fire import Fire
 
-    Fire(main)
+    Fire(run_codegen)
+
+
+if __name__ == "__main__":
+    main()

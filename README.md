@@ -239,8 +239,7 @@ pip install -r tools/requirements.txt
 
 ### Code generation
 
-You can use `codegen/generate.py` to performance code generation.
-We currently support following backends:
+`evalplus.codegen` support following backends:
 
 * `vllm`: Set `--model` as Hugging Face model ID such as `microsoft/Phi-3-mini-128k-instruct`
 * `hf`: HuggingFace Transformers; same way to setup `--model`
@@ -249,7 +248,7 @@ We currently support following backends:
 * `mistral`: Configure `MISTRAL_API_KEY`
 
 ```shell
-python codegen/generate.py --model "mistralai/Mistral-7B-Instruct-v0.2" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm]
+evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm]
 ```
 
 To perform code generation using user-defined tasks and datasets:

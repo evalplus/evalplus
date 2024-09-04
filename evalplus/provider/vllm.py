@@ -1,0 +1,54 @@
+from typing import List
+
+from transformers import AutoTokenizer
+from vllm import LLM, SamplingParams
+
+from evalplus.provider.base import DecoderBase
+from evalplus.provider.utility import extra_eos_for_direct_completion, make_chat_prompt
+
+
+class VllmDecoder(DecoderBase):
+    def __init__(
+        self, name: str, dataset: str, tensor_parallel_size: int = 1, **kwargs
+    ) -> None:
+        super().__init__(name, **kwargs)
+
+        kwargs = {
+            "tensor_parallel_size": tensor_parallel_size,
+            "dtype": self.dtype,
+            "trust_remote_code": self.trust_remote_code,
+        }
+
+        self.tokenizer = AutoTokenizer.from_pretrained(self.name)
+        if self.tokenizer.chat_template is None:
+            self.eos += extra_eos_for_direct_completion(dataset)
+        else:
+            self.eos += ["\n```\n"]
+        self.llm = LLM(model=name, max_model_len=2048, **kwargs)
+
+    def is_direct_completion(self) -> bool:
+        return self.tokenizer.chat_template is None
+
+    def codegen(
+        self, prompt: str, do_sample: bool = True, num_samples: int = 200
+    ) -> List[str]:
+        if do_sample:
+            assert self.temperature > 0, "Temperature must be greater than 0!"
+        batch_size = min(self.batch_size, num_samples)
+        prompt = make_chat_prompt(
+            prompt, self.instruction_prefix, self.response_prefix, self.tokenizer
+        )
+
+        vllm_outputs = self.llm.generate(
+            [prompt] * batch_size,
+            SamplingParams(
+                temperature=self.temperature,
+                max_tokens=self.max_new_tokens,
+                top_p=0.95 if do_sample else 1.0,
+                stop=self.eos,
+            ),
+            use_tqdm=False,
+        )
+
+        gen_strs = [x.outputs[0].text.replace("\t", "    ") for x in vllm_outputs]
+        return gen_strs
