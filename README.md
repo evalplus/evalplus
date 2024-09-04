@@ -65,6 +65,9 @@ You can checkout the generation and results at `evalplus_results/[humaneval|mbpp
 
 ```bash
 pip install "git+https://github.com/evalplus/evalplus.git" --upgrade
+
+pip install --upgrade "git+https://github.com/evalplus/evalplus.git"                     # without vLLM
+pip install --upgrade "evalplus[vllm] @ git+https://github.com/evalplus/evalplus@master" # with vLLM
 ```
 
 </div>
