@@ -8,6 +8,10 @@ MODELS = {
         "meta-llama/Meta-Llama-3-8B-Instruct",
         "custom_finetuned_models/llama3_instruct_dpo",
     ),
+    "llama_3_instruct_8b_full": (
+        "meta-llama/Meta-Llama-3-8B-Instruct",
+        "custom_saved_models/llama_3_instruct/full/dpo",
+    ),
     "llama_3_base_8b": (
         "meta-llama/Meta-Llama-3-8B",
         "custom_finetuned_models/llama3_base_dpo",

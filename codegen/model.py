@@ -153,7 +153,6 @@ class VllmDecoder(DecoderBase):
         if do_sample:
             assert self.temperature > 0, "Temperature must be greater than 0!"
         batch_size = min(self.batch_size, num_samples)
-
         vllm_outputs = self.llm.generate(
             [prompt] * batch_size,
             SamplingParams(

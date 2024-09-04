@@ -1,5 +1,6 @@
 # custom models
 custom_finetuned_models/*
+custom_saved_models/*
 inferenced_output/*
 
 # Byte-compiled / optimized / DLL files
