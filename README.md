@@ -51,10 +51,96 @@ Want to know more details? Read our [**NeurIPS'23 paper**](https://openreview.ne
 To quickly perform code generation and evaluation on HumanEval+:
 
 ```bash
-pip install "evalplus[vllm]" --upgrade
-evalplus.evaluate --model "deepseek-ai/deepseek-coder-6.7b-instruct" \
-                  --dataset [humaneval|mbpp]                         \
-                  --backend [vllm|hf|openai|anthropic|google]        \
+pip install evalplus --upgrade
+```
+
+### HuggingFace models
+
+- `transformers` backend:
+
+```bash
+evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3" \
+                  --dataset [humaneval|mbpp]                   \
+                  --backend hf                                 \
+                  --greedy
+```
+
+<details><summary>Enable Flash Attention 2<i>:: click to expand ::</i></summary>
+<div>
+
+```bash
+# Install Flash Attention 2
+pip install packaging ninja
+pip install flash-attn --no-build-isolation
+# Note: if you have installation problem, consider using pre-built
+# wheels from https://github.com/Dao-AILab/flash-attention/releases
+
+# Run evaluation with FA2
+evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3"    \
+                  --dataset [humaneval|mbpp]                      \
+                  --backend hf                                    \
+                  --attn-implementation [flash_attention_2|sdpa]  \
+                  --greedy
+```
+
+</div>
+</details>
+
+- `vllm` backend:
+
+```bash
+pip install "evalplus[vllm]" --upgrade    # Install vLLM backend
+evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3" \
+                  --dataset [humaneval|mbpp]                   \
+                  --backend vllm                               \
+                  --tp [TENSOR_PARALLEL_SIZE]                  \
+                  --greedy
+```
+
+- `openai` compatible servers (e.g., [vLLM](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html)):
+
+```bash
+# Launch a model server first: e.g., https://docs.vllm.ai/en/latest/serving/deploying_with_docker.html
+evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3" \
+                  --dataset [humaneval|mbpp]                   \
+                  --backend openai                             \
+                  --base-url http://localhost:8000/v1          \
+                  --greedy
+```
+
+### OpenAI models
+
+- Access OpenAI APIs from [OpenAI Console](https://platform.openai.com/)
+
+```bash
+export OPENAI_API_KEY="[YOUR_API_KEY]"
+evalplus.evaluate --model "gpt-4o"            \
+                  --dataset [humaneval|mbpp]  \
+                  --backend openai            \
+                  --greedy
+```
+
+### Anthropic models
+
+- Access Anthropic APIs from [Anthropic Console](https://console.anthropic.com/)
+
+```bash
+export ANTHROPIC_API_KEY="[YOUR_API_KEY]"
+evalplus.evaluate --model "claude-3-haiku-20240307" \
+                  --dataset [humaneval|mbpp]        \
+                  --backend anthropic               \
+                  --greedy
+```
+
+### Google Gemini models
+
+- Access Gemini APIs from [Google AI Studio](https://aistudio.google.com/)
+
+```bash
+export GOOGLE_API_KEY="[YOUR_API_KEY]"
+evalplus.evaluate --model "gemini-1.5-pro"    \
+                  --dataset [humaneval|mbpp]  \
+                  --backend gemini            \
                   --greedy
 ```
 
