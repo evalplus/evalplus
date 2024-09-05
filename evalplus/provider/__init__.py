@@ -11,6 +11,7 @@ def make_model(
     base_url=None,
     instruction_prefix=None,
     response_prefix=None,
+    attn_implementation="eager",
 ) -> DecoderBase:
     if backend == "vllm":
         from evalplus.provider.vllm import VllmDecoder
@@ -34,6 +35,7 @@ def make_model(
             dataset=dataset,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
+            attn_implementation=attn_implementation,
         )
     elif backend == "openai":
         from evalplus.provider.openai import OpenAIChatDecoder

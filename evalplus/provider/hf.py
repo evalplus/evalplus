@@ -9,7 +9,9 @@ from evalplus.provider.utility import extra_eos_for_direct_completion, make_chat
 
 
 class HuggingFaceDecoder(DecoderBase):
-    def __init__(self, name: str, dataset: str, **kwargs):
+    def __init__(
+        self, name: str, dataset: str, attn_implementation: str = "eager", **kwargs
+    ):
         super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -17,6 +19,7 @@ class HuggingFaceDecoder(DecoderBase):
             "device_map": "auto",
             "trust_remote_code": self.trust_remote_code,
             "torch_dtype": getattr(torch, self.dtype),
+            "attn_implementation": attn_implementation,  # "eager", "flash_attention_2", "sdpa"
         }
         self.skip_special_tokens = True
 
