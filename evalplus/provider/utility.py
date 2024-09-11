@@ -22,7 +22,7 @@ def extra_eos_for_direct_completion(dataset) -> List[str]:
 _MAGIC_SPLITTER_ = "-[[]]-this-is-really-our-highest-priority-[[]]-"
 
 
-def make_chat_prompt(
+def make_raw_chat_prompt(
     task_prompt: str,
     instruction_prefix: str,
     response_prefix: str,

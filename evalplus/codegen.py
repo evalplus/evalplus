@@ -115,6 +115,7 @@ def run_codegen(
     id_range: List = None,
     version: str = "default",
     backend: str = "vllm",
+    force_base_prompt: bool = False,
     base_url: str = None,
     tp: int = 1,
     evalperf_type: str = None,  # For EvalPerf
@@ -163,6 +164,7 @@ def run_codegen(
         backend=backend,
         batch_size=bs,
         temperature=temperature,
+        force_base_prompt=force_base_prompt,
         dataset=dataset,
         base_url=base_url,
         tp=tp,

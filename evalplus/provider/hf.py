@@ -5,12 +5,20 @@ from stop_sequencer import StopSequencer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from evalplus.provider.base import DecoderBase
-from evalplus.provider.utility import extra_eos_for_direct_completion, make_chat_prompt
+from evalplus.provider.utility import (
+    extra_eos_for_direct_completion,
+    make_raw_chat_prompt,
+)
 
 
 class HuggingFaceDecoder(DecoderBase):
     def __init__(
-        self, name: str, dataset: str, attn_implementation: str = "eager", **kwargs
+        self,
+        name: str,
+        dataset: str,
+        force_base_prompt: bool = False,
+        attn_implementation: str = "eager",
+        **kwargs,
     ):
         super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -25,8 +33,9 @@ class HuggingFaceDecoder(DecoderBase):
 
         print(f"{kwargs = }")
 
+        self.force_base_prompt = force_base_prompt
         self.tokenizer = AutoTokenizer.from_pretrained(name)
-        if self.tokenizer.chat_template is None:  # no chat template
+        if self.is_direct_completion():  # no chat template
             self.eos += extra_eos_for_direct_completion(dataset)
         else:  # with chat template
             self.eos += ["\n```\n"]
@@ -36,7 +45,7 @@ class HuggingFaceDecoder(DecoderBase):
         self.model = self.model.to(self.device)
 
     def is_direct_completion(self) -> bool:
-        return self.tokenizer.chat_template is None
+        return self.force_base_prompt or self.tokenizer.chat_template is None
 
     @torch.inference_mode()
     def codegen(
@@ -46,8 +55,12 @@ class HuggingFaceDecoder(DecoderBase):
             assert not do_sample
             assert num_samples == 1
 
-        prompt = make_chat_prompt(
-            prompt, self.instruction_prefix, self.response_prefix, self.tokenizer
+        prompt = (
+            prompt
+            if self.is_direct_completion()
+            else make_raw_chat_prompt(
+                prompt, self.instruction_prefix, self.response_prefix, self.tokenizer
+            )
         )
         input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
             self.device
