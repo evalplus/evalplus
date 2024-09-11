@@ -68,9 +68,10 @@ evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3" \
 > [!Note]
 >
 > EvalPlus uses different prompts for base and chat models.
-> By default it is detected by `tokenizer.chat_template`.
+> By default it is detected by `tokenizer.chat_template` when using `hf`/`vllm` as backend.
+> For other backends, only chat mode is allowed.
 >
-> If your base models come with a `tokenizer.chat_template`,
+> Therefore, if your base models come with a `tokenizer.chat_template`,
 > please add `--force-base-prompt` to avoid being evaluated
 > in a chat mode.
 
