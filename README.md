@@ -65,6 +65,15 @@ evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3" \
                   --greedy
 ```
 
+> [!Note]
+>
+> EvalPlus uses different prompts for base and chat models.
+> By default it is detected by `tokenizer.chat_template`.
+>
+> If your base models come with a `tokenizer.chat_template`,
+> please add `--force-base-prompt` to avoid being evaluated
+> in a chat mode.
+
 <details><summary>Enable Flash Attention 2<i>:: click to expand ::</i></summary>
 <div>
 
