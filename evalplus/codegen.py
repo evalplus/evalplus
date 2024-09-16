@@ -37,7 +37,7 @@ def codegen(
     if target_path.endswith(".jsonl"):
         raw_target_path = target_path.replace(".jsonl", ".raw.jsonl")
     else:
-        raw_target_path = raw_target_path + ".raw"
+        raw_target_path = target_path + ".raw"
         os.makedirs(target_path, exist_ok=True)
 
     print(f"Sanitized code outputs will be saved to {target_path}")
