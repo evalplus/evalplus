@@ -12,6 +12,7 @@ from rich.progress import (
 )
 
 from evalplus.provider import DecoderBase, make_model
+from evalplus.sanitize import sanitize
 
 
 def codegen(
@@ -32,6 +33,15 @@ def codegen(
                     continue
                 task_id = json.loads(line)["task_id"]
                 task2nexist[task_id] = task2nexist.get(task_id, 0) + 1
+
+    if target_path.endswith(".jsonl"):
+        raw_target_path = target_path.replace(".jsonl", ".raw.jsonl")
+    else:
+        raw_target_path = raw_target_path + ".raw"
+        os.makedirs(target_path, exist_ok=True)
+
+    print(f"Sanitized code outputs will be saved to {target_path}")
+    print(f"Raw outputs will be saved to {raw_target_path}")
 
     with Progress(
         TextColumn(f"{dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"),
@@ -87,15 +97,37 @@ def codegen(
                 assert outputs, "No outputs from model!"
                 for impl in outputs:
                     solution = prompt + impl if model.is_direct_completion() else impl
+                    sanitized_solution = sanitize(
+                        solution, entrypoint=task["entrypoint"]
+                    )
                     if target_path.endswith(".jsonl"):
+                        # Writing the sanitized version
                         with open(target_path, "a") as f:
+                            f.write(
+                                json.dumps(
+                                    {"task_id": task_id, "solution": sanitized_solution}
+                                )
+                                + "\n"
+                            )
+
+                        # Writing the raw version
+                        with open(raw_target_path, "a") as f:
                             f.write(
                                 json.dumps({"task_id": task_id, "solution": solution})
                                 + "\n"
                             )
                     else:
+                        # Writing the sanitized version
                         with open(
                             os.path.join(target_path, p_name, f"{sidx}.py"),
+                            "w",
+                            encoding="utf-8",
+                        ) as f:
+                            f.write(sanitized_solution)
+
+                        # Writing the raw version
+                        with open(
+                            os.path.join(raw_target_path, p_name, f"{sidx}.py"),
                             "w",
                             encoding="utf-8",
                         ) as f:
