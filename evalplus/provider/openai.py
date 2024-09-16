@@ -1,4 +1,5 @@
 from typing import List
+import os
 
 import openai
 
@@ -9,7 +10,9 @@ from evalplus.provider.base import DecoderBase
 class OpenAIChatDecoder(DecoderBase):
     def __init__(self, name: str, base_url=None, **kwargs) -> None:
         super().__init__(name, **kwargs)
-        self.client = openai.OpenAI(base_url=base_url)
+        self.client = openai.OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY", "none"), base_url=base_url
+        )
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
