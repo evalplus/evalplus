@@ -98,7 +98,7 @@ def codegen(
                 for impl in outputs:
                     solution = prompt + impl if model.is_direct_completion() else impl
                     sanitized_solution = sanitize(
-                        solution, entrypoint=task["entrypoint"]
+                        solution, entrypoint=task["entry_point"]
                     )
                     if target_path.endswith(".jsonl"):
                         # Writing the sanitized version
