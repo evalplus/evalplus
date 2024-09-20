@@ -1,7 +1,7 @@
 import json
 import os
 from os import PathLike
-from typing import List
+from typing import List, Optional
 
 from rich.progress import (
     BarColumn,
@@ -139,7 +139,7 @@ def run_codegen(
     model: str,
     dataset: str,
     root: str = "evalplus_results",
-    bs: int = 1,
+    bs: Optional[int] = None,
     n_samples: int = 1,
     temperature: float = 0.0,
     resume: bool = True,
@@ -171,6 +171,10 @@ def run_codegen(
         assert len(id_range) == 2, "id_range must be a list of length 2"
         assert id_range[0] < id_range[1], "id_range must be increasing"
         id_range = tuple(id_range)
+    
+    if bs is None:
+        bs = min(n_samples, 32)
+        print(f"Setting batch size to {bs}")
 
     # Make project dir
     os.makedirs(root, exist_ok=True)
