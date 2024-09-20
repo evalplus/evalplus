@@ -17,10 +17,11 @@ from evalplus.data.mbpp import (
     get_mbpp_plus_hash,
 )
 from evalplus.eval import is_floats
-from evalplus.eval._special_oracle import _surface_Area, _digit_distance_nums
 from evalplus.eval._special_oracle import (
     MBPP_OUTPUT_NOT_NONE_TASKS,
     MBPP_OUTPUT_SET_EQ_TASKS,
+    _digit_distance_nums,
+    _surface_Area,
 )
 from evalplus.evaluate import get_groundtruth
 
@@ -108,17 +109,25 @@ def assertion(out, exp, atol):
 """
     elif entry_point == "surface_Area":
         imports.add("import math")
-        aux_fn = inspect.getsource(_surface_Area) + "\n" + """\
+        aux_fn = (
+            inspect.getsource(_surface_Area)
+            + "\n"
+            + """\
 def assertion(out, exp_0, exp_1, atol):
     assert abs(out - exp_0) <= atol or abs(out - exp_1) <= atol
-""" 
+"""
+        )
         assertion = f"assertion(surface_Area(*inp), exp, _surface_Area(*inp), {atol})"
 
     elif entry_point == "digit_distance_nums":
-        aux_fn = inspect.getsource(_digit_distance_nums) + "\n" + """\
+        aux_fn = (
+            inspect.getsource(_digit_distance_nums)
+            + "\n"
+            + """\
 def assertion(out, exp_0, exp_1, atol):
     assert out == exp_0 or out == exp_1
 """
+        )
         assertion = f"assertion(digit_distance_nums(*inp), exp, _digit_distance_nums(*inp), {atol})"
 
     # ============== special oracles ================= #

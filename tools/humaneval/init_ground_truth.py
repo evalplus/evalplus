@@ -14,7 +14,7 @@ if __name__ == "__main__":
     os.mkdir(GT_DIR)
 
     human_eval = get_human_eval()
-    for i, (task_id, task) in enumerate(human_eval.items()):        
+    for i, (task_id, task) in enumerate(human_eval.items()):
         incomplete = (
             task["prompt"]
             + task["canonical_solution"]

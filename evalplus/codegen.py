@@ -171,7 +171,7 @@ def run_codegen(
         assert len(id_range) == 2, "id_range must be a list of length 2"
         assert id_range[0] < id_range[1], "id_range must be increasing"
         id_range = tuple(id_range)
-    
+
     if bs is None:
         bs = min(n_samples, 32)
         print(f"Setting batch size to {bs}")

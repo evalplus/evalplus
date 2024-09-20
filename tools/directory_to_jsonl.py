@@ -1,13 +1,12 @@
 # Convert a directory of solutions to a JSONL file
 
-import os
 import json
+import os
 
 from tqdm import tqdm
 
-
-from evalplus.sanitize import sanitize
 from evalplus.data import get_human_eval_plus, get_mbpp_plus
+from evalplus.sanitize import sanitize
 
 
 def main(directory, sanitize_code: bool = True):
