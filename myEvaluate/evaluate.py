@@ -4,17 +4,25 @@ from evalplus.evaluate import main as evaluate_model
 from fire import Fire
 # tuple in the form of (original model path, original model name, custom model path, custom model name)
 MODELS = {
-    "llama_3_instruct_8b": (
+    "llama_3_instruct_8b_dpo": (
         "meta-llama/Meta-Llama-3-8B-Instruct",
         "custom_finetuned_models/llama3_instruct_dpo",
     ),
-    "llama_3_instruct_8b_full": (
+    "llama_3_instruct_8b_sft": (
+        "meta-llama/Meta-Llama-3-8B-Instruct",
+        "custom_finetuned_models/llama3_instruct_sft",
+    ),
+    "llama_3_instruct_8b_dpo_full": (
         "meta-llama/Meta-Llama-3-8B-Instruct",
         "custom_saved_models/llama_3_instruct/full/dpo",
     ),
     "llama_3_base_8b": (
         "meta-llama/Meta-Llama-3-8B",
         "custom_finetuned_models/llama3_base_dpo",
+    ),
+    "llama_3_base_8b_sft": (
+        "meta-llama/Meta-Llama-3-8B",
+        "custom_finetuned_models/llama3_base_sft",
     ),
     "deepseek_coder_6.7b_instruct": (
         "meta-llama/Meta-Llama-3-8B",
@@ -52,10 +60,10 @@ def evaluate(model_name: str, custom: bool, evaluate:bool):
             sanitize(samples=f"inferenced_output/{dataset}/{model_path_2}_vllm_temp_0.0.jsonl")
         else:
             print(f"-----------{dataset}--------------")
-            print("---------------base-----------------")
+            print("---------------Pre-finetuned-----------------")
             ram = model_path.replace("/", "--")
             evaluate_model(dataset=dataset, samples=f"inferenced_output/{dataset}/{ram}_vllm_temp_0.0-sanitized.jsonl")
-            print("---------------fine tuned-----------------")
+            print("---------------Post-finetuned----------------")
             ram = custom_model_path.replace("/", "--")
             evaluate_model(dataset=dataset, samples=f"inferenced_output/{dataset}/{ram}_vllm_temp_0.0-sanitized.jsonl")
 
