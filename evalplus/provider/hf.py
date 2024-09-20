@@ -34,7 +34,7 @@ class HuggingFaceDecoder(DecoderBase):
         print(f"{kwargs = }")
 
         self.force_base_prompt = force_base_prompt
-        self.tokenizer = AutoTokenizer.from_pretrained(name)
+        self.tokenizer = AutoTokenizer.from_pretrained(name, use_fast=False)
         if self.is_direct_completion():  # no chat template
             self.eos += extra_eos_for_direct_completion(dataset)
         else:  # with chat template

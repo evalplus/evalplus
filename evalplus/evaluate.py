@@ -285,8 +285,8 @@ def evaluate(
                         "solution": res["solution"],
                         "base_status": base_stat,
                         "plus_status": plus_stat,
-                        # "base_fail_tests": base_fail_tests,
-                        # "plus_fail_tests": plus_fail_tests,
+                        "base_fail_tests": base_fail_tests,
+                        "plus_fail_tests": plus_fail_tests,
                     }
                 )
 

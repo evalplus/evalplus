@@ -28,7 +28,7 @@ class VllmDecoder(DecoderBase):
         }
 
         self.force_base_prompt = force_base_prompt
-        self.tokenizer = AutoTokenizer.from_pretrained(self.name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.name, use_fast=False)
         if self.is_direct_completion():
             self.eos += extra_eos_for_direct_completion(dataset)
         else:
