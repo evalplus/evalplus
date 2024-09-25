@@ -24,17 +24,13 @@ MODELS = {
         "meta-llama/Meta-Llama-3-8B",
         "custom_finetuned_models/llama3_base_sft",
     ),
-    "deepseek_coder_6.7b_instruct": (
-        "meta-llama/Meta-Llama-3-8B",
-        "custom_finetuned_models/llama3_base_dpo",
+    "mistral_3_instruct_dpo_lora": (
+        "mistralai/Mistral-7B-Instruct-v0.3",
+        "custom_finetuned_models/mistral3_instruct_dpo",
     ),
-    "mistral2_instruct": (
-        "mistralai/Mistral-7B-Instruct-v0.2",
-        "custom_finetuned_models/mistral2_instruct_dpo",
-    ),
-    "mistral3_base": (
-        "mistralai/Mistral-7B-v0.3",
-        "custom_finetuned_models/mistral3_base_dpo",
+    "mistral_3_instruct_dpo_full": (
+        "mistralai/Mistral-7B-Instruct-v0.3",
+        "custom_saved_models/mistral_3_instruct/full/dpo",
     ),
 }
 
@@ -47,7 +43,7 @@ def evaluate(model_name: str, custom: bool, evaluate:bool):
         model_path = original_model_path
     model_path_2 = model_path.replace("/", "--")
     
-    for dataset in ["mbpp", "humaneval"]:
+    for dataset in ["humaneval", "mbpp"]:
         if not evaluate:
             create_inference(
                 model=model_path,
