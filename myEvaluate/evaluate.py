@@ -4,29 +4,9 @@ from evalplus.evaluate import main as evaluate_model
 from fire import Fire
 # tuple in the form of (original model path, original model name, custom model path, custom model name)
 MODELS = {
-    "llama_3_instruct_8b_dpo": (
-        "meta-llama/Meta-Llama-3-8B-Instruct",
-        "custom_finetuned_models/llama3_instruct_dpo",
-    ),
-    "llama_3_instruct_8b_sft": (
-        "meta-llama/Meta-Llama-3-8B-Instruct",
-        "custom_finetuned_models/llama3_instruct_sft",
-    ),
     "llama_3_instruct_8b_dpo_full": (
         "meta-llama/Meta-Llama-3-8B-Instruct",
-        "custom_saved_models/llama_3_instruct/full/dpo",
-    ),
-    "llama_3_base_8b": (
-        "meta-llama/Meta-Llama-3-8B",
-        "custom_finetuned_models/llama3_base_dpo",
-    ),
-    "llama_3_base_8b_sft": (
-        "meta-llama/Meta-Llama-3-8B",
-        "custom_finetuned_models/llama3_base_sft",
-    ),
-    "mistral_3_instruct_dpo_lora": (
-        "mistralai/Mistral-7B-Instruct-v0.3",
-        "custom_finetuned_models/mistral3_instruct_dpo",
+        "trained_models/llama_3_instruct/full/dpo/1",
     ),
     "mistral_3_instruct_dpo_full": (
         "mistralai/Mistral-7B-Instruct-v0.3",
