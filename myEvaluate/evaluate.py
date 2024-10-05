@@ -8,6 +8,10 @@ MODELS = {
         "meta-llama/Meta-Llama-3-8B-Instruct",
         "trained_models/llama_3_instruct/full/dpo/1",
     ),
+    "llama_3_instruct_8b_apo_full": (
+        "meta-llama/Meta-Llama-3-8B-Instruct",
+        "trained_models/llama_3_instruct/full/apo_zero/1",
+    ),
     "mistral_3_instruct_dpo_full": (
         "mistralai/Mistral-7B-Instruct-v0.3",
         "custom_saved_models/mistral_3_instruct/full/dpo",
