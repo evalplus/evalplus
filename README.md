@@ -48,10 +48,8 @@ Want to know more details? Read our [**NeurIPS'23 paper**](https://openreview.ne
 > EvalPlus ❤️ [bigcode-evaluation-harness](https://github.com/bigcode-project/bigcode-evaluation-harness)!
 > HumanEval+ and MBPP+ have been integrated to bigcode-evaluation-harness that you can also run EvalPlus datasets there!
 
-To quickly perform code generation and evaluation on HumanEval+:
-
 ```bash
-pip install evalplus --upgrade
+pip install --upgrade "git+https://github.com/evalplus/evalplus.git"
 ```
 
 ### HuggingFace models
@@ -155,17 +153,6 @@ evalplus.evaluate --model "gemini-1.5-pro"    \
 ```
 
 You can checkout the generation and results at `evalplus_results/[humaneval|mbpp]/`
-
-<details><summary>⏬ Install nightly version <i>:: click to expand ::</i></summary>
-<div>
-
-```bash
-pip install --upgrade "git+https://github.com/evalplus/evalplus.git"                     # without vLLM
-pip install --upgrade "evalplus[vllm] @ git+https://github.com/evalplus/evalplus@master" # with vLLM
-```
-
-</div>
-</details>
 
 <details><summary>⏬ Using EvalPlus as a local repo? <i>:: click to expand ::</i></summary>
 <div>
