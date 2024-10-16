@@ -5,6 +5,8 @@ from datasets import Dataset, DatasetDict
 from fire import Fire
 from huggingface_hub import create_tag, delete_tag, list_repo_refs
 
+from evalplus.data import get_human_eval_plus, get_mbpp_plus
+
 REPO_ID = "evalplus/evalperf"
 
 
@@ -14,12 +16,24 @@ def main(path, overwrite=False):
     first, version = name.split("-")
     assert first == "evalperf", f"Expected fmt evalperf-[date].jsonl; but got {path}"
 
+    evalplus_datasets = {**get_human_eval_plus(), **get_mbpp_plus()}
+
     with open(path, "r") as f:
         data = [json.loads(line) for line in f]
+
+    # drop task ids that are removed in latest EvalPlus dataset
+    to_drop = [
+        task["task_id"] for task in data if task["task_id"] not in evalplus_datasets
+    ]
+    print(f"Removing {len(to_drop)} tasks that are not in the latest EvalPlus dataset")
+    print(to_drop)
+    data = [d for d in data if d["task_id"] not in to_drop]
 
     # convert pe_input into string
     for d in data:
         d["pe_input"] = json.dumps(d["pe_input"])
+        d["entry_point"] = evalplus_datasets[d["task_id"]]["entry_point"]
+        d["prompt"] = evalplus_datasets[d["task_id"]]["prompt"]
 
     # combine
     dataset = DatasetDict(
