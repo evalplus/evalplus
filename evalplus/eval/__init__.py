@@ -99,7 +99,7 @@ def query_maximum_memory_bytes() -> Optional[int]:
     # Disable functionalities that can make destructive changes to the test.
     # allow only 4GB memory usage
     maximum_memory_bytes = os.getenv(
-        "EVALPLUS_MAX_MEMORY_BYTES", 4 * 1024 * 1024 * 1024
+        "EVALPLUS_MAX_MEMORY_BYTES", 6 * 1024 * 1024 * 1024
     )
     maximum_memory_bytes = min(int(maximum_memory_bytes), psutil.virtual_memory().total)
     if maximum_memory_bytes == -1:
