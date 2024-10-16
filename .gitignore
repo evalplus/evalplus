@@ -175,3 +175,4 @@ evalplus/_version.py
 *.png
 *.pdf
 trash-bin
+.bak

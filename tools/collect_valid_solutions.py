@@ -17,7 +17,7 @@ from evalplus.data import (
     get_mbpp_plus_hash,
 )
 from evalplus.eval import PASS
-from evalplus.evalperf import check_solution
+from evalplus.evalperf import correctness_check
 from evalplus.evaluate import get_groundtruth
 
 
@@ -135,7 +135,7 @@ def test_solutions(
     with ProcessPoolExecutor(max_workers=n_workers) as executor:
         futures = [
             executor.submit(
-                check_solution, index, solution, dataset, task, expected_output
+                correctness_check, index, solution, dataset, task, expected_output
             )
             for index, solution in enumerate(solutions)
         ]

@@ -1,4 +1,5 @@
 from concurrent.futures import ProcessPoolExecutor
+from platform import system
 from time import perf_counter
 from traceback import format_exc
 from typing import Any, Callable, List, Optional
@@ -13,6 +14,21 @@ from evalplus.eval.utils import (
     time_limit,
 )
 from evalplus.perf.config import MEMORY_LIMIT_GB, PROFILE_ROUNDS
+
+
+def simple_test_profiler():
+    # assert linux
+    assert system() == "Linux", "EvalPerf requires Linux's perf_event_open"
+    try:
+        with Collector():
+            pass
+    except Exception as e:
+        print("It seems your system does not support instruction counting.")
+        print("Try this on Linux:")
+        print("   sudo sh -c 'echo 0 > /proc/sys/kernel/perf_event_paranoid'   ")
+        print("Also check more info at: https://github.com/s7nfo/Cirron")
+        print("Re-raising the original exception...")
+        raise e
 
 
 def are_profiles_broken(profiles) -> bool:

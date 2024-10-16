@@ -1,22 +1,15 @@
 import json
 import os
-from os import PathLike
 from typing import List, Optional
 
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    TextColumn,
-    TimeElapsedColumn,
-)
-
+from evalplus.data import get_evalperf_data, get_human_eval_plus, get_mbpp_plus
 from evalplus.provider import DecoderBase, make_model
 from evalplus.sanitize import sanitize
+from evalplus.utils import progress
 
 
 def codegen(
-    target_path: PathLike,
+    target_path: str,
     model: DecoderBase,
     dataset: str,
     greedy=False,
@@ -43,21 +36,17 @@ def codegen(
     print(f"Sanitized code outputs will be saved to {target_path}")
     print(f"Raw outputs will be saved to {raw_target_path}")
 
-    with Progress(
-        TextColumn(f"{dataset} •" + "[progress.percentage]{task.percentage:>3.0f}%"),
-        BarColumn(),
-        MofNCompleteColumn(),
-        TextColumn("•"),
-        TimeElapsedColumn(),
-    ) as p:
+    with progress(dataset) as p:
         if dataset == "humaneval":
-            from evalplus.data import get_human_eval_plus
-
             dataset = get_human_eval_plus(version=version)
         elif dataset == "mbpp":
-            from evalplus.data import get_mbpp_plus
-
             dataset = get_mbpp_plus(version=version)
+        elif dataset == "evalperf":
+            original_dataset = {**get_human_eval_plus(), **get_mbpp_plus()}
+            dataset = {k: original_dataset[k] for k in get_evalperf_data()}
+            assert id_range is None, "id_range not supported for evalperf"
+        else:
+            raise ValueError(f"Invalid dataset {dataset}")
 
         for task_id, task in p.track(dataset.items()):
             if id_range is not None:
@@ -154,7 +143,7 @@ def run_codegen(
     jsonl_fmt: bool = True,
     attn_implementation: str = "eager",
 ):
-    assert dataset in ["humaneval", "mbpp"], f"Invalid dataset {dataset}"
+    assert dataset in ["humaneval", "mbpp", "evalperf"], f"Invalid dataset {dataset}"
     assert backend in ["vllm", "hf", "openai"]
     assert evalperf_type is None or evalperf_type in [
         "instruct",

@@ -7,13 +7,6 @@ from traceback import format_exc
 from typing import Any, List, Optional, Tuple
 
 from pympler.asizeof import asizeof
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    TextColumn,
-    TimeElapsedColumn,
-)
 from rich.syntax import Syntax
 from termcolor import colored
 
@@ -22,6 +15,7 @@ from evalplus.data.mbpp import mbpp_serialize_inputs
 from evalplus.eval.utils import TimeoutException, reliability_guard, time_limit
 from evalplus.perf.config import CURATION_TIMEOUT_PER_TEST_SECOND, MEMORY_LIMIT_GB
 from evalplus.sanitize import syntax_check
+from evalplus.utils import progress
 
 
 # this is more of a hack... rather than a "verified" implementation
@@ -246,13 +240,7 @@ def main(input: str, output: str):
 
     print("Resumed finished tasks:", finished_tasks)
     with open(output, "ab+") as f:
-        with Progress(
-            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-            BarColumn(),
-            MofNCompleteColumn(),
-            TextColumn("•"),
-            TimeElapsedColumn(),
-        ) as p:
+        with progress() as p:
             for item in p.track(synthesizers):
                 task_id = item["task_id"]
                 entry_point = id2task[task_id]["entry_point"]
