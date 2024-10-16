@@ -25,6 +25,7 @@ class VllmDecoder(DecoderBase):
             "tensor_parallel_size": tensor_parallel_size,
             "dtype": self.dtype,
             "trust_remote_code": self.trust_remote_code,
+            "enable_prefix_caching": True,
         }
 
         self.force_base_prompt = force_base_prompt
