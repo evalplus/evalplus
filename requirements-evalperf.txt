@@ -1,2 +1,2 @@
 Pympler
-cirron @ git+https://github.com/evalplus/Cirron@master
+cirron
