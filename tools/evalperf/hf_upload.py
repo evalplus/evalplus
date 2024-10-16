@@ -1,7 +1,7 @@
 import json
 import os
 
-from datasets import Dataset
+from datasets import Dataset, DatasetDict
 from fire import Fire
 from huggingface_hub import create_tag, delete_tag, list_repo_refs
 
@@ -21,7 +21,13 @@ def main(path, overwrite=False):
     for d in data:
         d["pe_input"] = json.dumps(d["pe_input"])
 
-    dataset = Dataset.from_list(data, split="test")
+    # combine
+    dataset = DatasetDict(
+        {
+            "test": Dataset.from_list(data, split="test"),
+            "demo": Dataset.from_list(data[:2], split="demo"),
+        }
+    )
     print(dataset)
 
     repo = list_repo_refs(REPO_ID, repo_type="dataset")
