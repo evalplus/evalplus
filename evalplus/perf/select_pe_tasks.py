@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.syntax import Syntax
 from termcolor import colored
 
-from evalplus.perf.config import MIN_REQUIRED_NUM_INSTRUCTION
+from evalplus.config import PREF_CURATE_MIN_INSTRUCTION
 
 
 def cv(time_costs: List[float]) -> float:
@@ -41,7 +41,7 @@ def filter_by_profile_size(task2profile: dict, threshold: int = 10):
 
 
 def filter_by_compute_cost(
-    task2profile: dict, thresh: float = MIN_REQUIRED_NUM_INSTRUCTION
+    task2profile: dict, thresh: float = PREF_CURATE_MIN_INSTRUCTION
 ):
     """Filter out tasks that can be solved using less than threshold #instruction."""
     to_remove = []
@@ -91,7 +91,7 @@ def adaptive_seg1d(arr1d, base_thresh=0.10):
 
     splitter_idx = []
     for i, rel in enumerate(relative_distance):
-        if rel > thresh_fn(base_thresh, arr1d[i], weight=MIN_REQUIRED_NUM_INSTRUCTION):
+        if rel > thresh_fn(base_thresh, arr1d[i], weight=PREF_CURATE_MIN_INSTRUCTION):
             splitter_idx.append(i + 1)
 
     # [9, 8, 7, |-> 3, 2 1]
@@ -149,7 +149,7 @@ def script(
     # * Criteria 2: Solutions should run more than MIN_SLOWEST_INSTRUCTION_COUNT
     task2profile = filter_by_compute_cost(task2profile)
     print(
-        f"{len(task2profile)} tasks with slowest mean time > {MIN_REQUIRED_NUM_INSTRUCTION}s."
+        f"{len(task2profile)} tasks with slowest mean time > {PREF_CURATE_MIN_INSTRUCTION}s."
     )
 
     # * Criteria 3: P99-CV should be less than 5%

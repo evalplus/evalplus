@@ -15,6 +15,7 @@ from termcolor import cprint
 from tqdm import tqdm
 
 from evalplus.codegen import run_codegen
+from evalplus.config import *
 from evalplus.data import (
     get_human_eval_plus,
     get_human_eval_plus_hash,
@@ -84,8 +85,8 @@ def check_correctness(
     base_only=False,
     fast_check=False,
     identifier=None,
-    min_time_limit: float = 0.1,
-    gt_time_limit_factor: float = 2.0,
+    min_time_limit: float = DEFAULT_MIN_TIME_LIMIT,
+    gt_time_limit_factor: float = DEFAULT_GT_TIME_LIMIT_FACTOR,
 ) -> Dict[str, Result]:  # {...}, "base" | "plus" -> (status, details)
     ret = {
         "completion_id": completion_id,
@@ -130,8 +131,8 @@ def evaluate(
     parallel: Optional[int] = None,
     i_just_wanna_run: bool = False,
     test_details: bool = False,
-    min_time_limit: float = 1,
-    gt_time_limit_factor: float = 4.0,
+    min_time_limit: float = DEFAULT_MIN_TIME_LIMIT,
+    gt_time_limit_factor: float = DEFAULT_GT_TIME_LIMIT_FACTOR,
     mini: bool = False,
     noextreme: bool = False,
     version: str = "default",

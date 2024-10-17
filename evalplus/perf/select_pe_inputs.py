@@ -6,9 +6,9 @@ from statistics import median
 
 from tqdm import tqdm
 
+from evalplus.config import PERF_CURATE_TIMEOUT_SECOND
 from evalplus.data import get_human_eval_plus, get_mbpp_plus
 from evalplus.data.mbpp import mbpp_deserialize_inputs, mbpp_serialize_inputs
-from evalplus.perf.config import CURATION_TIMEOUT_PER_TEST_SECOND
 from evalplus.perf.profile import are_profiles_broken, profile
 
 
@@ -62,7 +62,7 @@ def script(solutions: str, output_profiled_solutions: str, pe_inputs: str = None
                 canonical_solution,
                 task["entry_point"],
                 [inp],
-                timeout_second_per_test=CURATION_TIMEOUT_PER_TEST_SECOND,
+                timeout_second_per_test=PERF_CURATE_TIMEOUT_SECOND,
             )
             if are_profiles_broken(costs):
                 continue
@@ -77,7 +77,7 @@ def script(solutions: str, output_profiled_solutions: str, pe_inputs: str = None
                     solution,
                     task["entry_point"],
                     [pe_input],
-                    timeout_second_per_test=CURATION_TIMEOUT_PER_TEST_SECOND,
+                    timeout_second_per_test=PERF_CURATE_TIMEOUT_SECOND,
                 )
                 if not are_profiles_broken(costs):
                     solution_costs.append(costs)

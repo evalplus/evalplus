@@ -8,6 +8,7 @@ from typing import Any, Callable, List, Optional
 import psutil
 from cirron import Collector
 
+from evalplus.config import PERF_PROFILE_ROUNDS, PERF_RAM_GB_PER_PROC
 from evalplus.eval.utils import (
     TimeoutException,
     create_tempdir,
@@ -15,7 +16,6 @@ from evalplus.eval.utils import (
     swallow_io,
     time_limit,
 )
-from evalplus.perf.config import PER_PROC_RAM_LIMIT_GB, PROFILE_ROUNDS
 
 
 def get_max_ram_gb():
@@ -24,9 +24,7 @@ def get_max_ram_gb():
 
 
 def default_parallelism(divisor=4):
-    return max(
-        1, max(cpu_count(), get_max_ram_gb() // PER_PROC_RAM_LIMIT_GB) // divisor
-    )
+    return max(1, max(cpu_count(), get_max_ram_gb() // PERF_RAM_GB_PER_PROC) // divisor)
 
 
 def simple_test_profiler():
@@ -129,8 +127,8 @@ def profile(
     entry_point: str,
     test_inputs: List[Any],
     timeout_second_per_test: float,
-    memory_bound_gb: int = PER_PROC_RAM_LIMIT_GB,
-    profile_rounds: int = PROFILE_ROUNDS,
+    memory_bound_gb: int = PERF_RAM_GB_PER_PROC,
+    profile_rounds: int = PERF_PROFILE_ROUNDS,
     profiler: Callable = num_instruction_profiler,
     warmup_inputs: Optional[List[Any]] = None,  # multiple inputs
 ) -> List[int | float | str]:

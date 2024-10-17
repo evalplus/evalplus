@@ -22,7 +22,7 @@ import multiprocessing
 import os
 import time
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from datetime import datetime
 from statistics import mean
 from typing import Dict, List, Optional, Tuple
@@ -33,6 +33,8 @@ from rich.syntax import Syntax
 from rich.table import Table
 
 from evalplus.codegen import run_codegen
+from evalplus.config import *
+from evalplus.config import PERF_EVAL_TIMEOUT_SECOND
 from evalplus.data import (
     get_evalperf_data,
     get_human_eval_plus,
@@ -45,7 +47,6 @@ from evalplus.data.utils import stream_jsonl
 from evalplus.eval import PASS, untrusted_check
 from evalplus.eval._special_oracle import MBPP_OUTPUT_NOT_NONE_TASKS
 from evalplus.evaluate import get_groundtruth
-from evalplus.perf.config import EVALUATION_TIMEOUT_SECOND_PER_TEST
 from evalplus.perf.profile import (
     are_profiles_broken,
     default_parallelism,
@@ -78,8 +79,8 @@ def correctness_check(
         task["atol"],
         expected_output["base_time"] + expected_output["plus_time"],
         fast_check=True,
-        min_time_limit=EVALUATION_TIMEOUT_SECOND_PER_TEST,
-        gt_time_limit_factor=4.0,
+        min_time_limit=DEFAULT_MIN_TIME_LIMIT,
+        gt_time_limit_factor=DEFAULT_GT_TIME_LIMIT_FACTOR,
     )
     return result, solution
 
@@ -113,76 +114,50 @@ def table_print(table_name: str, kv: Dict):
     rich.print(table)
 
 
-def worker_on_one_task(
-    task_id: str,
-    ptask: Dict,  # EvalPerf data
-    samples: list,
-    ctask: Dict,  # EvalPlus data
-    expected_output: Dict,
-    min_correct: int,
-    n_workers: int,
-    lazy_evaluation: bool,
-):
+def correctness_worker(task_id: str, samples: list, ctask: Dict, expected_output: Dict):
     assert isinstance(
         samples, list
     ), f"{task_id}: samples is not a list but {type(samples)}"
+
+    results = []
+
+    for solution in samples:
+        result, solution = correctness_check(
+            solution, task_id.split("/")[0].lower(), ctask, expected_output
+        )
+        results.append(
+            {
+                "solution": solution,
+                "pass": result[0] == PASS,
+                "profiled": False,
+                "matching_cluster_idx": None,
+                "dps": None,
+                "dps_norm": None,
+            }
+        )
+
+    return task_id, results
+
+
+def perf_worker(
+    task_id: str,
+    ptask: Dict,  # EvalPerf data
+    ret_dict: Dict,
+    lazy_evaluation: bool,
+    max_profile: int,
+):
     rich.print(f"{task_id}: Started")
     start_time = time.time()
 
-    ######################### Meta information #########################
+    ######################### Profiling Setup #########################
     n_reference = len(ptask["reference"])
     entry_point = ptask["entry_point"]
-    ####################################################################
-
-    ret_dict = {
-        "task_id": task_id,
-        "results": [],
-        "ref": [
-            {"solution": s, "score": r, "_num_cpu_instructions": None}
-            for s, r in zip(ptask["reference"], ptask["scores"])
-        ],
-        "dps": None,
-        "dps_norm": None,
-        "pass@1": None,
-    }
-
-    # Correctness checking
-    n_passing = 0
-    with ProcessPoolExecutor(max_workers=n_workers) as executor:
-        futures = [
-            executor.submit(
-                correctness_check,
-                solution,
-                task_id.split("/")[0].lower(),
-                ctask,
-                expected_output,
-            )
-            for solution in samples
-        ]
-        for future in as_completed(futures):
-            result, solution = future.result()
-            ret_dict["results"].append(
-                {
-                    "solution": solution,
-                    "pass": result[0] == PASS,
-                    "matching_cluster_idx": None,
-                    "dps": None,
-                    "dps_norm": None,
-                }
-            )
-            n_passing += result[0] == PASS
-
-    ret_dict["pass@1"] = n_passing / len(samples) * 100
-    if n_passing < min_correct:
-        print(f"{task_id}: {n_passing} < {min_correct} correct solutions, skipped")
-        return ret_dict
-
-    ######################### Profiling #########################
     pe_input = (
         mbpp_deserialize_inputs(task_id, ptask["pe_input"])[0]
         if task_id.startswith("Mbpp/")
         else ptask["pe_input"][0]
     )
+    ####################################################################
 
     ####################################################################
     ############### Lazily profile reference solutions #################
@@ -201,7 +176,7 @@ def worker_on_one_task(
         if cache_ref_num_inst[idx] is not None:
             return cache_ref_num_inst[idx], ptask["scores"][idx]
 
-        evaluation_time = EVALUATION_TIMEOUT_SECOND_PER_TEST
+        evaluation_time = PERF_EVAL_TIMEOUT_SECOND
         ref_solution = ptask["reference"][idx]
         for _ in range(_REFERENCE_EXEC_TIMES):
             profiles = profile(
@@ -248,7 +223,11 @@ def worker_on_one_task(
             None not in cache_ref_num_inst
         ), f"{task_id}: Failed to profile certain reference: {cache_ref_num_inst = }"
 
+    cur_profiled = 0
     for result in ret_dict["results"]:
+        if cur_profiled >= max_profile:
+            rich.print(f"{task_id}: Reached max_profile limit {max_profile}, stopped")
+            break
         if not result["pass"]:
             continue
 
@@ -257,7 +236,7 @@ def worker_on_one_task(
             solution,
             entry_point,
             [pe_input],
-            timeout_second_per_test=EVALUATION_TIMEOUT_SECOND_PER_TEST,
+            timeout_second_per_test=PERF_EVAL_TIMEOUT_SECOND,
         )
 
         score = 0
@@ -282,16 +261,20 @@ def worker_on_one_task(
 
         result["dps"] = score
         result["dps_norm"] = norm_score
+        result["profiled"] = True
+        cur_profiled += 1
 
     ret_dict["dps"] = mean(not_none([r["dps"] for r in ret_dict["results"]]))
     ret_dict["dps_norm"] = mean(not_none([r["dps_norm"] for r in ret_dict["results"]]))
+    ret_dict["n_profiled"] = cur_profiled
 
     table_print(
-        f"{task_id} Results",
+        f"[bold green]{task_id} Completed[/]",
         {
             "Duration": f"{time.time() - start_time:.1f}s",
-            "DPS": f"{ret_dict['dps']:.1f}",
-            "DPS_norm": f"{ret_dict['dps_norm']:.1f}",
+            "DPS": f"[green]{ret_dict['dps']:.1f}[/]",
+            "DPS_norm": f"[green]{ret_dict['dps_norm']:.1f}[/]",
+            "# Profiled": f"{cur_profiled} / {len(ret_dict['results'])}",
             "Pass@1": f"{ret_dict['pass@1']:.1f}%",
         },
     )
@@ -303,6 +286,7 @@ def worker_on_one_task(
 def script(
     samples: Optional[str] = None,
     min_correct: int = 10,
+    max_profile: Optional[int] = None,
     n_samples: int = 100,
     temperature: float = 1.0,
     parallel: Optional[int] = None,
@@ -310,7 +294,8 @@ def script(
     i_just_wanna_run: bool = False,
     **model_kwargs,
 ):
-    assert min_correct <= n_samples, "min_correct should be no more than max_n_samples"
+    max_profile = max_profile or min(min_correct * 2, n_samples)
+    assert min_correct <= max_profile <= n_samples
     simple_test_profiler()  # test linux perf setup
 
     if model_kwargs:
@@ -329,7 +314,7 @@ def script(
     ptasks = get_evalperf_data()
 
     # Parallelism
-    max_workers = parallel or max(1, default_parallelism(divisor=8))
+    max_workers = parallel or max(1, default_parallelism(divisor=4))
     assert 0 < max_workers < multiprocessing.cpu_count(), "Invalid max CPU workers"
 
     if os.path.isdir(samples):
@@ -341,11 +326,18 @@ def script(
     # resume results
     eval_results = {}
     if not i_just_wanna_run and os.path.exists(result_path):
-        eval_results = json.load(open(result_path, "r"))
-        for evaluated_task in eval_results:
-            ptasks.pop(evaluated_task, None)
+        resumed_result = json.load(open(result_path, "r"))
+        if (
+            resumed_result["n_samples"] == n_samples
+            and resumed_result["temperature"] == temperature
+            and resumed_result["min_correct"] == min_correct
+            and resumed_result["max_profile"] == max_profile
+        ):
+            eval_results = resumed_result["eval"]
+            for etask in eval_results:
+                ptasks.pop(etask, None)
 
-        rich.print(f"Resumed {len(eval_results)} results from {result_path}")
+            rich.print(f"Resumed {len(eval_results)} results from {result_path}")
 
     # Load model's samples: task_id -> a list of samples
     sample_iter = stream_jsonl(samples)
@@ -358,7 +350,43 @@ def script(
     for task_id, s in samples.items():
         assert len(s) == n_samples, f"{task_id} has {len(s)} samples != {n_samples}"
 
-    rule("Configurations")
+    # Initialize eval_results
+    for task_id, ptask in ptasks.items():
+        eval_results[task_id] = {
+            "task_id": task_id,
+            "results": [],
+            "ref": [
+                {"solution": s, "score": r, "_num_cpu_instructions": None}
+                for s, r in zip(ptask["reference"], ptask["scores"])
+            ],
+            "dps": None,
+            "dps_norm": None,
+            "pass@1": None,
+            "n_profiled": None,
+        }
+
+    rule("Correctness Checking...")
+    with progress("Correctness") as p:
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = [
+                executor.submit(
+                    correctness_worker,
+                    task_id,
+                    samples[task_id],
+                    problems[task_id],
+                    expected_output[task_id],
+                )
+                for task_id in ptasks
+            ]
+
+            for future in p.track(as_completed(futures), total=len(futures)):
+                task_id, results = future.result()
+                eval_results[task_id]["results"] = results
+                eval_results[task_id]["pass@1"] = (
+                    100 * len([r for r in results if r["pass"]]) / n_samples
+                )
+
+    rule("EvalPerf Configurations")
     if lazy_evaluation:
         rich.print(
             "[bold yellow]Lazy evaluation is enabled[/]: "
@@ -372,34 +400,43 @@ def script(
             "#Tasks": len(ptasks),
             "#Samples per task": n_samples,
             "Min correct": min_correct,
+            "Max profile": max_profile,
             "Result path": result_path,
         },
     )
 
     rich.print(f"IDs of tasks to evaluate: {list(ptasks.keys())}")
-
-    TEST_MAX_WORKERS = min(max_workers, 4)
     rule("Evaluation Start")
+    undone = []
     with progress("EvalPerf") as p:
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            futures = [
-                executor.submit(
-                    worker_on_one_task,
-                    task_id,
-                    ptask,
-                    samples[task_id],
-                    problems[task_id],
-                    expected_output[task_id],
-                    min_correct,
-                    TEST_MAX_WORKERS,
-                    lazy_evaluation,
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = []
+            for task_id, ptask in ptasks.items():
+                n_pass = len([r for r in eval_results[task_id]["results"] if r["pass"]])
+                if n_pass < min_correct:
+                    rich.print(
+                        f"{task_id}: [bold yellow]{n_pass} < {min_correct} correct solutions, skipped[/]"
+                    )
+                    continue
+                futures.append(
+                    executor.submit(
+                        perf_worker,
+                        task_id,
+                        ptask,
+                        eval_results[task_id],
+                        lazy_evaluation,
+                        max_profile,
+                    )
                 )
-                for task_id, ptask in ptasks.items()
-            ]
+                undone.append(task_id)
+                rich.print(f"{task_id}: Queued")
 
             for future in p.track(as_completed(futures), total=len(futures)):
                 result = future.result()
                 eval_results[result["task_id"]] = result
+                undone.remove(result["task_id"])
+                if len(undone) < max_workers:
+                    print(f"Still running: {undone}")
                 print()  # newline
 
     rule("Evaluation Summary")
@@ -407,6 +444,20 @@ def script(
     dps_norm = mean(not_none([res["dps_norm"] for res in eval_results.values()]))
     pass_1 = mean(not_none([res["pass@1"] for res in eval_results.values()]))
     n_evalperfed = len(not_none([res["dps"] for res in eval_results.values()]))
+
+    with open(result_path, "w") as f:
+        f.write(
+            json.dumps(
+                {
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "n_samples": n_samples,
+                    "temperature": temperature,
+                    "min_correct": min_correct,
+                    "max_profile": max_profile,
+                    "eval": eval_results,
+                }
+            )
+        )
 
     table_print(
         "EvalPerf Summary",
@@ -420,18 +471,6 @@ def script(
             "temperature": temperature,
         },
     )
-    with open(result_path, "w") as f:
-        f.write(
-            json.dumps(
-                {
-                    "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                    "n_samples": n_samples,
-                    "temperature": temperature,
-                    "min_correct": min_correct,
-                    "eval": eval_results,
-                }
-            )
-        )
     rich.print(f"Results have been saved to {result_path}")
 
 
