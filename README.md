@@ -148,7 +148,7 @@ evalplus.evaluate --model "claude-3-haiku-20240307" \
 export GOOGLE_API_KEY="[YOUR_API_KEY]"
 evalplus.evaluate --model "gemini-1.5-pro"    \
                   --dataset [humaneval|mbpp]  \
-                  --backend gemini            \
+                  --backend google            \
                   --greedy
 ```
 

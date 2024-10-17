@@ -1,5 +1,6 @@
 import os
 import time
+from traceback import print_exc
 from typing import List
 
 import google.generativeai as genai
@@ -9,13 +10,17 @@ from evalplus.provider.base import DecoderBase
 
 
 def make_request(
-    client: genai.GenerativeModel, temperature, messages, max_new_tokens=2048
+    client: genai.GenerativeModel,
+    messages: List,
+    temperature: float,
+    n: int,
+    max_new_tokens: int = 2048,
 ) -> genai.types.GenerateContentResponse:
     messages = [{"role": m["role"], "parts": [m["content"]]} for m in messages]
     response = client.generate_content(
         messages,
         generation_config=genai.types.GenerationConfig(
-            candidate_count=1,
+            candidate_count=n,
             max_output_tokens=max_new_tokens,
             temperature=temperature,
             top_p=0.95,
@@ -28,7 +33,7 @@ def make_request(
         ],
     )
 
-    return response.text
+    return response
 
 
 def make_auto_request(*args, **kwargs) -> genai.types.GenerateContentResponse:
@@ -42,9 +47,9 @@ def make_auto_request(*args, **kwargs) -> genai.types.GenerateContentResponse:
         except GoogleAPICallError as e:
             print(e.message)
             time.sleep(1)
-        except Exception as e:
+        except Exception:
             print("Unknown error. Waiting...")
-            print(e)
+            print_exc()
             time.sleep(1)
     return ret
 
@@ -60,15 +65,14 @@ class GeminiDecoder(DecoderBase):
     ) -> List[str]:
         if do_sample:
             assert self.temperature > 0, "Temperature must be positive for sampling"
-        batch_size = min(self.batch_size, num_samples)
+        batch_size = min(self.batch_size, num_samples, 8)
         message = self.instruction_prefix + f"\n```python\n{prompt.strip()}\n```"
         replies = make_auto_request(
             self.client,
-            message,
-            self.name,
+            [{"role": "user", "content": message}],
             n=batch_size,
-            max_tokens=self.max_new_tokens,
             temperature=self.temperature,
+            max_new_tokens=self.max_new_tokens,
         )
 
         if len(replies.candidates) != batch_size:

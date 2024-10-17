@@ -145,7 +145,6 @@ def run_codegen(
     dtype: str = "bfloat16",
 ):
     assert dataset in ["humaneval", "mbpp", "evalperf"], f"Invalid dataset {dataset}"
-    assert backend in ["vllm", "hf", "openai"]
     assert evalperf_type is None or evalperf_type in [
         "instruct",
         "perf-instruct",
