@@ -18,6 +18,7 @@ def make_request(
             candidate_count=1,
             max_output_tokens=max_new_tokens,
             temperature=temperature,
+            top_p=0.95,
         ),
         safety_settings=[
             {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
