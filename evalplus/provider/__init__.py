@@ -11,6 +11,8 @@ def make_model(
     # instruction model only
     instruction_prefix=None,
     response_prefix=None,
+    # non-server only
+    dtype="bfloat16",
     # vllm only
     tp=1,
     # openai only
@@ -30,6 +32,7 @@ def make_model(
             tensor_parallel_size=tp,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
+            dtype=dtype,
         )
     elif backend == "hf":
         from evalplus.provider.hf import HuggingFaceDecoder
@@ -43,6 +46,7 @@ def make_model(
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
             attn_implementation=attn_implementation,
+            dtype=dtype,
         )
     elif backend == "openai":
         from evalplus.provider.openai import OpenAIChatDecoder
