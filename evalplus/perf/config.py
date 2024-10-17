@@ -1,6 +1,6 @@
 # General
 PROFILE_ROUNDS = 1
-MEMORY_LIMIT_GB = 5
+PER_PROC_RAM_LIMIT_GB = 12
 
 # Data curation phase of EvalPerf
 CURATION_TIMEOUT_PER_TEST_SECOND = 20

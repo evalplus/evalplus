@@ -13,7 +13,7 @@ from termcolor import colored
 from evalplus.data import get_human_eval_plus, get_mbpp_plus
 from evalplus.data.mbpp import mbpp_serialize_inputs
 from evalplus.eval.utils import TimeoutException, reliability_guard, time_limit
-from evalplus.perf.config import CURATION_TIMEOUT_PER_TEST_SECOND, MEMORY_LIMIT_GB
+from evalplus.perf.config import CURATION_TIMEOUT_PER_TEST_SECOND, PER_PROC_RAM_LIMIT_GB
 from evalplus.sanitize import syntax_check
 from evalplus.utils import progress
 
@@ -92,7 +92,7 @@ def sample_one_input(
     chdir = os.chdir
     # Disable functionalities that can make destructive changes to the test.
     # :imit memory usages.
-    maximum_memory_bytes = MEMORY_LIMIT_GB * 1024 * 1024 * 1024
+    maximum_memory_bytes = PER_PROC_RAM_LIMIT_GB * 1024 * 1024 * 1024
     reliability_guard(maximum_memory_bytes=maximum_memory_bytes)
     exec_globals = {}
 

@@ -1,9 +1,11 @@
 from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import cpu_count
 from platform import system
 from time import perf_counter
 from traceback import format_exc
 from typing import Any, Callable, List, Optional
 
+import psutil
 from cirron import Collector
 
 from evalplus.eval.utils import (
@@ -13,7 +15,18 @@ from evalplus.eval.utils import (
     swallow_io,
     time_limit,
 )
-from evalplus.perf.config import MEMORY_LIMIT_GB, PROFILE_ROUNDS
+from evalplus.perf.config import PER_PROC_RAM_LIMIT_GB, PROFILE_ROUNDS
+
+
+def get_max_ram_gb():
+    total_ram = psutil.virtual_memory().total
+    return total_ram / (1024**3)
+
+
+def default_parallelism(divisor=4):
+    return max(
+        1, max(cpu_count(), get_max_ram_gb() // PER_PROC_RAM_LIMIT_GB) // divisor
+    )
 
 
 def simple_test_profiler():
@@ -96,7 +109,7 @@ def get_instruction_count(
             print("[Warning] Profiling hits MemoryError")
             error = "MEMORY ERROR"
         except:
-            print("[CRITICAL] ! Non-time out exception during profiling !")
+            print("[CRITICAL] ! Unknown exception during profiling !")
             error = format_exc()
             print(error)
 
@@ -116,7 +129,7 @@ def profile(
     entry_point: str,
     test_inputs: List[Any],
     timeout_second_per_test: float,
-    memory_bound_gb: int = MEMORY_LIMIT_GB,
+    memory_bound_gb: int = PER_PROC_RAM_LIMIT_GB,
     profile_rounds: int = PROFILE_ROUNDS,
     profiler: Callable = num_instruction_profiler,
     warmup_inputs: Optional[List[Any]] = None,  # multiple inputs

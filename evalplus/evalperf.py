@@ -20,6 +20,7 @@ Check our COLM paper for more details: https://www.arxiv.org/abs/2408.06450
 import json
 import multiprocessing
 import os
+import time
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
@@ -27,6 +28,7 @@ from statistics import mean
 from typing import Dict, List, Optional, Tuple
 
 import rich
+from rich.rule import Rule
 from rich.syntax import Syntax
 from rich.table import Table
 
@@ -44,10 +46,23 @@ from evalplus.eval import PASS, untrusted_check
 from evalplus.eval._special_oracle import MBPP_OUTPUT_NOT_NONE_TASKS
 from evalplus.evaluate import get_groundtruth
 from evalplus.perf.config import EVALUATION_TIMEOUT_SECOND_PER_TEST
-from evalplus.perf.profile import are_profiles_broken, profile, simple_test_profiler
+from evalplus.perf.profile import (
+    are_profiles_broken,
+    default_parallelism,
+    profile,
+    simple_test_profiler,
+)
 from evalplus.utils import progress
 
-_REFERENCE_EXEC_TIMES = 3
+_REFERENCE_EXEC_TIMES = 2
+
+
+def rule(msg: str):
+    rich.print(Rule(msg))
+
+
+def not_none(l: list) -> list:
+    return [x for x in l if x is not None]
 
 
 def correctness_check(
@@ -85,33 +100,16 @@ def get_evalplus_data():
     return problems, expected_output
 
 
-def summarize_evalperf(eval_results: Dict):
-    # print a rich table
-    dps = mean([res["dps"] for res in eval_results.values() if res["dps"] is not None])
-    dps_norm = mean(
-        [
-            res["dps_norm"]
-            for res in eval_results.values()
-            if res["dps_norm"] is not None
-        ]
-    )
-    pass_1 = mean(
-        [res["pass@1"] for res in eval_results.values() if res["pass@1"] is not None]
-    )
-    n_evalperfed = len([res for res in eval_results.values() if res["dps"] is not None])
-
+def table_print(table_name: str, kv: Dict):
     table = Table(
-        title="EvalPerf Summary",
+        title=table_name,
         show_header=True,
         header_style="bold",
     )
-    table.add_column("DPS", style="dim")
-    table.add_column("DPS_norm", style="dim")
-    table.add_column("Pass@1", style="dim")
-    table.add_column("#EvalPerf-ed tasks", style="dim")
+    for col_name in kv:
+        table.add_column(col_name)
 
-    table.add_row(f"{dps:.1f}", f"{dps_norm:.1f}", f"{pass_1:.1f}%", n_evalperfed)
-
+    table.add_row(*[str(v) for v in kv.values()])
     rich.print(table)
 
 
@@ -128,7 +126,8 @@ def worker_on_one_task(
     assert isinstance(
         samples, list
     ), f"{task_id}: samples is not a list but {type(samples)}"
-    rich.print(f"Start processing: {task_id}")
+    rich.print(f"{task_id}: Started")
+    start_time = time.time()
 
     ######################### Meta information #########################
     n_reference = len(ptask["reference"])
@@ -167,6 +166,8 @@ def worker_on_one_task(
                     "solution": solution,
                     "pass": result[0] == PASS,
                     "matching_cluster_idx": None,
+                    "dps": None,
+                    "dps_norm": None,
                 }
             )
             n_passing += result[0] == PASS
@@ -188,20 +189,20 @@ def worker_on_one_task(
     ####################################################################
     cache_ref_num_inst = [None] * n_reference
 
-    def get_avg_ref_profile(index, check_order=True) -> Optional[Tuple]:
+    def get_avg_ref_profile(idx, check_order=True) -> Optional[Tuple]:
         nonlocal cache_ref_num_inst
 
         assert (
-            index < n_reference - 1
-            and cache_ref_num_inst[index + 1] is not None
-            or index == n_reference - 1
-        ), f"Calling get_avg_ref_profile({index}) before get_avg_ref_profile({index+1}) is called, is not allowed! {n_reference = }"
+            idx < n_reference - 1
+            and cache_ref_num_inst[idx + 1] is not None
+            or idx == n_reference - 1
+        ), f"Calling get_avg_ref_profile({idx}) before get_avg_ref_profile({idx+1}) is called, is not allowed! {n_reference = }"
 
-        if cache_ref_num_inst[index] is not None:
-            return cache_ref_num_inst[index], ptask["scores"][index]
+        if cache_ref_num_inst[idx] is not None:
+            return cache_ref_num_inst[idx], ptask["scores"][idx]
 
         evaluation_time = EVALUATION_TIMEOUT_SECOND_PER_TEST
-        ref_solution = ptask["reference"][index]
+        ref_solution = ptask["reference"][idx]
         for _ in range(_REFERENCE_EXEC_TIMES):
             profiles = profile(
                 ref_solution,
@@ -214,25 +215,25 @@ def worker_on_one_task(
             if are_profiles_broken(profiles):
                 print(f"{task_id}: [WARNING] Error in ref: {profiles}")
                 rich.print(Syntax(ref_solution, "python"))
-                print(f"{task_id}: Retrying w/ +5s timeout...")
-                evaluation_time += 5
+                print(f"{task_id}: Retrying w/ +10s timeout...")
+                evaluation_time += 10
                 continue
 
-            avg_profile = mean(profiles)
-            # Bad thing#2: if the current #instruction is faster than that of i+1
-            if index < n_reference - 1 and avg_profile < cache_ref_num_inst[index + 1]:
-                print(f"{task_id}: [WARNING] {index} ref faster than {index + 1}")
-                rich.print(Syntax(ref_solution, "python"))
-                print(
-                    f"{task_id}: Ref {index+1} avg. #inst {cache_ref_num_inst[index+1]}"
-                )
-                print(f"{task_id}: Current solution mean runtime: {profiles}")
-                if check_order:
-                    return None
+        avg_profile = mean(profiles)
+        # Bad thing#2: if the current #instruction is faster than that of i+1
+        if idx < n_reference - 1 and avg_profile < cache_ref_num_inst[idx + 1]:
+            print(f"{task_id}: [WARNING] #{idx} ref faster than #{idx + 1}")
+            print(f"ref {idx}: #inst {avg_profile}\tscore {ptask['scores'][idx]:.1f}")
+            print(
+                f"ref {idx+1}: #inst {cache_ref_num_inst[idx+1]}\tscore {ptask['scores'][idx+1]:.1f}"
+            )
+            rich.print(Syntax(ref_solution, "python"))
+            if check_order:
+                return None
 
-        cache_ref_num_inst[index] = avg_profile
-        ret_dict["ref"][index]["_num_cpu_instructions"] = avg_profile
-        return cache_ref_num_inst[index], ptask["scores"][index]
+        cache_ref_num_inst[idx] = avg_profile
+        ret_dict["ref"][idx]["_num_cpu_instructions"] = avg_profile
+        return cache_ref_num_inst[idx], ptask["scores"][idx]
 
     ####################################################################
     ############################## END #################################
@@ -251,6 +252,7 @@ def worker_on_one_task(
         if not result["pass"]:
             continue
 
+        solution = result["solution"]
         sample_profiles = profile(
             solution,
             entry_point,
@@ -269,8 +271,7 @@ def worker_on_one_task(
             rich.print(Syntax(solution, "python"))
         else:
             avg_sample_profile = result["_num_cpu_instructions"] = mean(sample_profiles)
-
-            # Get profiles from fast to slow:
+            # Get profiles from fast to slow (back to front):
             for j in range(n_reference - 1, -1, -1):
                 avg_ref_profile, ref_score = get_avg_ref_profile(j, check_order=False)
                 if avg_sample_profile <= avg_ref_profile:
@@ -282,16 +283,17 @@ def worker_on_one_task(
         result["dps"] = score
         result["dps_norm"] = norm_score
 
-    ret_dict["dps"] = mean(
-        [r["dps"] for r in ret_dict["results"] if r["dps"] is not None]
-    )
-    ret_dict["dps_norm"] = mean(
-        [r["dps_norm"] for r in ret_dict["results"] if r["dps_norm"] is not None]
-    )
+    ret_dict["dps"] = mean(not_none([r["dps"] for r in ret_dict["results"]]))
+    ret_dict["dps_norm"] = mean(not_none([r["dps_norm"] for r in ret_dict["results"]]))
 
-    print(
-        f"\t{task_id}: {n_passing} / {len(samples)} correct solutions, "
-        f"avg DPS: {ret_dict['dps'] :.1f}, avg DPS_norm: {ret_dict['dps_norm'] :.1f}"
+    table_print(
+        f"{task_id} Results",
+        {
+            "Duration": f"{time.time() - start_time:.1f}s",
+            "DPS": f"{ret_dict['dps']:.1f}",
+            "DPS_norm": f"{ret_dict['dps_norm']:.1f}",
+            "Pass@1": f"{ret_dict['pass@1']:.1f}%",
+        },
     )
 
     return ret_dict
@@ -322,18 +324,12 @@ def script(
 
     assert samples is not None, "Please provide the path to the samples"
 
-    if lazy_evaluation:
-        rich.print(
-            "[bold yellow]Lazy evaluation is enabled[/]: "
-            "Fast evaluation without enumeratively checking reference order consistency."
-        )
-
     # Data loading
     problems, expected_output = get_evalplus_data()
     ptasks = get_evalperf_data()
 
     # Parallelism
-    max_workers = parallel or max(1, multiprocessing.cpu_count() // 4)
+    max_workers = parallel or max(1, default_parallelism(divisor=8))
     assert 0 < max_workers < multiprocessing.cpu_count(), "Invalid max CPU workers"
 
     if os.path.isdir(samples):
@@ -346,60 +342,84 @@ def script(
     eval_results = {}
     if not i_just_wanna_run and os.path.exists(result_path):
         eval_results = json.load(open(result_path, "r"))
-        # pop tasks that have been evaluated
         for evaluated_task in eval_results:
             ptasks.pop(evaluated_task, None)
 
         rich.print(f"Resumed {len(eval_results)} results from {result_path}")
 
     # Load model's samples: task_id -> a list of samples
-    temp_samples = defaultdict(list)
-    for task in stream_jsonl(samples):
-        task_id = task["task_id"].replace("_", "/")
-        if len(temp_samples[task_id]) < n_samples:
-            temp_samples[task_id].append(task["solution"])
-    samples = temp_samples
+    sample_iter = stream_jsonl(samples)
+    samples = defaultdict(list)
+    for task in sample_iter:
+        samples[task["task_id"].replace("_", "/")].append(task["solution"])
+    samples = {k: v[:n_samples] for k, v in samples.items()}
 
     # assert each task has n_samples
-    for task_id, task_samples in samples.items():
-        assert (
-            len(task_samples) == n_samples
-        ), f"{task_id} has {len(task_samples)} samples != {n_samples}"
+    for task_id, s in samples.items():
+        assert len(s) == n_samples, f"{task_id} has {len(s)} samples != {n_samples}"
 
-    # log all tasks
-    rich.print(f"{len(ptasks)} tasks to evaluate :: result path: {result_path}")
-    rich.print(f"Max CPU: {max_workers}")
-    rich.print(f"{n_samples} samples per task")
-    rich.print(f"Those with >= {min_correct} correct samples will be evalperf-ed")
-    rich.print(f"Tasks: {list(ptasks.keys())}")
+    rule("Configurations")
+    if lazy_evaluation:
+        rich.print(
+            "[bold yellow]Lazy evaluation is enabled[/]: "
+            "Fast evaluation without enumeratively checking reference order consistency."
+        )
+
+    table_print(
+        "Configurations",
+        {
+            "Max CPU": max_workers,
+            "#Tasks": len(ptasks),
+            "#Samples per task": n_samples,
+            "Min correct": min_correct,
+            "Result path": result_path,
+        },
+    )
+
+    rich.print(f"IDs of tasks to evaluate: {list(ptasks.keys())}")
 
     TEST_MAX_WORKERS = min(max_workers, 4)
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = [
-            executor.submit(
-                worker_on_one_task,
-                task_id,
-                ptask,
-                samples[task_id],
-                problems[task_id],
-                expected_output[task_id],
-                min_correct,
-                TEST_MAX_WORKERS,
-                lazy_evaluation,
-            )
-            for task_id, ptask in ptasks.items()
-        ]
+    rule("Evaluation Start")
+    with progress("EvalPerf") as p:
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = [
+                executor.submit(
+                    worker_on_one_task,
+                    task_id,
+                    ptask,
+                    samples[task_id],
+                    problems[task_id],
+                    expected_output[task_id],
+                    min_correct,
+                    TEST_MAX_WORKERS,
+                    lazy_evaluation,
+                )
+                for task_id, ptask in ptasks.items()
+            ]
 
-        with progress() as p:
             for future in p.track(as_completed(futures), total=len(futures)):
                 result = future.result()
                 eval_results[result["task_id"]] = result
+                print()  # newline
 
-    with open(result_path, "w") as f:  # final write
-        f.write(json.dumps(eval_results))
+    rule("Evaluation Summary")
+    dps = mean(not_none([res["dps"] for res in eval_results.values()]))
+    dps_norm = mean(not_none([res["dps_norm"] for res in eval_results.values()]))
+    pass_1 = mean(not_none([res["pass@1"] for res in eval_results.values()]))
+    n_evalperfed = len(not_none([res["dps"] for res in eval_results.values()]))
 
-    summarize_evalperf(eval_results)
-
+    table_print(
+        "EvalPerf Summary",
+        {
+            "DPS": f"{dps:.1f}",
+            "DPS_norm": f"{dps_norm:.1f}",
+            "Pass@1": f"{pass_1:.1f}%",
+            "#EvalPerf-ed tasks": f"{n_evalperfed} / {len(ptasks)}",
+            "min_correct": min_correct,
+            "n_samples": n_samples,
+            "temperature": temperature,
+        },
+    )
     with open(result_path, "w") as f:
         f.write(
             json.dumps(
@@ -412,6 +432,7 @@ def script(
                 }
             )
         )
+    rich.print(f"Results have been saved to {result_path}")
 
 
 def main():
