@@ -139,6 +139,10 @@ def evaluate(
     **model_kwargs,
 ):
     if model_kwargs:
+        # To suppress the warning of tokenizers
+        os.environ["TOKENIZERS_PARALLELISM"] = os.environ.get(
+            "TOKENIZERS_PARALLELISM", "false"
+        )
         samples = run_codegen(
             dataset=dataset,
             **model_kwargs,

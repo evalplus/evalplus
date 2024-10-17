@@ -306,6 +306,10 @@ def script(
     simple_test_profiler()  # test linux perf setup
 
     if model_kwargs:
+        # To suppress the warning of tokenizers
+        os.environ["TOKENIZERS_PARALLELISM"] = os.environ.get(
+            "TOKENIZERS_PARALLELISM", "false"
+        )
         # overwrite parameters
         samples = run_codegen(
             dataset="evalperf",
