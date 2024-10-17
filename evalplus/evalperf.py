@@ -223,6 +223,8 @@ def perf_worker(
             None not in cache_ref_num_inst
         ), f"{task_id}: Failed to profile certain reference: {cache_ref_num_inst = }"
 
+    profile_cache = {}
+
     cur_profiled = 0
     for result in ret_dict["results"]:
         if cur_profiled >= max_profile:
@@ -232,12 +234,17 @@ def perf_worker(
             continue
 
         solution = result["solution"]
-        sample_profiles = profile(
-            solution,
-            entry_point,
-            [pe_input],
-            timeout_second_per_test=PERF_EVAL_TIMEOUT_SECOND,
-        )
+
+        if solution in profile_cache:  # reuse cache
+            sample_profiles = profile_cache[solution]
+        else:
+            sample_profiles = profile(
+                solution,
+                entry_point,
+                [pe_input],
+                timeout_second_per_test=PERF_EVAL_TIMEOUT_SECOND,
+            )
+            profile_cache[solution] = sample_profiles  # store cache
 
         score = 0
         norm_score = 0
