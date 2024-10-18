@@ -446,7 +446,7 @@ def script(
                 result = future.result()
                 eval_results[result["task_id"]] = result
                 undone.remove(result["task_id"])
-                if len(undone) < max_workers:
+                if undone and len(undone) < max_workers:
                     print(f"Still running: {undone}")
 
     rule("Evaluation Summary")

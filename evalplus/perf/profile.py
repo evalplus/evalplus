@@ -1,5 +1,6 @@
+import time
 from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import cpu_count
+from multiprocessing import Process, Value, cpu_count
 from platform import system
 from time import perf_counter
 from traceback import format_exc
@@ -60,7 +61,13 @@ def num_instruction_profiler(function, test_inputs) -> int:
     return int(c.counters.instruction_count)
 
 
-def get_instruction_count(
+_STAT_NONE = 0
+_STAT_START = 1
+_STAT_SUCC = 2
+_STAT_ERROR = 3
+
+
+def get_instruction_count_shared_mem(
     profiler: Callable,
     func_code: str,
     entry_point: str,
@@ -68,6 +75,9 @@ def get_instruction_count(
     timeout_second_per_test: float,
     memory_bound_gb: int,
     warmup_inputs: Optional[List[Any]],
+    # shared memory
+    compute_cost,  # Value("d", 0.0),
+    progress,  # Value("i", 0),
 ) -> Optional[float]:
 
     error = None
@@ -95,31 +105,28 @@ def get_instruction_count(
             for _ in range(3):
                 fn(*warmup_inputs)
 
-        compute_cost = None
+        progress.value = _STAT_START
         try:  # run the function
             with time_limit(timeout_second_per_test):
                 with swallow_io():
-                    compute_cost = profiler(fn, test_inputs)
+                    compute_cost.value = profiler(fn, test_inputs)
+                    progress.value = _STAT_SUCC
         except TimeoutException:
             print("[Warning] Profiling hits TimeoutException")
-            error = "TIMEOUT ERROR"
         except MemoryError:
             print("[Warning] Profiling hits MemoryError")
-            error = "MEMORY ERROR"
         except:
             print("[CRITICAL] ! Unknown exception during profiling !")
             error = format_exc()
             print(error)
 
+        if progress.value != _STAT_SUCC:
+            progress.value = _STAT_ERROR
+
         # Needed for cleaning up.
         shutil.rmtree = rmtree
         os.rmdir = rmdir
         os.chdir = chdir
-
-    if not error:
-        return compute_cost
-
-    return error
 
 
 def profile(
@@ -135,10 +142,15 @@ def profile(
     """Profile the func_code against certain input tests.
     The function code is assumed to be correct and if a string is returned, it is an error message.
     """
+    timeout = timeout_second_per_test * len(test_inputs) * profile_rounds
 
     def _run():
-        with ProcessPoolExecutor(max_workers=1) as executor:
-            args = (
+        compute_cost = Value("d", 0.0)
+        progress = Value("i", _STAT_NONE)
+
+        p = Process(
+            target=get_instruction_count_shared_mem,
+            args=(
                 profiler,
                 func_code,
                 entry_point,
@@ -146,14 +158,26 @@ def profile(
                 timeout_second_per_test,
                 memory_bound_gb,
                 warmup_inputs,
-            )
-            future = executor.submit(get_instruction_count, *args)
-            if future.exception():
-                print(
-                    f"[Profile Error] Exception in profile: {str(future.exception())}..."
-                )
-                return "UNEXPECTED_ERROR"
-            return future.result()
+                # shared memory
+                compute_cost,
+                progress,
+            ),
+        )
+        p.start()
+        p.join(timeout=timeout + 1)
+        if p.is_alive():
+            p.terminate()
+            time.sleep(0.1)
 
-    # setup a process
+        if p.is_alive():
+            p.kill()
+            time.sleep(0.1)
+
+        if progress.value == _STAT_SUCC:
+            return compute_cost.value
+        elif progress.value == _STAT_NONE:
+            return "PROFILING DID NOT START"
+        elif progress.value == _STAT_ERROR:
+            return "SOLUTION ERROR ENCOUNTERED WHILE PROFILING"
+
     return [_run() for _ in range(profile_rounds)]
