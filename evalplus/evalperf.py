@@ -22,7 +22,7 @@ import multiprocessing
 import os
 import time
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from statistics import mean
 from typing import Dict, List, Optional, Tuple
@@ -378,7 +378,7 @@ def script(
 
     rule("Correctness Checking...")
     with progress("Correctness") as p:
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [
                 executor.submit(
                     correctness_worker,
@@ -419,7 +419,7 @@ def script(
     rich.print(f"IDs of tasks to evaluate: {list(ptasks.keys())}")
     rule("Evaluation Start")
     undone = []
-    with progress("EvalPerf") as p:
+    with progress("Profiling") as p:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = []
             for task_id, ptask in ptasks.items():
@@ -448,7 +448,6 @@ def script(
                 undone.remove(result["task_id"])
                 if len(undone) < max_workers:
                     print(f"Still running: {undone}")
-                print()  # newline
 
     rule("Evaluation Summary")
     dps = mean(not_none([res["dps"] for res in eval_results.values()]))
