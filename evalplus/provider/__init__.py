@@ -13,6 +13,7 @@ def make_model(
     response_prefix=None,
     # non-server only
     dtype="bfloat16",
+    trust_remote_code=False,
     # vllm only
     tp=1,
     # openai only
@@ -32,6 +33,7 @@ def make_model(
             tensor_parallel_size=tp,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
+            trust_remote_code=trust_remote_code,
             dtype=dtype,
         )
     elif backend == "hf":
@@ -46,6 +48,7 @@ def make_model(
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
             attn_implementation=attn_implementation,
+            trust_remote_code=trust_remote_code,
             dtype=dtype,
         )
     elif backend == "openai":

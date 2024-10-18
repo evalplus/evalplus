@@ -142,6 +142,7 @@ def run_codegen(
     evalperf_type: str = None,  # For EvalPerf
     jsonl_fmt: bool = True,
     attn_implementation: str = "eager",
+    trust_remote_code: bool = False,
     dtype: str = "bfloat16",
 ):
     assert dataset in ["humaneval", "mbpp", "evalperf"], f"Invalid dataset {dataset}"
@@ -197,6 +198,7 @@ def run_codegen(
         instruction_prefix=instruction_prefix,
         response_prefix=response_prefix,
         attn_implementation=attn_implementation,
+        trust_remote_code=trust_remote_code,
         dtype=dtype,
     )
 
@@ -220,6 +222,12 @@ def run_codegen(
         id_range=id_range,
         version=version,
     )
+
+    # force shutdown the model runner
+    del model_runner
+    import gc
+
+    gc.collect()
 
     return target_path
 
