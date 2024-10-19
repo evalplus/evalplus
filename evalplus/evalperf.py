@@ -55,8 +55,6 @@ from evalplus.perf.profile import (
 )
 from evalplus.utils import progress
 
-_REFERENCE_EXEC_TIMES = 2
-
 
 def rule(msg: str):
     rich.print(Rule(msg))
@@ -178,7 +176,7 @@ def perf_worker(
 
         evaluation_time = PERF_EVAL_TIMEOUT_SECOND
         ref_solution = ptask["reference"][idx]
-        for _ in range(_REFERENCE_EXEC_TIMES):
+        for _ in range(2):  # at most retry twice
             profiles = profile(
                 ref_solution,
                 entry_point,
@@ -192,7 +190,8 @@ def perf_worker(
                 rich.print(Syntax(ref_solution, "python"))
                 print(f"{task_id}: Retrying w/ +10s timeout...")
                 evaluation_time += 10
-                continue
+            else:
+                break
 
         avg_profile = mean(profiles)
         # Bad thing#2: if the current #instruction is faster than that of i+1
@@ -333,6 +332,9 @@ def script(
     else:
         assert samples.endswith(".jsonl")
         result_path = samples.replace(".jsonl", "_evalperf_results.json")
+    brief_result_path = result_path.replace(
+        "evalperf_results.json", "evalperf_results.brief.json"
+    )
 
     # resume results
     eval_results = {}
@@ -455,6 +457,20 @@ def script(
     pass_1 = mean(not_none([res["pass@1"] for res in eval_results.values()]))
     n_evalperfed = len(not_none([res["dps"] for res in eval_results.values()]))
 
+    table_print(
+        "EvalPerf Summary",
+        {
+            "DPS": f"{dps:.1f}",
+            "DPS_norm": f"{dps_norm:.1f}",
+            "Pass@1": f"{pass_1:.1f}%",
+            "#EvalPerf-ed tasks": f"{n_evalperfed} / {len(ptasks)}",
+            "min_correct": min_correct,
+            "n_samples": n_samples,
+            "temperature": temperature,
+        },
+    )
+
+    # Save full results
     with open(result_path, "w") as f:
         f.write(
             json.dumps(
@@ -468,20 +484,46 @@ def script(
                 }
             )
         )
+    rich.print(f"Full results have been saved to {result_path}")
 
-    table_print(
-        "EvalPerf Summary",
-        {
-            "DPS": f"{dps:.1f}",
-            "DPS_norm": f"{dps_norm:.1f}",
-            "Pass@1": f"{pass_1:.1f}%",
-            "#EvalPerf-ed tasks": f"{n_evalperfed} / {len(ptasks)}",
-            "min_correct": min_correct,
-            "n_samples": n_samples,
-            "temperature": temperature,
-        },
-    )
-    rich.print(f"Results have been saved to {result_path}")
+    # Save brief results
+    with open(brief_result_path, "w") as f:
+        f.write(
+            json.dumps(
+                {
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "config": {
+                        "n_samples": n_samples,
+                        "temperature": temperature,
+                        "min_correct": min_correct,
+                        "max_profile": max_profile,
+                    },
+                    "summary": {
+                        "dps": dps,
+                        "dps_norm": dps_norm,
+                        "pass@1": pass_1,
+                    },
+                    "eval": {
+                        task_id: {
+                            "dps": res["dps"],
+                            "dps_norm": res["dps_norm"],
+                            "pass@1": res["pass@1"],
+                            "profiled": [
+                                {
+                                    "solution": r["solution"],
+                                    "matching_cluster_idx": r["matching_cluster_idx"],
+                                }
+                                for r in res["results"]
+                                if r["profiled"]
+                            ],
+                        }
+                        for task_id, res in eval_results.items()
+                    },
+                }
+            )
+        )
+
+    rich.print(f"Brief results have been saved to {brief_result_path}")
 
 
 def main():
