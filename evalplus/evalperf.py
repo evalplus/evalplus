@@ -463,7 +463,7 @@ def script(
             "DPS": f"{dps:.1f}",
             "DPS_norm": f"{dps_norm:.1f}",
             "Pass@1": f"{pass_1:.1f}%",
-            "#EvalPerf-ed tasks": f"{n_evalperfed} / {len(ptasks)}",
+            "#EvalPerf-ed tasks": f"{n_evalperfed} / {len(eval_results)}",
             "min_correct": min_correct,
             "n_samples": n_samples,
             "temperature": temperature,
