@@ -79,8 +79,8 @@ evalplus.codegen --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                  --greedy
 
 # Code execution within Docker
-docker run --rm ganler/evalplus:latest -v $(pwd)/evalplus_results:/app \
-           evalplus.evaluate --dataset humaneval                       \
+docker run --rm --pull=always -v $(pwd)/evalplus_results:/app ganler/evalplus:latest \
+           evalplus.evaluate --dataset humaneval                                     \
            --samples /app/humaneval/ise-uiuc--Magicoder-S-DS-6.7B_vllm_temp_0.0.jsonl
 ```
 
@@ -110,7 +110,7 @@ evalplus.codegen --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                  --n-samples 100
 
 # Code execution within Docker
-docker run --cap-add PERFMON --rm ganler/evalplus:latest -v $(pwd)/evalplus_results:/app \
+docker run --cap-add PERFMON --rm --pull=always -v $(pwd)/evalplus_results:/app ganler/evalplus:latest \
            evalplus.evalperf --samples /app/humaneval/ise-uiuc--Magicoder-S-DS-6.7B_vllm_temp_1.0.jsonl
 ```
 
