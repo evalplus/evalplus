@@ -29,8 +29,8 @@ EvalPlus is a rigorous evaluation framework for LLM4Code, with:
 
 Why EvalPlus?
 
-- ✨ **Precise evaluation & ranking**: See [our leaderboard](https://evalplus.github.io/leaderboard.html) for latest LLM rankings before & after rigorous evaluation.
-- ✨ **Coding rigorousness**: Look at the score differences! esp. before and after using EvalPlus tests! Less drop is better as it means more rigorousness and less laxity in code generation; while a big drop means the generated code tends to be fragile.
+- ✨ **Precise evaluation**: See [our leaderboard](https://evalplus.github.io/leaderboard.html) for latest LLM rankings before & after rigorous evaluation.
+- ✨ **Coding rigorousness**: Look at the score differences! esp. before & after using EvalPlus tests! Less drop means more rigorousness and less laxity in code generation; while a big drop means the generated code tends to be fragile.
 - ✨ **Code efficiency**: Beyond correctness, our EvalPerf dataset evaluates the efficiency of LLM-generated code via performance-exercising coding tasks and test inputs.
 
 Want to know more details? Read our papers & materials!
@@ -42,7 +42,7 @@ Want to know more details? Read our papers & materials!
 
 Below tracks the notable updates of EvalPlus:
 
-- **[2024-10-20 `v0.3.1`]**: EvalPlus `v0.3.1` is officially released! Release highlights includes (i) Code efficiency evaluation via EvalPerf, (ii) one command to run the whole pipline (generation + post-processing + evaluation), (iii) support for more inference backends such as Google Gemini & Anthropic, etc.
+- **[2024-10-20 `v0.3.1`]**: EvalPlus `v0.3.1` is officially released! Highlights: *(i)* Code efficiency evaluation via EvalPerf, *(ii)* one command to run all: generation + post-processing + evaluation, *(iii)* support for more inference backends such as Google Gemini & Anthropic, etc.
 - **[2024-06-09 pre `v0.3.0`]**: Improved ground-truth solutions for MBPP+ tasks (IDs: 459, 102, 559). Thanks to [EvalArena](https://github.com/crux-eval/eval-arena).
 - **[2024-04-17 pre `v0.3.0`]**: MBPP+ is upgraded to `v0.2.0` by removing some broken tasks (399 -> 378 tasks). ~4pp pass@1 improvement could be expected.
 - **Earlier**:
