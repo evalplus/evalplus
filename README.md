@@ -56,7 +56,7 @@ Below tracks the notable updates of EvalPlus:
 
 ## 🔥 Quick Start
 
-- Code correctness evaluation: HumanEval(+) or MBPP(+)
+### Code Correctness Evaluation: HumanEval(+) or MBPP(+)
 
 ```bash
 pip install --upgrade "evalplus[vllm] @ git+https://github.com/evalplus/evalplus"
@@ -68,7 +68,7 @@ evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                   --greedy
 ```
 
-<details><summary>Code execution within Docker <i>:: click to expand ::</i></summary>
+<details><summary>🛡️ Safe code execution within Docker <i>:: click to expand ::</i></summary>
 <div>
 
 ```bash
@@ -87,7 +87,7 @@ docker run --rm --pull=always -v $(pwd)/evalplus_results:/app ganler/evalplus:la
 </div>
 </details>
 
-- Code efficiency evaluation: EvalPerf (*nix only)
+### Code Efficiency Evaluation: EvalPerf (*nix only)
 
 ```bash
 pip install --upgrade "evalplus[perf,vllm] @ git+https://github.com/evalplus/evalplus"
@@ -98,7 +98,7 @@ evalplus.evalperf --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                   --backend vllm
 ```
 
-<details><summary>Code execution within Docker <i>:: click to expand ::</i></summary>
+<details><summary>🛡️ Safe code execution within Docker <i>:: click to expand ::</i></summary>
 <div>
 
 ```bash
@@ -110,8 +110,9 @@ evalplus.codegen --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                  --n-samples 100
 
 # Code execution within Docker
+sudo sh -c 'echo 0 > /proc/sys/kernel/perf_event_paranoid' # Enable perf
 docker run --cap-add PERFMON --rm --pull=always -v $(pwd)/evalplus_results:/app ganler/evalplus:latest \
-           evalplus.evalperf --samples /app/humaneval/ise-uiuc--Magicoder-S-DS-6.7B_vllm_temp_1.0.jsonl
+           evalplus.evalperf --samples /app/evalperf/ise-uiuc--Magicoder-S-DS-6.7B_vllm_temp_1.0.jsonl
 ```
 
 </div>
