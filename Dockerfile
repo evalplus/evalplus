@@ -16,4 +16,4 @@ RUN python3 -c "from evalplus.data import *; get_human_eval_plus(); get_mbpp_plu
 
 WORKDIR /app
 
-ENTRYPOINT ["python3", "-m", "evalplus.evaluate"]
+CMD ["bash"]

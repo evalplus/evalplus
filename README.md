@@ -42,7 +42,7 @@ Want to know more details? Read our papers & materials!
 
 Below tracks the notable updates of EvalPlus:
 
-- **[2024-10-20 `v0.3.0`]**: EvalPlus `v0.3.0` is officially released! Release highlights includes (i) Code efficiency evaluation via EvalPerf, (ii) one command to run the whole pipline (generation + post-processing + evaluation), (iii) support for more inference backends such as Google Gemini & Anthropic, etc.
+- **[2024-10-20 `v0.3.1`]**: EvalPlus `v0.3.1` is officially released! Release highlights includes (i) Code efficiency evaluation via EvalPerf, (ii) one command to run the whole pipline (generation + post-processing + evaluation), (iii) support for more inference backends such as Google Gemini & Anthropic, etc.
 - **[2024-06-09 pre `v0.3.0`]**: Improved ground-truth solutions for MBPP+ tasks (IDs: 459, 102, 559). Thanks to [EvalArena](https://github.com/crux-eval/eval-arena).
 - **[2024-04-17 pre `v0.3.0`]**: MBPP+ is upgraded to `v0.2.0` by removing some broken tasks (399 -> 378 tasks). ~4pp pass@1 improvement could be expected.
 - **Earlier**:
@@ -68,6 +68,25 @@ evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                   --greedy
 ```
 
+<details><summary>Code execution within Docker <i>:: click to expand ::</i></summary>
+<div>
+
+```bash
+# Local generation
+evalplus.codegen --model "ise-uiuc/Magicoder-S-DS-6.7B" \
+                 --dataset humaneval                    \
+                 --backend vllm                         \
+                 --greedy
+
+# Code execution within Docker
+docker run --rm ganler/evalplus:latest -v $(pwd)/evalplus_results:/app \
+           evalplus.evaluate --dataset humaneval                       \
+           --samples /app/humaneval/ise-uiuc--Magicoder-S-DS-6.7B_vllm_temp_0.0.jsonl
+```
+
+</div>
+</details>
+
 - Code efficiency evaluation: EvalPerf (*nix only)
 
 ```bash
@@ -79,6 +98,25 @@ evalplus.evalperf --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                   --backend vllm
 ```
 
+<details><summary>Code execution within Docker <i>:: click to expand ::</i></summary>
+<div>
+
+```bash
+# Local generation
+evalplus.codegen --model "ise-uiuc/Magicoder-S-DS-6.7B" \
+                 --dataset evalperf                     \
+                 --backend vllm                         \
+                 --temperture 1.0                       \
+                 --n-samples 100
+
+# Code execution within Docker
+docker run --cap-add PERFMON --rm ganler/evalplus:latest -v $(pwd)/evalplus_results:/app \
+           evalplus.evalperf --samples /app/humaneval/ise-uiuc--Magicoder-S-DS-6.7B_vllm_temp_1.0.jsonl
+```
+
+</div>
+</details>
+
 ## 🚀 LLM Backends
 
 ### HuggingFace models
@@ -86,9 +124,9 @@ evalplus.evalperf --model "ise-uiuc/Magicoder-S-DS-6.7B" \
 - `transformers` backend:
 
 ```bash
-evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3" \
-                  --dataset [humaneval|mbpp]                   \
-                  --backend hf                                 \
+evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B" \
+                  --dataset [humaneval|mbpp]             \
+                  --backend hf                           \
                   --greedy
 ```
 
@@ -113,10 +151,10 @@ pip install flash-attn --no-build-isolation
 # wheels from https://github.com/Dao-AILab/flash-attention/releases
 
 # Run evaluation with FA2
-evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3"    \
-                  --dataset [humaneval|mbpp]                      \
-                  --backend hf                                    \
-                  --attn-implementation [flash_attention_2|sdpa]  \
+evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B"         \
+                  --dataset [humaneval|mbpp]                     \
+                  --backend hf                                   \
+                  --attn-implementation [flash_attention_2|sdpa] \
                   --greedy
 ```
 
@@ -126,10 +164,10 @@ evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3"    \
 - `vllm` backend:
 
 ```bash
-evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3" \
-                  --dataset [humaneval|mbpp]                   \
-                  --backend vllm                               \
-                  --tp [TENSOR_PARALLEL_SIZE]                  \
+evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B" \
+                  --dataset [humaneval|mbpp]             \
+                  --backend vllm                         \
+                  --tp [TENSOR_PARALLEL_SIZE]            \
                   --greedy
 ```
 
@@ -137,10 +175,10 @@ evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3" \
 
 ```bash
 # Launch a model server first: e.g., https://docs.vllm.ai/en/latest/serving/deploying_with_docker.html
-evalplus.evaluate --model "mistralai/Mistral-7B-Instruct-v0.3" \
-                  --dataset [humaneval|mbpp]                   \
-                  --backend openai                             \
-                  --base-url http://localhost:8000/v1          \
+evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B" \
+                  --dataset [humaneval|mbpp]             \
+                  --backend openai                       \
+                  --base-url http://localhost:8000/v1    \
                   --greedy
 ```
 
