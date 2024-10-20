@@ -14,7 +14,7 @@ MODELS = {
     ),
     "mistral_3_instruct_dpo_full": (
         "mistralai/Mistral-7B-Instruct-v0.3",
-        "custom_saved_models/mistral_3_instruct/full/dpo",
+        "trained_models/mistral_3_instruct/full/dpo/3",
     ),
 }
 
