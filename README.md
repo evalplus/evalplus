@@ -25,7 +25,7 @@ EvalPlus is a rigorous evaluation framework for LLM4Code, with:
 - ✨ **HumanEval+**: 80x more tests than the original HumanEval!
 - ✨ **MBPP+**: 35x more tests than the original MBPP!
 - ✨ **EvalPerf**: evaluating the efficiency of LLM-generated code!
-- ✨ **Evaluation framework**: our packages/images/tools can easily and safely evaluate LLMs on above benchmarks.
+- ✨ **Framework**: our packages/images/tools can easily and safely evaluate LLMs on above benchmarks.
 
 Why EvalPlus?
 
@@ -37,13 +37,6 @@ Want to know more details? Read our papers & materials!
 
 - **EvalPlus**: [NeurIPS'23 paper](https://openreview.net/forum?id=1qvx610Cu7), [Google Slides](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs), [Poster](https://jw-liu.xyz/assets/pdf/EvalPlus_Poster.pdf)
 - **EvalPerf**: [COLM'24 paper](https://openreview.net/forum?id=IBCBMeAhmC), [Poster](https://jw-liu.xyz/assets/pdf/jiawei-colm-evalperf-poster.pdf), [Documentation](./docs/evalperf.md)
-
-> [!Important]
->
-> 🚧 **MBPP+ update (`v0.1.0` to `v0.2.0`)**:
-> We recently improved and stablized MBPP+ dataset by removing some tasks whose `test_list` is wrong (brought by the original MBPP dataset itself) to make it more reasonable to solve.
-> In `v0.1.0` MBPP+ has 399 tasks while the new `v0.2.0` has 378 tasks.
-> We also improved the oracle. Therefore, **using `v0.2.0` you might expect ~4pp pass@1 improvement** for both base and plus tests.
 
 ## 📰 News
 
@@ -63,8 +56,9 @@ Below tracks the notable updates of EvalPlus:
 
 ## 🔥 Quick Start
 
+- Code correctness evaluation: HumanEval(+) or MBPP(+)
+
 ```bash
-# Code correctness evaluation: HumanEval(+) or MBPP(+)
 pip install --upgrade "evalplus[vllm] @ git+https://github.com/evalplus/evalplus"
 # Or `pip install "evalplus[vllm]" --upgrade` for the latest stable release
 
@@ -74,8 +68,9 @@ evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                   --greedy
 ```
 
+- Code efficiency evaluation: EvalPerf (*nix only)
+
 ```bash
-# Code efficiency evaluation: EvalPerf (*nix only)
 pip install --upgrade "evalplus[perf,vllm] @ git+https://github.com/evalplus/evalplus"
 # Or `pip install "evalplus[perf,vllm]" --upgrade` for the latest stable release
 
