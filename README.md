@@ -42,9 +42,9 @@ Want to know more details? Read our papers & materials!
 
 Below tracks the notable updates of EvalPlus:
 
-- **2024-10-20** (`v0.3.0`): EvalPlus `v0.3.0` is officially released! Release highlights includes (i) Code efficiency evaluation via EvalPerf, (ii) one command to run the whole pipline (generation + post-processing + evaluation), (iii) support for more inference backends such as Google Gemini & Anthropic, etc.
-- **2024-06-09** (pre `v0.3.0`): Improved ground-truth solutions for MBPP+ tasks (IDs: 459, 102, 559). Thanks to [EvalArena](https://github.com/crux-eval/eval-arena).
-- **2024-04-17** (pre `v0.3.0`): MBPP+ is upgraded to `v0.2.0` by removing some broken tasks (399 -> 378 tasks). ~4pp pass@1 improvement could be expected.
+- **[2024-10-20 `v0.3.0`]**: EvalPlus `v0.3.0` is officially released! Release highlights includes (i) Code efficiency evaluation via EvalPerf, (ii) one command to run the whole pipline (generation + post-processing + evaluation), (iii) support for more inference backends such as Google Gemini & Anthropic, etc.
+- **[2024-06-09 pre `v0.3.0`]**: Improved ground-truth solutions for MBPP+ tasks (IDs: 459, 102, 559). Thanks to [EvalArena](https://github.com/crux-eval/eval-arena).
+- **[2024-04-17 pre `v0.3.0`]**: MBPP+ is upgraded to `v0.2.0` by removing some broken tasks (399 -> 378 tasks). ~4pp pass@1 improvement could be expected.
 - **Earlier**:
   - ([`v0.2.1`](https://github.com/evalplus/evalplus/releases/tag/v0.2.1)) You can use EvalPlus datasets via [bigcode-evaluation-harness](https://github.com/bigcode-project/bigcode-evaluation-harness)! HumanEval+ oracle fixes (32).
   - ([`v0.2.0`](https://github.com/evalplus/evalplus/releases/tag/v0.2.0)) MBPP+ is released! HumanEval contract & input fixes (0/3/9/148/114/1/2/99/28/32/35/160).
