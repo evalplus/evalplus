@@ -30,7 +30,7 @@ EvalPlus is a rigorous evaluation framework for LLM4Code, with:
 Why EvalPlus?
 
 - ✨ **Precise evaluation**: See [our leaderboard](https://evalplus.github.io/leaderboard.html) for latest LLM rankings before & after rigorous evaluation.
-- ✨ **Coding rigorousness**: Look at the score differences! esp. before & after using EvalPlus tests! Less drop means more rigorousness and less laxity in code generation; while a big drop means the generated code tends to be fragile.
+- ✨ **Coding rigorousness**: Look at the score differences! esp. before & after using EvalPlus tests! Less drop means more rigorousness in code generation; while a bigger drop means the generated code tends to be fragile.
 - ✨ **Code efficiency**: Beyond correctness, our EvalPerf dataset evaluates the efficiency of LLM-generated code via performance-exercising coding tasks and test inputs.
 
 Want to know more details? Read our papers & materials!
