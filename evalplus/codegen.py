@@ -11,7 +11,8 @@ from evalplus.utils import progress
 def codegen(
     target_path: str,
     model: DecoderBase,
-    dataset: Dict,
+    dataset: str,
+    current_dataset: Dict,
     greedy=False,
     n_samples=1,
     id_range=None,
@@ -37,7 +38,7 @@ def codegen(
     print(f"Raw outputs will be saved to {raw_target_path}")
 
     with progress(dataset) as p:
-        for task_id, task in p.track(dataset.items()):
+        for task_id, task in p.track(current_dataset.items()):
             if id_range is not None:
                 id_num = int(task_id.split("/")[1])
                 low, high = id_range
@@ -232,7 +233,8 @@ def run_codegen(
 
     codegen(
         target_path=target_path,
-        dataset=current_dataset,
+        dataset=dataset,
+        current_dataset=current_dataset,
         greedy=greedy,
         model=model_runner,
         n_samples=n_samples,
