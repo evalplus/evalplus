@@ -143,6 +143,8 @@ def run_codegen(
     jsonl_fmt: bool = True,
     attn_implementation: str = "eager",
     trust_remote_code: bool = False,
+    enable_prefix_caching: bool = True,
+    enable_chunked_prefill: bool = True,
     dtype: str = "bfloat16",
 ):
     assert dataset in ["humaneval", "mbpp", "evalperf"], f"Invalid dataset {dataset}"
@@ -199,6 +201,8 @@ def run_codegen(
         response_prefix=response_prefix,
         attn_implementation=attn_implementation,
         trust_remote_code=trust_remote_code,
+        enable_prefix_caching=enable_prefix_caching,
+        enable_chunked_prefill=enable_chunked_prefill,
         dtype=dtype,
     )
 
