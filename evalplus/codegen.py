@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from evalplus.data import get_evalperf_data, get_human_eval_plus, get_mbpp_plus
 from evalplus.provider import DecoderBase, make_model
@@ -11,7 +11,7 @@ from evalplus.utils import progress
 def codegen(
     target_path: str,
     model: DecoderBase,
-    dataset: str,
+    dataset: Dict,
     greedy=False,
     n_samples=1,
     id_range=None,
@@ -37,17 +37,6 @@ def codegen(
     print(f"Raw outputs will be saved to {raw_target_path}")
 
     with progress(dataset) as p:
-        if dataset == "humaneval":
-            dataset = get_human_eval_plus(version=version)
-        elif dataset == "mbpp":
-            dataset = get_mbpp_plus(version=version)
-        elif dataset == "evalperf":
-            original_dataset = {**get_human_eval_plus(), **get_mbpp_plus()}
-            dataset = {k: original_dataset[k] for k in get_evalperf_data()}
-            assert id_range is None, "id_range not supported for evalperf"
-        else:
-            raise ValueError(f"Invalid dataset {dataset}")
-
         for task_id, task in p.track(dataset.items()):
             if id_range is not None:
                 id_num = int(task_id.split("/")[1])
@@ -163,6 +152,17 @@ def run_codegen(
     else:
         os.makedirs(target_path, exist_ok=True)
 
+    if dataset == "humaneval":
+        current_dataset = get_human_eval_plus(version=version)
+    elif dataset == "mbpp":
+        current_dataset = get_mbpp_plus(version=version)
+    elif dataset == "evalperf":
+        original_dataset = {**get_human_eval_plus(), **get_mbpp_plus()}
+        current_dataset = {k: original_dataset[k] for k in get_evalperf_data()}
+        assert id_range is None, "id_range not supported for evalperf"
+    else:
+        raise ValueError(f"Invalid dataset {dataset}")
+
     all_tasks_complete = False
     if jsonl_fmt and os.path.isfile(target_path):
         task_counts = {}
@@ -173,17 +173,6 @@ def run_codegen(
                 data = json.loads(line)
                 task_id = data['task_id']
                 task_counts[task_id] = task_counts.get(task_id, 0) + 1
-
-            if dataset == "humaneval":
-                current_dataset = get_human_eval_plus(version=version)
-            elif dataset == "mbpp":
-                current_dataset = get_mbpp_plus(version=version)
-            elif dataset == "evalperf":
-                original_dataset = {**get_human_eval_plus(), **get_mbpp_plus()}
-                current_dataset = {k: original_dataset[k] for k in get_evalperf_data()}
-                assert id_range is None, "id_range not supported for evalperf"
-            else:
-                raise ValueError(f"Invalid dataset {dataset}")
 
             all_tasks_complete = all(task_counts.get(task_id, 0) >= n_samples for task_id in current_dataset.keys())
 
@@ -243,7 +232,7 @@ def run_codegen(
 
     codegen(
         target_path=target_path,
-        dataset=dataset,
+        dataset=current_dataset,
         greedy=greedy,
         model=model_runner,
         n_samples=n_samples,
