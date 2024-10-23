@@ -17,8 +17,8 @@ class VllmDecoder(DecoderBase):
         dataset: str,
         force_base_prompt: bool = False,
         tensor_parallel_size: int = 1,
-        enable_prefix_caching=True,
-        enable_chunked_prefill=True,
+        enable_prefix_caching=False,
+        enable_chunked_prefill=False,
         **kwargs
     ) -> None:
         super().__init__(name, **kwargs)

@@ -16,8 +16,8 @@ def make_model(
     trust_remote_code=False,
     # vllm only
     tp=1,
-    enable_prefix_caching=True,
-    enable_chunked_prefill=True,
+    enable_prefix_caching=False,
+    enable_chunked_prefill=False,
     # openai only
     base_url=None,
     # hf only
