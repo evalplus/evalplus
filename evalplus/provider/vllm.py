@@ -17,6 +17,8 @@ class VllmDecoder(DecoderBase):
         dataset: str,
         force_base_prompt: bool = False,
         tensor_parallel_size: int = 1,
+        enable_prefix_caching=False,
+        enable_chunked_prefill=False,
         **kwargs
     ) -> None:
         super().__init__(name, **kwargs)
@@ -25,7 +27,8 @@ class VllmDecoder(DecoderBase):
             "tensor_parallel_size": tensor_parallel_size,
             "dtype": self.dtype,
             "trust_remote_code": self.trust_remote_code,
-            "enable_prefix_caching": True,
+            "enable_prefix_caching": enable_prefix_caching,
+            "enable_chunked_prefill": enable_chunked_prefill,
         }
 
         self.force_base_prompt = force_base_prompt

@@ -106,7 +106,7 @@ evalplus.evalperf --model "ise-uiuc/Magicoder-S-DS-6.7B" \
 evalplus.codegen --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                  --dataset evalperf                     \
                  --backend vllm                         \
-                 --temperture 1.0                       \
+                 --temperature 1.0                       \
                  --n-samples 100
 
 # Code execution within Docker
