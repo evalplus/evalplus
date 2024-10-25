@@ -322,6 +322,7 @@ def evaluate(
     cprint(f"{dataset} (base tests)", "red")
     for k, v in pass_at_k.items():
         cprint(f"{k}:\t{v:.3f}", "red")
+    results["pass_at_k"] = {"base": pass_at_k}
 
     if new_correct:
         cprint(f"{dataset}+ (base + extra tests)", "green")
@@ -332,6 +333,7 @@ def evaluate(
         }
         for k, v in pass_at_k.items():
             cprint(f"{k}:\t{v:.3f}", "green")
+        results["pass_at_k"]["plus"] = pass_at_k
 
     # save results
     if os.path.isfile(result_path) and i_just_wanna_run:
