@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-    <a href="#-news">📰News</a> •
+    <a href="#-news">📢News</a> •
     <a href="#-quick-start">🔥Quick Start</a> •
     <a href="#-llm-backends">🚀LLM Backends</a> •
     <a href="#-documents">📚Documents</a> •
@@ -38,7 +38,7 @@ Want to know more details? Read our papers & materials!
 - **EvalPlus**: [NeurIPS'23 paper](https://openreview.net/forum?id=1qvx610Cu7), [Google Slides](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs), [Poster](https://jw-liu.xyz/assets/pdf/EvalPlus_Poster.pdf)
 - **EvalPerf**: [COLM'24 paper](https://openreview.net/forum?id=IBCBMeAhmC), [Poster](https://jw-liu.xyz/assets/pdf/jiawei-colm-evalperf-poster.pdf), [Documentation](./docs/evalperf.md)
 
-## 📰 News
+## 📢 News
 
 Below tracks the notable updates of EvalPlus:
 
