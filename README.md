@@ -35,8 +35,8 @@ Why EvalPlus?
 
 Want to know more details? Read our papers & materials!
 
-- **EvalPlus**: [NeurIPS'23 paper](https://openreview.net/forum?id=1qvx610Cu7), [Google Slides](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs), [Poster](https://jw-liu.xyz/assets/pdf/EvalPlus_Poster.pdf)
-- **EvalPerf**: [COLM'24 paper](https://openreview.net/forum?id=IBCBMeAhmC), [Poster](https://jw-liu.xyz/assets/pdf/jiawei-colm-evalperf-poster.pdf), [Documentation](./docs/evalperf.md)
+- **EvalPlus**: [NeurIPS'23 paper](https://openreview.net/forum?id=1qvx610Cu7), [Slides](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs), [Poster](https://jw-liu.xyz/assets/pdf/EvalPlus_Poster.pdf), [Leaderboard](https://evalplus.github.io/leaderboard.html)
+- **EvalPerf**: [COLM'24 paper](https://openreview.net/forum?id=IBCBMeAhmC), [Poster](https://jw-liu.xyz/assets/pdf/jiawei-colm-evalperf-poster.pdf), [Documentation](./docs/evalperf.md), [Leaderboard](https://evalplus.github.io/evalperf.html)
 
 ## 📢 News
 
@@ -94,8 +94,7 @@ pip install --upgrade "evalplus[perf,vllm] @ git+https://github.com/evalplus/eva
 # Or `pip install "evalplus[perf,vllm]" --upgrade` for the latest stable release
 
 sudo sh -c 'echo 0 > /proc/sys/kernel/perf_event_paranoid' # Enable perf
-evalplus.evalperf --model "ise-uiuc/Magicoder-S-DS-6.7B" \
-                  --backend vllm
+evalplus.evalperf --model "ise-uiuc/Magicoder-S-DS-6.7B" --backend vllm
 ```
 
 <details><summary>🛡️ Safe code execution within Docker <i>:: click to expand ::</i></summary>
@@ -106,7 +105,7 @@ evalplus.evalperf --model "ise-uiuc/Magicoder-S-DS-6.7B" \
 evalplus.codegen --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                  --dataset evalperf                     \
                  --backend vllm                         \
-                 --temperature 1.0                       \
+                 --temperature 1.0                      \
                  --n-samples 100
 
 # Code execution within Docker
