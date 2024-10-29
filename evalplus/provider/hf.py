@@ -1,7 +1,6 @@
 from typing import List
 
 import torch
-from stop_sequencer import StopSequencer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from evalplus.provider.base import DecoderBase
@@ -70,23 +69,14 @@ class HuggingFaceDecoder(DecoderBase):
             kwargs["top_p"] = 0.95
             kwargs["temperature"] = self.temperature
 
-        stop_sequencer = StopSequencer(
-            self.model,
-            model_type="causal",  # or seq2seq
-            tokenizer=self.tokenizer,
-        )
-
-        model = stop_sequencer.register_stop_texts(
-            stop_texts=self.eos,
-            input_length=input_tokens.size(-1),
-        )
-
-        outputs = model.generate(
+        outputs = self.model.generate(
             input_tokens,
             max_new_tokens=self.max_new_tokens,
             do_sample=do_sample,
             num_return_sequences=min(self.batch_size, num_samples),
-            pad_token_id=self.tokenizer.eos_token_id,
+            pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
+            stop_strings=self.eos,
+            tokenizer=self.tokenizer,
             **kwargs,
         )
 

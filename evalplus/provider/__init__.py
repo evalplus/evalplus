@@ -16,6 +16,8 @@ def make_model(
     trust_remote_code=False,
     # vllm only
     tp=1,
+    enable_prefix_caching=False,
+    enable_chunked_prefill=False,
     # openai only
     base_url=None,
     # hf only
@@ -34,6 +36,8 @@ def make_model(
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
             trust_remote_code=trust_remote_code,
+            enable_prefix_caching=enable_prefix_caching,
+            enable_chunked_prefill=enable_chunked_prefill,
             dtype=dtype,
         )
     elif backend == "hf":
