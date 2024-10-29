@@ -24,4 +24,3 @@ google-generativeai
 
 # transformers
 transformers
-stop-sequencer
