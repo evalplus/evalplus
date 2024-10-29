@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 
 from evalplus.data import get_evalperf_data, get_human_eval_plus, get_mbpp_plus
 from evalplus.provider import DecoderBase, make_model
@@ -11,12 +11,10 @@ from evalplus.utils import progress
 def codegen(
     target_path: str,
     model: DecoderBase,
-    dataset: str,
-    current_dataset: Dict,
+    dataset: Dict,
     greedy=False,
     n_samples=1,
     id_range=None,
-    version="default",
     resume=True,
 ):
     task2nexist = {}
@@ -37,8 +35,9 @@ def codegen(
     print(f"Sanitized code outputs will be saved to {target_path}")
     print(f"Raw outputs will be saved to {raw_target_path}")
 
-    with progress(dataset) as p:
-        for task_id, task in p.track(current_dataset.items()):
+    backend_type: str = type(model).__name__
+    with progress(backend_type) as p:
+        for task_id, task in p.track(dataset.items()):
             if id_range is not None:
                 id_num = int(task_id.split("/")[1])
                 low, high = id_range
@@ -156,12 +155,12 @@ def run_codegen(
         os.makedirs(target_path, exist_ok=True)
 
     if dataset == "humaneval":
-        current_dataset = get_human_eval_plus(version=version)
+        dataset_dict = get_human_eval_plus(version=version)
     elif dataset == "mbpp":
-        current_dataset = get_mbpp_plus(version=version)
+        dataset_dict = get_mbpp_plus(version=version)
     elif dataset == "evalperf":
         original_dataset = {**get_human_eval_plus(), **get_mbpp_plus()}
-        current_dataset = {k: original_dataset[k] for k in get_evalperf_data()}
+        dataset_dict = {k: original_dataset[k] for k in get_evalperf_data()}
         assert id_range is None, "id_range not supported for evalperf"
     else:
         raise ValueError(f"Invalid dataset {dataset}")
@@ -169,15 +168,18 @@ def run_codegen(
     all_tasks_complete = False
     if jsonl_fmt and os.path.isfile(target_path):
         task_counts = {}
-        with open(target_path, 'r') as f:
+        with open(target_path, "r") as f:
             for line in f:
                 if not line.strip():
                     continue
                 data = json.loads(line)
-                task_id = data['task_id']
+                task_id = data["task_id"]
                 task_counts[task_id] = task_counts.get(task_id, 0) + 1
 
-            all_tasks_complete = all(task_counts.get(task_id, 0) >= n_samples for task_id in current_dataset.keys())
+            all_tasks_complete = all(
+                task_counts.get(task_id, 0) >= n_samples
+                for task_id in dataset_dict.keys()
+            )
 
     if all_tasks_complete:
         print("All samples are already cached. Skipping codegen.")
@@ -237,14 +239,12 @@ def run_codegen(
 
     codegen(
         target_path=target_path,
-        dataset=dataset,
-        current_dataset=current_dataset,
+        dataset=dataset_dict,
         greedy=greedy,
         model=model_runner,
         n_samples=n_samples,
         resume=resume,
         id_range=id_range,
-        version=version,
     )
 
     # force shutdown the model runner
