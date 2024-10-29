@@ -74,8 +74,9 @@ class HuggingFaceDecoder(DecoderBase):
             max_new_tokens=self.max_new_tokens,
             do_sample=do_sample,
             num_return_sequences=min(self.batch_size, num_samples),
-            pad_token_id=self.tokenizer.eos_token_id,
+            pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
             stop_strings=self.eos,
+            tokenizer=self.tokenizer,
             **kwargs,
         )
 
