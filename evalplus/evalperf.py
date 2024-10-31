@@ -192,8 +192,12 @@ def perf_worker(
                 evaluation_time += 10
             else:
                 break
+        try:
+            avg_profile = mean(profiles)
+        except AttributeError as e:
+            print(f"{task_id}: [WARNING] Retrying failed in ref: {profiles}")
+            return None
 
-        avg_profile = mean(profiles)
         # Bad thing#2: if the current #instruction is faster than that of i+1
         if idx < n_reference - 1 and avg_profile < cache_ref_num_inst[idx + 1]:
             print(f"{task_id}: [WARNING] #{idx} ref faster than #{idx + 1}")
