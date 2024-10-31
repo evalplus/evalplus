@@ -194,7 +194,7 @@ def perf_worker(
                 break
         try:
             avg_profile = mean(profiles)
-        except AttributeError as e:
+        except Exception as e:
             print(f"{task_id}: [WARNING] Retrying failed in ref: {profiles}")
             return None
 
