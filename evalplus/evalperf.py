@@ -20,9 +20,11 @@ Check our COLM paper for more details: https://www.arxiv.org/abs/2408.06450
 import json
 import multiprocessing
 import os
+import socket
 import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import closing
 from datetime import datetime
 from statistics import mean
 from typing import Dict, List, Optional, Tuple
@@ -62,6 +64,13 @@ def rule(msg: str):
 
 def not_none(l: list) -> list:
     return [x for x in l if x is not None]
+
+
+def get_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
 
 
 def correctness_check(
@@ -524,6 +533,19 @@ def script(
         )
 
     rich.print(f"Brief results have been saved to {brief_result_path}")
+
+    rule("To visualize win-rates and pair-wise DPS, run:")
+    rich.print(
+        Syntax(
+            f"""\
+git clone git@github.com:evalplus/evalplus.github.io.git
+git --git-dir=evalplus.github.io/.git pull
+cp {brief_result_path} evalplus.github.io/results/evalperf
+python evalplus.github.io/results/evalperf/stats.py
+python -m http.server -d evalplus.github.io {get_free_port()}""",
+            "bash",
+        )
+    )
 
 
 def main():
