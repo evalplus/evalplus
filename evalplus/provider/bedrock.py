@@ -1,6 +1,6 @@
 import datetime
 import os
-from typing import List
+from typing import Dict, List
 
 import boto3
 from botocore.config import Config

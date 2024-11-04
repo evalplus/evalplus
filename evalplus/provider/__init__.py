@@ -89,3 +89,14 @@ def make_model(
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
         )
+    elif backend == "bedrock":
+        from evalplus.provider.bedrock import BedrockDecoder
+
+        assert not force_base_prompt, f"{backend} backend does not serve base model"
+        return BedrockDecoder(
+            name=model,
+            batch_size=batch_size,
+            temperature=temperature,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
+        )
