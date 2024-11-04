@@ -14,23 +14,16 @@ def make_request(
     n: int = 1,
     **kwargs
 ) -> ChatCompletion:
-    system_msg = "You are a helpful assistant good at coding."
-    if (
-        kwargs.get("response_format", None)
-        and kwargs["response_format"]["type"] == "json_object"
-    ):
-        system_msg = "You are a helpful assistant designed to output JSON."
-
+    if "top_p" not in kwargs and not model.startswith("o1-"):
+        kwargs["top_p"] = 0.95
     return client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": system_msg},
             {"role": "user", "content": message},
         ],
-        max_tokens=max_tokens,
+        max_completion_tokens=max_tokens,
         temperature=temperature,
         n=n,
-        top_p=0.95,
         **kwargs
     )
 
