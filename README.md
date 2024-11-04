@@ -218,6 +218,18 @@ evalplus.evaluate --model "gemini-1.5-pro"    \
                   --greedy
 ```
 
+### Amazon Bedrock models
+
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/)
+
+```bash
+export BEDROCK_ROLE_ARN="[BEDROCK_ROLE_ARN]"
+evalplus.evaluate --model "anthropic.claude-3-5-sonnet-20241022-v2:0" \
+                  --dataset [humaneval|mbpp]                          \
+                  --backend bedrock                                   \
+                  --greedy
+```
+
 You can checkout the generation and results at `evalplus_results/[humaneval|mbpp]/`
 
 <details><summary>⏬ Using EvalPlus as a local repo? <i>:: click to expand ::</i></summary>
