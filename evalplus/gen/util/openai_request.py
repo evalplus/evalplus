@@ -1,4 +1,3 @@
-import signal
 import time
 
 import openai
@@ -14,47 +13,38 @@ def make_request(
     n: int = 1,
     **kwargs
 ) -> ChatCompletion:
-    if "top_p" not in kwargs and not model.startswith("o1-"):
-        kwargs["top_p"] = 0.95
+    kwargs["top_p"] = 0.95
+    kwargs["max_completion_tokens"] = max_tokens
+    if model.startswith("o1-"):  # pop top-p and max_completion_tokens
+        kwargs.pop("top_p")
+        kwargs.pop("max_completion_tokens")
+
     return client.chat.completions.create(
         model=model,
         messages=[
             {"role": "user", "content": message},
         ],
-        max_completion_tokens=max_tokens,
         temperature=temperature,
         n=n,
         **kwargs
     )
 
 
-def handler(signum, frame):
-    # swallow signum and frame
-    raise Exception("end of time")
-
-
 def make_auto_request(*args, **kwargs) -> ChatCompletion:
     ret = None
     while ret is None:
         try:
-            signal.signal(signal.SIGALRM, handler)
-            signal.alarm(100)
             ret = make_request(*args, **kwargs)
-            signal.alarm(0)
         except openai.RateLimitError:
             print("Rate limit exceeded. Waiting...")
-            signal.alarm(0)
             time.sleep(5)
         except openai.APIConnectionError:
             print("API connection error. Waiting...")
-            signal.alarm(0)
             time.sleep(5)
         except openai.APIError as e:
             print(e)
-            signal.alarm(0)
         except Exception as e:
             print("Unknown error. Waiting...")
             print(e)
-            signal.alarm(0)
             time.sleep(1)
     return ret
