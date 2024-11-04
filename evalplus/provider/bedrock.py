@@ -52,17 +52,23 @@ class AutoRefreshBedrockCaller:
         return self.bedrock_client.converse(*arg, **kwargs)
 
 
+BEDROCK_ROLE_ARN = os.getenv("BEDROCK_ROLE_ARN", None)
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+
+
 class BedrockDecoder(DecoderBase):
     def __init__(self, name: str, **kwargs) -> None:
         super().__init__(name, **kwargs)
 
     def _call_one(self, messages: List[Dict[str, str]]) -> str:
+        assert (
+            BEDROCK_ROLE_ARN
+        ), "Please specify BEDROCK_ROLE_ARN via environment variable"
         self.client = AutoRefreshBedrockCaller(
-            role_arn=os.getenv("BEDROCK_ROLE_ARN", "none"),
-            region=os.getenv("AWS_REGION", "us-east-1"),
+            role_arn=BEDROCK_ROLE_ARN, region_name=AWS_REGION
         )
 
-        responses = self.client.converse(
+        response = self.client.converse(
             modelId=self.name,
             messages=messages,
             inferenceConfig={
@@ -72,7 +78,7 @@ class BedrockDecoder(DecoderBase):
             },
         )
 
-        return responses[0]["output"]["message"]["content"][0]["text"]
+        return response["output"]["message"]["content"][0]["text"]
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -81,7 +87,7 @@ class BedrockDecoder(DecoderBase):
             assert self.temperature > 0, "Temperature must be positive for sampling"
         batch_size = min(self.batch_size, num_samples)
         prompt = self.instruction_prefix + f"\n```python\n{prompt.strip()}\n```"
-        messages = [{"role": "user", "content": prompt.strip()}]
+        messages = [{"role": "user", "content": [{"text": prompt.strip()}]}]
 
         return concurrent_call(batch_size, self._call_one, messages)
 
