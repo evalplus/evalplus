@@ -24,3 +24,6 @@ google-generativeai
 
 # transformers
 transformers
+
+# bedrock
+boto3
