@@ -22,6 +22,7 @@ def make_model(
     base_url=None,
     # hf only
     attn_implementation="eager",
+    device_map=None,
 ) -> DecoderBase:
     if backend == "vllm":
         from evalplus.provider.vllm import VllmDecoder
@@ -52,6 +53,7 @@ def make_model(
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
             attn_implementation=attn_implementation,
+            device_map=device_map,
             trust_remote_code=trust_remote_code,
             dtype=dtype,
         )

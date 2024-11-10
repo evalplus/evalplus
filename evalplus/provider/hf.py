@@ -17,13 +17,14 @@ class HuggingFaceDecoder(DecoderBase):
         dataset: str,
         force_base_prompt: bool = False,
         attn_implementation: str = "eager",
+        device_map: str = None,
         **kwargs,
     ):
         super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         kwargs = {
-            "device_map": "auto",
+            "device_map": device_map,
             "trust_remote_code": self.trust_remote_code,
             "torch_dtype": getattr(torch, self.dtype),
             "attn_implementation": attn_implementation,  # "eager", "flash_attention_2", "sdpa"

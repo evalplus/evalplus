@@ -131,6 +131,7 @@ def run_codegen(
     evalperf_type: str = None,  # For EvalPerf
     jsonl_fmt: bool = True,
     attn_implementation: str = "eager",
+    device_map: Optional[str] = None,
     trust_remote_code: bool = False,
     enable_prefix_caching: bool = False,
     enable_chunked_prefill: bool = False,
@@ -230,6 +231,7 @@ def run_codegen(
         tp=tp,
         instruction_prefix=instruction_prefix,
         response_prefix=response_prefix,
+        device_map=device_map,
         attn_implementation=attn_implementation,
         trust_remote_code=trust_remote_code,
         enable_prefix_caching=enable_prefix_caching,
