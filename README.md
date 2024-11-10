@@ -1,7 +1,7 @@
 # `EvalPlus(📖) => 📚`
 
 <p align="center">
-    <a href="https://evalplus.github.io/leaderboard.html"><img src="https://img.shields.io/badge/%F0%9F%8F%86-leaderboard-8A2BE2"></a>
+    <a href="https://evalplus.github.io"><img src="https://img.shields.io/badge/%F0%9F%8F%86-leaderboard-8A2BE2"></a>
     <a href="https://openreview.net/forum?id=1qvx610Cu7"><img src="https://img.shields.io/badge/EvalPlus-NeurIPS'23-a55fed.svg"></a>
     <a href="https://openreview.net/forum?id=IBCBMeAhmC"><img src="https://img.shields.io/badge/EvalPerf-COLM'24-a55fed.svg"></a>
     <a href="https://huggingface.co/evalplus/"><img src="https://img.shields.io/badge/🤗%20Hugging%20Face-evalplus-%23ff8811.svg"></a>
@@ -174,12 +174,32 @@ evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B" \
 - `openai` compatible servers (e.g., [vLLM](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html)):
 
 ```bash
-# Launch a model server first: e.g., https://docs.vllm.ai/en/latest/serving/deploying_with_docker.html
+# OpenAI models
+export OPENAI_API_KEY="{KEY}" # https://platform.openai.com/settings/organization/api-keys
+evalplus.evaluate --model "gpt-4o-2024-08-06"  \
+                  --dataset [humaneval|mbpp]   \
+                  --backend openai --greedy
+
+# DeepSeek
+export OPENAI_API_KEY="{KEY}" # https://platform.deepseek.com/api_keys
+evalplus.evaluate --model "deepseek-chat"              \
+                  --dataset [humaneval|mbpp]           \
+                  --base-url https://api.deepseek.com  \
+                  --backend openai --greedy
+
+# Grok
+export OPENAI_API_KEY="{KEY}" # https://console.x.ai/
+evalplus.evaluate --model "grok-beta"             \
+                  --dataset [humaneval|mbpp]      \
+                  --base-url https://api.x.ai/v1  \
+                  --backend openai --greedy
+
+# vLLM server
+# First, launch a vLLM server: https://docs.vllm.ai/en/latest/serving/deploying_with_docker.html
 evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B" \
                   --dataset [humaneval|mbpp]             \
-                  --backend openai                       \
                   --base-url http://localhost:8000/v1    \
-                  --greedy
+                  --backend openai --greedy
 ```
 
 ### OpenAI models
