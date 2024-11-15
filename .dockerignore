@@ -162,6 +162,8 @@ cython_debug/
 
 # VSCode
 .vscode/
+
+# EvalPlus specific
 EvalPlus/
 backup/
 passrate.p*
@@ -176,3 +178,5 @@ evalplus/_version.py
 *.pdf
 trash-bin
 .bak
+evalplus.github.io
+evalplus_results/
