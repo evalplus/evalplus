@@ -18,6 +18,7 @@ def make_request(
     if model.startswith("o1-"):  # pop top-p and max_completion_tokens
         kwargs.pop("top_p")
         kwargs.pop("max_completion_tokens")
+        temperature = 1.0  # o1 models do not support temperature
 
     return client.chat.completions.create(
         model=model,
