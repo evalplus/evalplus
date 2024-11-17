@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-    <a href="#-news">📢News</a> •
+    <a href="#-about">📙About</a> •
     <a href="#-quick-start">🔥Quick Start</a> •
     <a href="#-llm-backends">🚀LLM Backends</a> •
     <a href="#-documents">📚Documents</a> •
@@ -18,7 +18,42 @@
     <a href="#-acknowledgement">🙏Acknowledgement</a>
 </p>
 
-## About
+## 📢 News
+
+Who's using EvalPlus datasets? EvalPlus has been used by various LLM teams, including:
+
+* [Meta Llama 3.1](https://ai.meta.com/blog/meta-llama-3-1/)
+* [Qwen2.5-Coder](https://qwenlm.github.io/blog/qwen2.5-coder-family/)
+* [CodeQwen 1.5](https://qwenlm.github.io/blog/codeqwen1.5/)
+* [DeepSeek-Coder V2](https://arxiv.org/pdf/2406.11931)
+* [Qwen2](https://arxiv.org/pdf/2407.10671)
+* [Snowflake Arctic](https://www.snowflake.com/en/data-cloud/arctic/)
+* [StarCoder2](https://arxiv.org/pdf/2402.19173)
+* [Magicoder](https://arxiv.org/pdf/2312.02120)
+* [WizardCoder](https://arxiv.org/pdf/2306.08568)
+
+Below tracks the notable updates of EvalPlus:
+
+- **[2024-10-20 `v0.3.1`]**: EvalPlus `v0.3.1` is officially released! Highlights: *(i)* Code efficiency evaluation via EvalPerf, *(ii)* one command to run all: generation + post-processing + evaluation, *(iii)* support for more inference backends such as Google Gemini & Anthropic, etc.
+- **[2024-06-09 pre `v0.3.0`]**: Improved ground-truth solutions for MBPP+ tasks (IDs: 459, 102, 559). Thanks to [EvalArena](https://github.com/crux-eval/eval-arena).
+- **[2024-04-17 pre `v0.3.0`]**: MBPP+ is upgraded to `v0.2.0` by removing some broken tasks (399 -> 378 tasks). ~4pp pass@1 improvement could be expected.
+
+<details><summary>Earlier news <i>:: click to expand ::</i></summary>
+<div>
+
+- ([`v0.2.1`](https://github.com/evalplus/evalplus/releases/tag/v0.2.1)) You can use EvalPlus datasets via [bigcode-evaluation-harness](https://github.com/bigcode-project/bigcode-evaluation-harness)! HumanEval+ oracle fixes (32).
+- ([`v0.2.0`](https://github.com/evalplus/evalplus/releases/tag/v0.2.0)) MBPP+ is released! HumanEval contract & input fixes (0/3/9/148/114/1/2/99/28/32/35/160).
+- ([`v0.1.7`](https://github.com/evalplus/evalplus/releases/tag/v0.1.7)) [Leaderboard](https://evalplus.github.io/leaderboard.html) release; HumanEval+ contract and input fixes (32/166/126/6)
+- ([`v0.1.6`](https://github.com/evalplus/evalplus/releases/tag/v0.1.6)) Configurable and by-default-conservative timeout settings; HumanEval+ contract & ground-truth fixes (129/148/75/53/0/3/9/140)
+- ([`v0.1.5`](https://github.com/evalplus/evalplus/releases/tag/v0.1.5)) HumanEval+ mini is released for ultra-fast evaluation when you have too many samples!
+- ([`v0.1.1`](https://github.com/evalplus/evalplus/releases/tag/v0.1.1)) Optimizing user experiences: evaluation speed, PyPI package, Docker, etc.
+- ([`v0.1.0`](https://github.com/evalplus/evalplus/releases/tag/v0.1.0)) HumanEval+ is released!
+
+</div>
+</details>
+
+
+## 📙 About
 
 EvalPlus is a rigorous evaluation framework for LLM4Code, with:
 
@@ -38,21 +73,6 @@ Want to know more details? Read our papers & materials!
 - **EvalPlus**: [NeurIPS'23 paper](https://openreview.net/forum?id=1qvx610Cu7), [Slides](https://docs.google.com/presentation/d/1eTxzUQG9uHaU13BGhrqm4wH5NmMZiM3nI0ezKlODxKs), [Poster](https://jw-liu.xyz/assets/pdf/EvalPlus_Poster.pdf), [Leaderboard](https://evalplus.github.io/leaderboard.html)
 - **EvalPerf**: [COLM'24 paper](https://openreview.net/forum?id=IBCBMeAhmC), [Poster](https://jw-liu.xyz/assets/pdf/jiawei-colm-evalperf-poster.pdf), [Documentation](./docs/evalperf.md), [Leaderboard](https://evalplus.github.io/evalperf.html)
 
-## 📢 News
-
-Below tracks the notable updates of EvalPlus:
-
-- **[2024-10-20 `v0.3.1`]**: EvalPlus `v0.3.1` is officially released! Highlights: *(i)* Code efficiency evaluation via EvalPerf, *(ii)* one command to run all: generation + post-processing + evaluation, *(iii)* support for more inference backends such as Google Gemini & Anthropic, etc.
-- **[2024-06-09 pre `v0.3.0`]**: Improved ground-truth solutions for MBPP+ tasks (IDs: 459, 102, 559). Thanks to [EvalArena](https://github.com/crux-eval/eval-arena).
-- **[2024-04-17 pre `v0.3.0`]**: MBPP+ is upgraded to `v0.2.0` by removing some broken tasks (399 -> 378 tasks). ~4pp pass@1 improvement could be expected.
-- **Earlier**:
-  - ([`v0.2.1`](https://github.com/evalplus/evalplus/releases/tag/v0.2.1)) You can use EvalPlus datasets via [bigcode-evaluation-harness](https://github.com/bigcode-project/bigcode-evaluation-harness)! HumanEval+ oracle fixes (32).
-  - ([`v0.2.0`](https://github.com/evalplus/evalplus/releases/tag/v0.2.0)) MBPP+ is released! HumanEval contract & input fixes (0/3/9/148/114/1/2/99/28/32/35/160).
-  - ([`v0.1.7`](https://github.com/evalplus/evalplus/releases/tag/v0.1.7)) [Leaderboard](https://evalplus.github.io/leaderboard.html) release; HumanEval+ contract and input fixes (32/166/126/6)
-  - ([`v0.1.6`](https://github.com/evalplus/evalplus/releases/tag/v0.1.6)) Configurable and by-default-conservative timeout settings; HumanEval+ contract & ground-truth fixes (129/148/75/53/0/3/9/140)
-  - ([`v0.1.5`](https://github.com/evalplus/evalplus/releases/tag/v0.1.5)) HumanEval+ mini is released for ultra-fast evaluation when you have too many samples!
-  - ([`v0.1.1`](https://github.com/evalplus/evalplus/releases/tag/v0.1.1)) Optimizing user experiences: evaluation speed, PyPI package, Docker, etc.
-  - ([`v0.1.0`](https://github.com/evalplus/evalplus/releases/tag/v0.1.0)) HumanEval+ is released!
 
 ## 🔥 Quick Start
 
