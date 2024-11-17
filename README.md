@@ -289,7 +289,7 @@ pip install -r requirements.txt
 
 To learn more about how to use EvalPlus, please refer to:
 
-- [Command Line Interface](./docs/cli.md)
+- [EvalPlus Commands](./docs/cli.md)
 - [EvalPerf](./docs/evalperf.md)
 - [Program Execution](./docs/execution.md)
 

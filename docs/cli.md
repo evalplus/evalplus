@@ -1,6 +1,10 @@
-# Command Line Interface
+# EvalPlus Commands
 
-## Default Code Generation
+* `evalplus.codegen`: Code generation + Code post-processing
+* `evalplus.evaluate`: Code generation + Code post-processing + Evaluation
+* `evalplus.sanitize`: Code post-processing
+
+## Code Generation
 
 `evalplus.codegen` support following backends:
 
@@ -8,19 +12,20 @@
 - `hf`: HuggingFace Transformers; same way to setup `--model`
 - `openai`: Configure `OPENAI_API_KEY`; one can configure `--base-url`
 - `anthropic`: Configure `ANTHROPIC_API_KEY`
-- `mistral`: Configure `MISTRAL_API_KEY`
+- `google`: Configure `GOOGLE_API_KEY`
+- `bedrock`: Configure `BEDROCK_ROLE_ARN`
 
 ```shell
-evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm|hf|openai|anthropic|google]
+evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm|hf|openai|...]
 ```
 
 To perform code generation using user-defined tasks and datasets:
 
 ```shell
 # Override HumanEval datasets
-HUMANEVAL_OVERRIDE_PATH="/path/to/HumanEvalPlus.jsonl.gz" evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset humaneval --backend [vllm|hf|openai|anthropic|google]
+HUMANEVAL_OVERRIDE_PATH="/path/to/HumanEvalPlus.jsonl.gz" evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset humaneval --backend [vllm|hf|openai|...]
 # Override MBPP datasets
-MBPP_OVERRIDE_PATH="/path/to/MbppPlus.jsonl.gz" evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset mbpp --backend [vllm|hf|openai|anthropic|google]
+MBPP_OVERRIDE_PATH="/path/to/MbppPlus.jsonl.gz" evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset mbpp --backend [vllm|hf|openai|...]
 ```
 
 ## Customized Code Generation
@@ -63,6 +68,11 @@ write_jsonl("samples.jsonl", samples)
 
 ## Code post-processing
 
+> [!Note]
+>
+> This step is by default performed in `evalplus.codegen`.
+> Yet, you might want to use it if you have generated the code using other tools.
+
 LLM-generated text may not be compilable code for including natural language lines or incomplete extra code.
 We provide a tool namely `evalplus.sanitize` to clean up the code:
 
@@ -92,12 +102,16 @@ evalplus.syncheck --samples /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval
 </div>
 </details>
 
-## Code evaluation
+
+
+## Code Evaluation
 
 You are strongly recommended to use a sandbox such as [docker](https://docs.docker.com/get-docker/):
 
 ```bash
-docker run -v $(pwd):/app ganler/evalplus:latest --dataset [humaneval|mbpp] --samples samples.jsonl
+docker run --rm --pull=always -v $(pwd)/evalplus_results:/app ganler/evalplus:latest \
+           evalplus.evaluate --dataset humaneval                                     \
+           --samples /app/humaneval/ise-uiuc--Magicoder-S-DS-6.7B_vllm_temp_0.0.jsonl
 ```
 
 ...Or if you want to try it locally regardless of the risks ⚠️:
