@@ -2,7 +2,14 @@ from typing import List
 
 import torch
 from transformers import AutoTokenizer
-from gptqmodel import GPTQModel
+
+try:
+    from gptqmodel import GPTQModel
+except ModuleNotFoundError as exception:
+    raise type(exception)(
+        "Tried to load gptqmodel, but gptqmodel is not installed ",
+        "please install gptqmodel via `pip install gptqmodel --no-build-isolation`",
+    )
 
 from evalplus.provider.base import DecoderBase
 from evalplus.provider.utility import (
