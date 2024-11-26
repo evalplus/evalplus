@@ -23,7 +23,7 @@ class GPTQModelDecoder(DecoderBase):
         self,
         name: str,
         dataset: str,
-        gptqmodel_backend: str,
+        gptqmodel_backend: str = 'AUTO',
         force_base_prompt: bool = False,
         **kwargs,
     ):
