@@ -57,7 +57,9 @@ class GPTQModelDecoder(DecoderBase):
         )
         input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
 
-        outputs = self.model.generate(input_ids=input_tokens, max_new_tokens=self.max_new_tokens)
+        outputs = self.model.generate(input_ids=input_tokens,
+                                      pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
+                                      max_new_tokens=self.max_new_tokens)
 
         gen_strs = self.tokenizer.batch_decode(
             outputs[:, input_tokens.size(-1):],
