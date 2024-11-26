@@ -102,3 +102,15 @@ def make_model(
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
         )
+    elif backend == "gptqmodel":
+        from evalplus.provider.gptqmodel import GPTQModelDecoder
+
+        return GPTQModelDecoder(
+            name=model,
+            dataset=dataset,
+            force_base_prompt=force_base_prompt,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
+            trust_remote_code=trust_remote_code,
+        )
+
