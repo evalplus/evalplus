@@ -31,7 +31,7 @@ class GPTQModelDecoder(DecoderBase):
 
         try:
             backend = get_backend(gptqmodel_backend)
-        except:
+        except Exception:
             raise ValueError("GPTQModel support backend: AUTO, TRITON, EXLLAMA_V2, MARLIN, BITBLAS, QBITS, VLLM, SGLANG")
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
