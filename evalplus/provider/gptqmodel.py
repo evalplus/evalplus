@@ -64,12 +64,6 @@ class GPTQModelDecoder(DecoderBase):
             skip_special_tokens=self.skip_special_tokens,
         )
 
-        print("********************************")
-        for g_str in gen_strs:
-            print(g_str)
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print("********************************")
-
         outputs = []
         # removes eos tokens.
         for output in gen_strs:
