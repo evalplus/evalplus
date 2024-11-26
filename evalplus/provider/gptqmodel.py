@@ -4,7 +4,7 @@ import torch
 from transformers import AutoTokenizer
 
 try:
-    from gptqmodel import GPTQModel
+    from gptqmodel import GPTQModel, BACKEND
 except ModuleNotFoundError as exception:
     raise type(exception)(
         "Tried to load gptqmodel, but gptqmodel is not installed ",
@@ -34,17 +34,12 @@ class GPTQModelDecoder(DecoderBase):
             "trust_remote_code": self.trust_remote_code,
         }
         self.skip_special_tokens = True
-
-        print(f"{kwargs = }")
-
         self.force_base_prompt = force_base_prompt
         self.tokenizer = AutoTokenizer.from_pretrained(name, trust_remote_code=self.trust_remote_code)
         if self.is_direct_completion():  # no chat template
             self.eos += extra_eos_for_direct_completion(dataset)
         else:  # with chat template
             self.eos += ["\n```\n"]
-
-        print(f"{self.eos = }")
         self.model = GPTQModel.load(**kwargs)
         self.model = self.model.to(self.device)
 
