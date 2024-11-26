@@ -14,6 +14,7 @@
 - `anthropic`: Configure `ANTHROPIC_API_KEY`
 - `google`: Configure `GOOGLE_API_KEY`
 - `bedrock`: Configure `BEDROCK_ROLE_ARN`
+- `gptqmodel`: Load model using GPTQModel, same way to setup `--model`
 
 ```shell
 evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm|hf|openai|...]
