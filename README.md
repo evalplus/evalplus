@@ -223,8 +223,8 @@ evalplus.evaluate --model "ise-uiuc/Magicoder-S-DS-6.7B" \
 
 # GPTQModel
 evalplus.evaluate --model "ModelCloud/Llama-3.2-1B-Instruct-gptqmodel-4bit-vortex-v1" \
-                  --dataset [humaneval|mbpp]             \
-                  --backend gptqmodel                         \
+                  --dataset [humaneval|mbpp]                                          \
+                  --backend gptqmodel --greedy
 ```
 
 ### OpenAI models
