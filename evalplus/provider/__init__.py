@@ -23,6 +23,8 @@ def make_model(
     # hf only
     attn_implementation="eager",
     device_map=None,
+    # gptqmodel only
+    gptqmodel_backend: str = 'AUTO',
 ) -> DecoderBase:
     if backend == "vllm":
         from evalplus.provider.vllm import VllmDecoder
@@ -102,3 +104,16 @@ def make_model(
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
         )
+    elif backend == "gptqmodel":
+        from evalplus.provider.gptqmodel import GPTQModelDecoder
+
+        return GPTQModelDecoder(
+            name=model,
+            dataset=dataset,
+            force_base_prompt=force_base_prompt,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
+            trust_remote_code=trust_remote_code,
+            gptqmodel_backend=gptqmodel_backend,
+        )
+
