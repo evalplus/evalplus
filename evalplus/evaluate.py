@@ -136,7 +136,7 @@ def evaluate(
     mini: bool = False,
     noextreme: bool = False,
     version: str = "default",
-    output_path: Optional[str] = None,
+    output_file: Optional[str] = None,
     **model_kwargs,
 ):
     if model_kwargs:
@@ -147,11 +147,9 @@ def evaluate(
 
         kwargs = {
             "dataset": dataset,
+            "output_file": output_file,
             **model_kwargs,
         }
-
-        if output_path is not None:
-            kwargs["root"] = output_path
 
         samples = run_codegen(**kwargs)
     assert samples is not None, "No samples provided"
