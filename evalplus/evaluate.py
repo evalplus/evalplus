@@ -147,7 +147,6 @@ def evaluate(
 
         kwargs = {
             "dataset": dataset,
-            "output_file": output_file,
             **model_kwargs,
         }
 
