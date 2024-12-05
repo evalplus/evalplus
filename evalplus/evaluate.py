@@ -136,6 +136,7 @@ def evaluate(
     mini: bool = False,
     noextreme: bool = False,
     version: str = "default",
+    output_path: Optional[str] = None,
     **model_kwargs,
 ):
     if model_kwargs:
@@ -143,10 +144,16 @@ def evaluate(
         os.environ["TOKENIZERS_PARALLELISM"] = os.environ.get(
             "TOKENIZERS_PARALLELISM", "false"
         )
-        samples = run_codegen(
-            dataset=dataset,
+
+        kwargs = {
+            "dataset": dataset,
             **model_kwargs,
-        )
+        }
+
+        if output_path is not None:
+            kwargs["root"] = output_path
+
+        samples = run_codegen(**kwargs)
     assert samples is not None, "No samples provided"
 
     n_workers = parallel or max(1, multiprocessing.cpu_count() // 2)
