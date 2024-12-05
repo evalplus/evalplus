@@ -136,6 +136,7 @@ def evaluate(
     mini: bool = False,
     noextreme: bool = False,
     version: str = "default",
+    output_file: Optional[str] = None,
     **model_kwargs,
 ):
     if model_kwargs:
@@ -156,6 +157,9 @@ def evaluate(
     else:
         assert samples.endswith(".jsonl")
         result_path = samples.replace(".jsonl", "_eval_results.json")
+
+    if output_file is not None:
+        result_path = output_file
 
     if os.path.isfile(result_path) and not i_just_wanna_run:
         print(f"Load from previous results from {result_path}")
