@@ -144,13 +144,10 @@ def evaluate(
         os.environ["TOKENIZERS_PARALLELISM"] = os.environ.get(
             "TOKENIZERS_PARALLELISM", "false"
         )
-
-        kwargs = {
-            "dataset": dataset,
+        samples = run_codegen(
+            dataset=dataset,
             **model_kwargs,
-        }
-
-        samples = run_codegen(**kwargs)
+        )
     assert samples is not None, "No samples provided"
 
     n_workers = parallel or max(1, multiprocessing.cpu_count() // 2)
@@ -160,6 +157,9 @@ def evaluate(
     else:
         assert samples.endswith(".jsonl")
         result_path = samples.replace(".jsonl", "_eval_results.json")
+
+    if output_file is not None:
+        result_path = output_file
 
     if os.path.isfile(result_path) and not i_just_wanna_run:
         print(f"Load from previous results from {result_path}")
