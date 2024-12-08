@@ -22,7 +22,8 @@
 
 Who's using EvalPlus datasets? EvalPlus has been used by various LLM teams, including:
 
-* [Meta Llama 3.1](https://ai.meta.com/blog/meta-llama-3-1/)
+* [Meta Llama 3.1 and 3.3](https://ai.meta.com/blog/meta-llama-3-1/)
+* [Allen AI TÜLU 1/2/3](https://github.com/allenai/open-instruct/blob/main/docs/tulu1_tulu2.md#benchmark-based-eval)
 * [Qwen2.5-Coder](https://qwenlm.github.io/blog/qwen2.5-coder-family/)
 * [CodeQwen 1.5](https://qwenlm.github.io/blog/codeqwen1.5/)
 * [DeepSeek-Coder V2](https://arxiv.org/pdf/2406.11931)
