@@ -29,7 +29,17 @@ class GPTQModelDecoder(DecoderBase):
     ):
         super().__init__(name=name, **kwargs)
 
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = None
+        if hasattr(torch, "mps") and torch.mps.is_available():
+            device = device("mps")
+        elif hasattr(torch, "xpu") and torch.xpu.is_available():
+            device = device("xpu")
+        elif hasattr(torch, "cuda") and torch.cuda.is_available():
+            device = device("cuda")
+        else:
+            device = device("cpu")
+
+        self.device = device
 
         kwargs = {
             "model_id_or_path": name,
