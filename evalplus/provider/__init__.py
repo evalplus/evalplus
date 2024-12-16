@@ -24,7 +24,7 @@ def make_model(
     attn_implementation="eager",
     device_map=None,
     # gptqmodel only
-    gptqmodel_backend: str = 'AUTO',
+    gptqmodel_backend: str = 'auto',
 ) -> DecoderBase:
     if backend == "vllm":
         from evalplus.provider.vllm import VllmDecoder

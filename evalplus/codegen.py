@@ -136,7 +136,7 @@ def run_codegen(
     enable_prefix_caching: bool = False,
     enable_chunked_prefill: bool = False,
     dtype: str = "bfloat16",
-    gptqmodel_backend: str = "AUTO",  # For GPTQModel
+    gptqmodel_backend: str = "auto",  # For GPTQModel
 ):
     assert dataset in ["humaneval", "mbpp", "evalperf"], f"Invalid dataset {dataset}"
     assert evalperf_type is None or evalperf_type in [
