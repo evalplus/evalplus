@@ -31,8 +31,6 @@ class GPTQModelDecoder(DecoderBase):
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        print(f"cl->DEBUG {gptqmodel_backend}")
-
         kwargs = {
             "model_id_or_path": name,
             "trust_remote_code": self.trust_remote_code,
