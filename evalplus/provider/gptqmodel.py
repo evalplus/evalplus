@@ -31,13 +31,13 @@ class GPTQModelDecoder(DecoderBase):
 
         device = None
         if hasattr(torch, "mps") and torch.mps.is_available():
-            device = device("mps")
+            device = torch.device("mps")
         elif hasattr(torch, "xpu") and torch.xpu.is_available():
-            device = device("xpu")
+            device = torch.device("xpu")
         elif hasattr(torch, "cuda") and torch.cuda.is_available():
-            device = device("cuda")
+            device = torch.device("cuda")
         else:
-            device = device("cpu")
+            device = torch.device("cpu")
 
         self.device = device
 
