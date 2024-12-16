@@ -29,7 +29,6 @@ class GPTQModelDecoder(DecoderBase):
     ):
         super().__init__(name=name, **kwargs)
 
-        device = None
         if hasattr(torch, "mps") and torch.mps.is_available():
             device = torch.device("mps")
         elif hasattr(torch, "xpu") and torch.xpu.is_available():
