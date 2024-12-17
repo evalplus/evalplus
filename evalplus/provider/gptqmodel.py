@@ -4,7 +4,7 @@ import torch
 from transformers import AutoTokenizer
 
 try:
-    from gptqmodel import GPTQModel, get_backend
+    from gptqmodel import GPTQModel
 except ModuleNotFoundError as exception:
     raise type(exception)(
         "Tried to load gptqmodel, but gptqmodel is not installed ",
@@ -23,23 +23,27 @@ class GPTQModelDecoder(DecoderBase):
         self,
         name: str,
         dataset: str,
-        gptqmodel_backend: str = 'AUTO',
+        gptqmodel_backend: str = 'auto',
         force_base_prompt: bool = False,
         **kwargs,
     ):
         super().__init__(name=name, **kwargs)
 
-        try:
-            backend = get_backend(gptqmodel_backend)
-        except Exception:
-            raise ValueError("GPTQModel support backend: AUTO, TRITON, EXLLAMA_V2, MARLIN, BITBLAS, QBITS, VLLM, SGLANG")
+        if hasattr(torch, "mps") and torch.mps.is_available():
+            device = torch.device("mps")
+        elif hasattr(torch, "xpu") and torch.xpu.is_available():
+            device = torch.device("xpu")
+        elif hasattr(torch, "cuda") and torch.cuda.is_available():
+            device = torch.device("cuda")
+        else:
+            device = torch.device("cpu")
 
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device
 
         kwargs = {
             "model_id_or_path": name,
             "trust_remote_code": self.trust_remote_code,
-            "backend": backend
+            "backend": gptqmodel_backend
         }
         self.skip_special_tokens = True
         self.force_base_prompt = force_base_prompt
