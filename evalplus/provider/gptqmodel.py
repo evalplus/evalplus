@@ -29,11 +29,11 @@ class GPTQModelDecoder(DecoderBase):
     ):
         super().__init__(name=name, **kwargs)
 
-        if hasattr(torch, "mps") and torch.mps.is_available():
+        if hasattr(torch, "mps") and hasattr(torch.mps, "is_available") and torch.mps.is_available():
             device = torch.device("mps")
-        elif hasattr(torch, "xpu") and torch.xpu.is_available():
+        elif hasattr(torch, "xpu") and hasattr(torch.xpu, "is_available") and torch.xpu.is_available():
             device = torch.device("xpu")
-        elif hasattr(torch, "cuda") and torch.cuda.is_available():
+        elif hasattr(torch, "cuda") and hasattr(torch.cuda, "is_available") and torch.cuda.is_available():
             device = torch.device("cuda")
         else:
             device = torch.device("cpu")
