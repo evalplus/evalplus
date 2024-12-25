@@ -137,6 +137,7 @@ def run_codegen(
     enable_chunked_prefill: bool = False,
     dtype: str = "bfloat16",
     gptqmodel_backend: str = "auto",  # For GPTQModel
+    gguf_file: Optional[str] = None
 ):
     assert dataset in ["humaneval", "mbpp", "evalperf"], f"Invalid dataset {dataset}"
     assert evalperf_type is None or evalperf_type in [
@@ -239,6 +240,7 @@ def run_codegen(
         enable_chunked_prefill=enable_chunked_prefill,
         dtype=dtype,
         gptqmodel_backend=gptqmodel_backend,
+        gguf_file=gguf_file,
     )
 
     codegen(

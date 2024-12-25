@@ -25,6 +25,7 @@ def make_model(
     device_map=None,
     # gptqmodel only
     gptqmodel_backend: str = 'auto',
+    gguf_file: str = None,
 ) -> DecoderBase:
     if backend == "vllm":
         from evalplus.provider.vllm import VllmDecoder
@@ -58,6 +59,7 @@ def make_model(
             device_map=device_map,
             trust_remote_code=trust_remote_code,
             dtype=dtype,
+            gguf_file=gguf_file,
         )
     elif backend == "openai":
         from evalplus.provider.openai import OpenAIChatDecoder

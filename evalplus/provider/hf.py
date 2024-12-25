@@ -18,6 +18,7 @@ class HuggingFaceDecoder(DecoderBase):
         force_base_prompt: bool = False,
         attn_implementation: str = "eager",
         device_map: str = None,
+        gguf_file: str = None,
         **kwargs,
     ):
         super().__init__(name=name, **kwargs)
@@ -29,12 +30,16 @@ class HuggingFaceDecoder(DecoderBase):
             "torch_dtype": getattr(torch, self.dtype),
             "attn_implementation": attn_implementation,  # "eager", "flash_attention_2", "sdpa"
         }
+
+        if gguf_file is not None:
+            kwargs["gguf_file"] = gguf_file
+
         self.skip_special_tokens = True
 
         print(f"{kwargs = }")
 
         self.force_base_prompt = force_base_prompt
-        self.tokenizer = AutoTokenizer.from_pretrained(name, use_fast=False)
+        self.tokenizer = AutoTokenizer.from_pretrained(name, gguf_file=gguf_file)
         if self.is_direct_completion():  # no chat template
             self.eos += extra_eos_for_direct_completion(dataset)
         else:  # with chat template
