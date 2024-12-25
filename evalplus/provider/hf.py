@@ -32,9 +32,6 @@ class HuggingFaceDecoder(DecoderBase):
             "gguf_file": gguf_file
         }
 
-        if gguf_file is not None:
-            kwargs["gguf_file"] = gguf_file
-
         self.skip_special_tokens = True
 
         print(f"{kwargs = }")
