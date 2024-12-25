@@ -43,7 +43,8 @@ class GPTQModelDecoder(DecoderBase):
         kwargs = {
             "model_id_or_path": name,
             "trust_remote_code": self.trust_remote_code,
-            "backend": gptqmodel_backend
+            "backend": gptqmodel_backend,
+            "device": device
         }
         self.skip_special_tokens = True
         self.force_base_prompt = force_base_prompt
