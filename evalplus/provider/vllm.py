@@ -19,6 +19,7 @@ class VllmDecoder(DecoderBase):
         tensor_parallel_size: int = 1,
         enable_prefix_caching=False,
         enable_chunked_prefill=False,
+        gguf_file: str = None,
         **kwargs
     ) -> None:
         super().__init__(name, **kwargs)
@@ -32,7 +33,13 @@ class VllmDecoder(DecoderBase):
         }
 
         self.force_base_prompt = force_base_prompt
-        self.tokenizer = AutoTokenizer.from_pretrained(self.name, use_fast=False)
+        # gguf format embeds tokenizer and is not compatible with hf tokenizer `use_fast` param
+        tokenizer_kwargs = {}
+        if gguf_file is None:
+            tokenizer_kwargs["use_fast"] = False
+        else:
+            tokenizer_kwargs["gguf_file"] = gguf_file
+        self.tokenizer = AutoTokenizer.from_pretrained(self.name, **tokenizer_kwargs)
         if self.is_direct_completion():
             self.eos += extra_eos_for_direct_completion(dataset)
         else:

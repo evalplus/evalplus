@@ -43,6 +43,7 @@ def make_model(
             enable_prefix_caching=enable_prefix_caching,
             enable_chunked_prefill=enable_chunked_prefill,
             dtype=dtype,
+            gguf_file=gguf_file
         )
     elif backend == "hf":
         from evalplus.provider.hf import HuggingFaceDecoder
