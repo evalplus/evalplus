@@ -137,6 +137,7 @@ def evaluate(
     noextreme: bool = False,
     version: str = "default",
     output_file: Optional[str] = None,
+    gguf_file: Optional[str] = None,
     **model_kwargs,
 ):
     if model_kwargs:
@@ -146,6 +147,7 @@ def evaluate(
         )
         samples = run_codegen(
             dataset=dataset,
+            gguf_file=gguf_file,
             **model_kwargs,
         )
     assert samples is not None, "No samples provided"
