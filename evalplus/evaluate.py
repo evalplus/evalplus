@@ -14,6 +14,7 @@ import numpy as np
 from termcolor import cprint
 from tqdm import tqdm
 
+
 from evalplus.codegen import run_codegen
 from evalplus.config import *
 from evalplus.data import (
@@ -138,6 +139,7 @@ def evaluate(
     version: str = "default",
     output_file: Optional[str] = None,
     gguf_file: Optional[str] = None,
+    num_ctx: Optional[int] = None,
     **model_kwargs,
 ):
     if model_kwargs:
@@ -145,9 +147,11 @@ def evaluate(
         os.environ["TOKENIZERS_PARALLELISM"] = os.environ.get(
             "TOKENIZERS_PARALLELISM", "false"
         )
+
         samples = run_codegen(
             dataset=dataset,
             gguf_file=gguf_file,
+            num_ctx=num_ctx,
             **model_kwargs,
         )
     assert samples is not None, "No samples provided"

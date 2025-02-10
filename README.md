@@ -275,6 +275,17 @@ evalplus.evaluate --model "anthropic.claude-3-5-sonnet-20241022-v2:0" \
                   --backend bedrock                                   \
                   --greedy
 ```
+### Ollama backend
+
+- [Ollama](https://ollama.com/)
+
+```bash
+evalplus.evaluate --model "mistral:7b" \
+                  --dataset [humaneval|mbpp]          \
+                  --backend ollama                    \
+                  --base-url http://localhost:11434/v1 \
+                  --greedy
+```
 
 You can checkout the generation and results at `evalplus_results/[humaneval|mbpp]/`
 

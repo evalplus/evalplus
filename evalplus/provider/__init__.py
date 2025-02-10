@@ -1,5 +1,5 @@
 from evalplus.provider.base import DecoderBase
-
+from typing import Optional
 
 def make_model(
     model: str,
@@ -18,8 +18,10 @@ def make_model(
     tp=1,
     enable_prefix_caching=False,
     enable_chunked_prefill=False,
-    # openai only
+    # openai and ollama only
     base_url=None,
+    # ollama only
+    num_ctx: Optional[int] = None,
     # hf only
     attn_implementation="eager",
     device_map=None,
@@ -70,6 +72,19 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            base_url=base_url,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
+        )
+    elif backend == "ollama":
+        from evalplus.provider.ollama import OllamaChatDecoder
+
+        assert not force_base_prompt, f"{backend} backend does not serve base model"
+        return OllamaChatDecoder(
+            name=model,
+            batch_size=batch_size,
+            temperature=temperature,
+            num_ctx=num_ctx,
             base_url=base_url,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,

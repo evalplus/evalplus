@@ -16,6 +16,7 @@ def codegen(
     n_samples=1,
     id_range=None,
     resume=True,
+    num_ctx=None,
 ):
     task2nexist = {}
     if resume and target_path.endswith(".jsonl") and os.path.isfile(target_path):
@@ -120,6 +121,7 @@ def run_codegen(
     bs: Optional[int] = None,
     n_samples: int = 1,
     temperature: float = 0.0,
+    num_ctx: Optional[int] = None,
     resume: bool = True,
     greedy: bool = False,
     id_range: List = None,
@@ -203,6 +205,9 @@ def run_codegen(
         bs = min(n_samples, 32)
         print(f"Setting batch size to {bs}")
 
+    if backend != "ollama" and num_ctx is not None:
+        print("Warning --num_ctx can be set on ollama backend only. num_ctx will be ignored.")
+
     # Make project dir
     os.makedirs(root, exist_ok=True)
     # Make dataset dir
@@ -227,6 +232,7 @@ def run_codegen(
         backend=backend,
         batch_size=bs,
         temperature=temperature,
+        num_ctx=num_ctx,
         force_base_prompt=force_base_prompt,
         dataset=dataset,
         base_url=base_url,
