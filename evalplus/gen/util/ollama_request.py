@@ -8,7 +8,7 @@ def make_request(model: str, prompt: str, max_tokens: int = -1, temperature: flo
     if num_ctx is not None: 
         options["num_ctx"] = num_ctx  # Add Context length, if provided. should be a multiple of 8 and never larger than the trained context length (see ollama show modelname)
 
-    #print(f"num_ctx in ollama is {num_ctx}, num_predict is {max_tokens}")
+    #print(f"num_ctx in ollama is {num_ctx}, num_predict is {max_tokens}, temperature is {temperature}")
     try:
         response = ollama.chat(
             model=model,

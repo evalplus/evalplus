@@ -9,6 +9,7 @@ class OllamaChatDecoder(DecoderBase):
         super().__init__(name, **kwargs)
         self.base_url = base_url
         self.num_ctx = num_ctx
+        self.max_new_tokens = -1  # In Ollama -1 means unlimited. -2 the context-length is the limit. It also accepts any int values as a limit similar to tokens
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200, num_ctx: Optional[int] = None
