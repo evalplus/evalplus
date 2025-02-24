@@ -9,6 +9,9 @@ from evalplus.provider.utility import (
     make_raw_chat_prompt,
 )
 
+from optimum.habana.transformers.modeling_utils import adapt_transformers_to_gaudi
+
+adapt_transformers_to_gaudi()
 
 class HuggingFaceDecoder(DecoderBase):
     def __init__(
@@ -22,7 +25,9 @@ class HuggingFaceDecoder(DecoderBase):
         **kwargs,
     ):
         super().__init__(name=name, **kwargs)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        #self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.dtype = "bfloat16"
+        self.device = torch.device("hpu")
 
         kwargs = {
             "device_map": device_map,
