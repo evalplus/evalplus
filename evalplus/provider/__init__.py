@@ -74,7 +74,6 @@ def make_model(
             force_base_prompt=force_base_prompt,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
-            attn_implementation=attn_implementation,
             device_map=device_map,
             trust_remote_code=trust_remote_code,
             dtype=dtype,

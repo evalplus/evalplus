@@ -44,7 +44,6 @@ class HuggingFaceDecoder(DecoderBase):
         name: str,
         dataset: str,
         force_base_prompt: bool = False,
-        attn_implementation: str = "eager",
         device_map: str = None,
         gguf_file: str = None,
         **kwargs,
@@ -55,7 +54,6 @@ class HuggingFaceDecoder(DecoderBase):
         #self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.device = torch.device("hpu")
         self.dtype =  "bfloat16"
-        attn_implementation = "flash_attention_2"
         
         if kwargs.get("torch_compile", False):
             self.torch_compile = True
@@ -70,7 +68,6 @@ class HuggingFaceDecoder(DecoderBase):
             "device_map": device_map,
             "trust_remote_code": self.trust_remote_code,
             "torch_dtype": getattr(torch, self.dtype),
-            #"attn_implementation": attn_implementation,  # "eager", "flash_attention_2", "sdpa"
             "gguf_file": gguf_file
         }
 
