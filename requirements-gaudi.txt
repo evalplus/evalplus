@@ -1,2 +1,1 @@
-#git+https://github.com/HabanaAI/vllm-fork.git@habana_main
 git+https://github.com/huggingface/optimum-habana.git
