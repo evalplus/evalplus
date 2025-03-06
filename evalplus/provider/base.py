@@ -15,6 +15,7 @@ class DecoderBase(ABC):
         trust_remote_code: bool = False,
         instruction_prefix: str = None,
         response_prefix: str = None,
+        **kwargs,
     ) -> None:
         print("Initializing a decoder model: {} ...".format(name))
         self.name = name

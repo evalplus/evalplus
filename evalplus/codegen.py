@@ -7,7 +7,6 @@ from evalplus.provider import DecoderBase, make_model
 from evalplus.sanitize import sanitize
 from evalplus.utils import progress
 
-
 def codegen(
     target_path: str,
     model: DecoderBase,
@@ -65,6 +64,7 @@ def codegen(
             p.console.print(log)
 
             sidx = n_samples - n_more_samples
+
             while sidx < n_samples:
                 prompt = task["prompt"].strip() + "\n"
                 outputs = model.codegen(
@@ -72,6 +72,7 @@ def codegen(
                     do_sample=not greedy,
                     num_samples=n_samples - sidx,
                 )
+
                 assert outputs, "No outputs from model!"
                 for impl in outputs:
                     solution = prompt + impl if model.is_direct_completion() else impl
@@ -137,7 +138,8 @@ def run_codegen(
     enable_chunked_prefill: bool = False,
     dtype: str = "bfloat16",
     gptqmodel_backend: str = "auto",  # For GPTQModel
-    gguf_file: Optional[str] = None
+    gguf_file: Optional[str] = None,
+    **kwargs,
 ):
     assert dataset in ["humaneval", "mbpp", "evalperf"], f"Invalid dataset {dataset}"
     assert evalperf_type is None or evalperf_type in [
@@ -241,6 +243,7 @@ def run_codegen(
         dtype=dtype,
         gptqmodel_backend=gptqmodel_backend,
         gguf_file=gguf_file,
+        **kwargs,
     )
 
     codegen(
