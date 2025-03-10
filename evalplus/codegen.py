@@ -64,7 +64,6 @@ def codegen(
             p.console.print(log)
 
             sidx = n_samples - n_more_samples
-
             while sidx < n_samples:
                 prompt = task["prompt"].strip() + "\n"
                 outputs = model.codegen(
@@ -72,7 +71,6 @@ def codegen(
                     do_sample=not greedy,
                     num_samples=n_samples - sidx,
                 )
-
                 assert outputs, "No outputs from model!"
                 for impl in outputs:
                     solution = prompt + impl if model.is_direct_completion() else impl
