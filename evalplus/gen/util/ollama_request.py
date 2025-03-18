@@ -8,28 +8,40 @@ def make_request(
     temperature: float = 1,
     num_ctx: int = None,
     n: int = 1,
+    stream: bool = True,  # Default to streaming
     **kwargs
-) -> ollama.ChatResponse :
+) -> ollama.ChatResponse:
     options = {
-    "temperature": temperature,
-    "num_predict": max_tokens   # based on llama.cpp: -1 is infinite , -2 until context is filled
+        "temperature": temperature,
+        "num_predict": max_tokens   # based on llama.cpp: -1 is infinite , -2 until context is filled
     }
-    if num_ctx is not None: 
+    if num_ctx is not None:
         options["num_ctx"] = num_ctx  # Add Context length, if provided. should be a multiple of 8 and never larger than the trained context length (see ollama show modelname)
 
     #print(f"num_ctx in ollama is {num_ctx}, num_predict is {max_tokens}, temperature is {temperature}")
     return ollama.chat(
-           model=model,
-           messages=[{"role": "user", "content": prompt}],
-           options=options
-           )
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        options=options,
+        stream=stream
+    )
 
 def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
     ret = None
     model = kwargs.get("model")
     while ret is None:
         try:
-            ret = make_request(*args, **kwargs)
+            response = make_request(*args, **kwargs)
+            if kwargs.get("stream", True):
+                # Handle streaming response
+                full_response = {"message": {"content": ""}}
+                for chunk in response:
+                    if "message" in chunk:
+                        full_response["message"]["content"] += chunk["message"]["content"]
+                ret = full_response
+            else:
+                ret = response
+
         except ollama.ResponseError as e:
             if e.status_code == 404:
                 print(f"Error: Model '{model}' not found. Please check if the model is available.")

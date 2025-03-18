@@ -27,14 +27,15 @@ class OllamaChatDecoder(DecoderBase):
         # Create a prompt that includes the instruction prefix and wraps the code in a Python code block
         full_prompt = self.instruction_prefix + f"\n```python\n{prompt.strip()}\n```\n"
         
-        # Use make_auto_request for better error handling
+        # Use make_auto_request with streaming enabled
         response = ollama_request.make_auto_request(
             model=self.name,
             prompt=full_prompt,
             max_tokens=self.max_new_tokens,
             temperature=self.temperature,
             num_ctx=self.num_ctx,
-            n=batch_size
+            n=batch_size,
+            stream=True  # Enable streaming
         )
         
         outputs = []
