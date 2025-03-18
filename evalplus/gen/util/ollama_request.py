@@ -9,7 +9,7 @@ def make_request(
     num_ctx: int = None,
     n: int = 1,
     **kwargs
-):
+) -> ollama.ChatResponse :
     options = {
     "temperature": temperature,
     "num_predict": max_tokens   # based on llama.cpp: -1 is infinite , -2 until context is filled
@@ -24,7 +24,7 @@ def make_request(
            options=options
            )
 
-def make_auto_request(*args, **kwargs):
+def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
     ret = None
     model = kwargs.get("model")
     while ret is None:
@@ -48,7 +48,6 @@ def make_auto_request(*args, **kwargs):
 
         except ValueError as ve:
             print(f"Error: Invalid input - {ve}")
-            ret=""
 
         except Exception as e:
             print(f"Unexpected error: {e}")
