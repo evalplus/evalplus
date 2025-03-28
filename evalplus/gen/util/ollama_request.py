@@ -1,63 +1,54 @@
 import time
 import ollama
 
-
-def print_histogram(row_stats: dict, header: str = "# Statistics histogram (ignoring counts of 2 or below):") -> None:
+def print_histogram(row_stats: dict) -> None:
+    # Build histogram for lines repeated more than twice
     histogram = {
-        "over_100": 0,
-        "90_99": 0,
-        "80_89": 0,
-        "70_79": 0,
-        "60_69": 0,
-        "50_59": 0,
-        "40_49": 0,
-        "30_39": 0,
-        "20_29": 0,
-        "10_19": 0,
-        "5_9": 0,
-        "under_5": 0,
+        "under_2": 0,
+        "2_4": 0,
+        "5_9": 0
     }
+    # Add additional buckets from 10 to 199 in 10-number intervals
+    for lower in range(10, 200, 10):
+        bucket_label = f"{lower}_{lower+9}"
+        histogram[bucket_label] = 0
+    histogram["over_200"] = 0
+
+    # Create a mapping of internal keys to display labels
+    display_labels = {
+        "under_2": "under 2",
+        "2_4": "2-4",
+        "5_9": "5-9",
+        "over_200": "over 200"
+    }
+    # Add display labels for the 10-number interval buckets
+    for lower in range(10, 200, 10):
+        bucket_key = f"{lower}_{lower+9}"
+        display_labels[bucket_key] = f"{lower}-{lower+9}"
+    
     for row_hash, data in row_stats.items():
         count = data[0]
-        if count > 2:  # Only consider rows with more than 2 counts
-            if count > 100:
-                histogram["over_100"] += 1
-            elif 90 <= count <= 99:
-                histogram["90_99"] += 1
-            elif 80 <= count <= 89:
-                histogram["80_89"] += 1
-            elif 70 <= count <= 79:
-                histogram["70_79"] += 1
-            elif 60 <= count <= 69:
-                histogram["60_69"] += 1
-            elif 50 <= count <= 59:
-                histogram["50_59"] += 1
-            elif 40 <= count <= 49:
-                histogram["40_49"] += 1
-            elif 30 <= count <= 39:
-                histogram["30_39"] += 1
-            elif 20 <= count <= 29:
-                histogram["20_29"] += 1
-            elif 10 <= count <= 19:
-                histogram["10_19"] += 1
-            elif 5 <= count <= 9:
-                histogram["5_9"] += 1
-            else:
-                histogram["under_5"] += 1
+        if count <= 1:
+            histogram["under_2"] += 1
+        elif count <= 4:
+            histogram["2_4"] += 1
+        elif count <= 9:
+            histogram["5_9"] += 1
+        elif count <= 200:
+            # Determine the appropriate 10-number bucket
+            lower = (count // 10) * 10
+            bucket_label = f"{lower}_{lower+9}"
+            histogram[bucket_label] += 1
+        else:
+            histogram["over_200"] += 1
 
-    print(header)
-    print(f"# Unique hashes with count over 100: {histogram['over_100']}")
-    print(f"# Unique hashes with count between 90-99: {histogram['90_99']}")
-    print(f"# Unique hashes with count between 80-89: {histogram['80_89']}")
-    print(f"# Unique hashes with count between 70-79: {histogram['70_79']}")
-    print(f"# Unique hashes with count between 60-69: {histogram['60_69']}")
-    print(f"# Unique hashes with count between 50-59: {histogram['50_59']}")
-    print(f"# Unique hashes with count between 40-49: {histogram['40_49']}")
-    print(f"# Unique hashes with count between 30-39: {histogram['30_39']}")
-    print(f"# Unique hashes with count between 20-29: {histogram['20_29']}")
-    print(f"# Unique hashes with count between 10-19: {histogram['10_19']}")
-    print(f"# Unique hashes with count between 5-9: {histogram['5_9']}")
-    print(f"# Unique hashes with count under 5: {histogram['under_5']}")
+    labels = {}
+    for bucket in histogram.keys():
+        # Use display label if it exists, otherwise use the bucket as is
+        labels[bucket] = display_labels.get(bucket, bucket)
+    
+    non_zero = [f"{labels[k]}: {v}" for k, v in histogram.items() if v > 0]
+    print("# Amount of repeated rows: " + ", ".join(non_zero))
 
 
 def make_request(
@@ -112,26 +103,29 @@ def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
                                 # Update the statistics dictionary
                                 if row_hash in row_stats:
                                     row_stats[row_hash][0] += 1
+                                    # Check if this row has been repeated 200 or more times
+                                    if row_stats[row_hash][0] >= 200:
+                                        print(f"Breaking due to row being repeated {row_stats[row_hash][0]} times")
+                                        ret = full_response
+                                        return ret  # Exit the entire function immediately
                                 else:
                                     row_stats[row_hash] = [1, row_length]
                             # Print out details for the completed row
-                            # print(f"Completed row: '{row}'")
-                     
-                            # Print only the hash when row_length > 1 and count > 2
-                            #if row_length > 1 and row_stats[row_hash][0] > 2:
-                            #    print(f"Seen this row {row_stats[row_hash][0]} times,  Row hash: {row_hash}")
+                            print(f"Completed row: '{row}'")
 
-                    # Every 120 seconds, display the statistics block
-                    if time.time() - last_stat_time >= 120:
-                        print_histogram(row_stats, header="# Periodic Statistics histogram (ignoring counts of 2 or below):")
+                
+                    # Every 60 seconds, display the statistics block
+                    if time.time() - last_stat_time >= 60:
+                        print("# 60 seconds Statistics histogram:", end="")
+                        print_histogram(row_stats)
                         last_stat_time = time.time()  # reset timer
 
                 # Optionally, handle any leftover incomplete row
-                #if current_row:
-                #    print(f"Incomplete row: '{current_row}'")
+                if current_row:
+                    print(f"Incomplete row: '{current_row}'")
 
-                # Final histogram block after processing all chunks
-                print_histogram(row_stats, header="# Final Statistics histogram (ignoring counts of 2 or below):")
+                print("### Final Statistics histogram:", end="")
+                print_histogram(row_stats)
 
                 ret = full_response
             else:
@@ -140,7 +134,11 @@ def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
         except ollama.ResponseError as e:
             if e.status_code == 404:
                 print(f"Error: Model '{model}' not found. Please check if the model is available.")
+                raise Exception(f"Fatal error: {e.status_code}")
                 time.sleep(5)
+            elif e.status_code == 500:
+                print(f"Error: Ollama is having a problem with Model '{model}' . Please check if the model is compatible with the current version of Ollama.")
+                raise Exception(f"Fatal error: {e.status_code}")
             else:
                 print(f"Ollama API Error: {e.error}, Code: {e.status_code}")
                 time.sleep(5)
