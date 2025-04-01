@@ -127,6 +127,7 @@ def run_codegen(
     backend: str = "vllm",
     force_base_prompt: bool = False,
     base_url: str = None,
+    verify_certificate: bool = True,
     tp: int = 1,
     evalperf_type: str = None,  # For EvalPerf
     jsonl_fmt: bool = True,
@@ -230,6 +231,7 @@ def run_codegen(
         force_base_prompt=force_base_prompt,
         dataset=dataset,
         base_url=base_url,
+        verify_certificate=verify_certificate,
         tp=tp,
         instruction_prefix=instruction_prefix,
         response_prefix=response_prefix,
