@@ -1,6 +1,7 @@
 import os
 from typing import List
 
+import httpx
 import openai
 
 from evalplus.gen.util import openai_request
@@ -9,9 +10,10 @@ from evalplus.provider.utility import concurrent_call
 
 
 class OpenAIChatDecoder(DecoderBase):
-    def __init__(self, name: str, base_url=None, **kwargs) -> None:
+    def __init__(self, name: str, base_url=None, verify_certificate=True, **kwargs) -> None:
         super().__init__(name, **kwargs)
         self.base_url = base_url
+        self.verify_certificate = verify_certificate
 
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
@@ -29,7 +31,11 @@ class OpenAIChatDecoder(DecoderBase):
 
     def _codegen_api_batch(self, prompt: str, batch_size: int) -> List[str]:
         client = openai.OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY", "none"), base_url=self.base_url
+            api_key=os.getenv("OPENAI_API_KEY", "none"),
+            base_url=self.base_url,
+            http_client= httpx.Client(
+                verify=self.verify_certificate
+            )
         )
 
         ret = openai_request.make_auto_request(
