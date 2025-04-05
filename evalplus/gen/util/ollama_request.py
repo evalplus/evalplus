@@ -1,5 +1,7 @@
 import time
 import ollama
+import math
+
 
 def print_histogram(row_stats: dict) -> None:
     # Build histogram for lines repeated more than twice
@@ -82,50 +84,84 @@ def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
         try:
             response = make_request(*args, **kwargs)
             if kwargs.get("stream", True):
-                # Handle streaming response
                 full_response = {"message": {"content": ""}}
-                # Initialize an empty dictionary for row statistics
                 row_stats = {}  # key: row_hash, value: [counter, row_length]
+                recent_rows = []  # list to track ALL recent rows (including duplicates)
                 current_row = ""
-                last_stat_time = time.time()    # start timer for statistics
+                request_start_time = time.time()    # Time when the request was sent
+                request_returns_characters = 0      # Number of characters returned from the so far
+                last_stat_time = time.time()
+                
                 for chunk in response:
                     if "message" in chunk:
-                        chunk_content = chunk["message"]["content"]
+                        chunk_content = chunk["message"]["content"]                        
+                        request_returns_characters += len(chunk_content) ## add a statitics on how many new characters were returned in the last 60 seconds
+
                         full_response["message"]["content"] += chunk_content
                         current_row += chunk_content
-                        # Process each complete row when a newline is found
+                        
                         while "\n" in current_row:
-                            # Extract one complete row
                             row, current_row = current_row.split("\n", 1)
                             row_length = len(row)
                             if row_length > 1:
                                 row_hash = hash(row)
-                                # Update the statistics dictionary
+                                
+                                # Track this row in recent_rows regardless of uniqueness
+                                recent_rows.append(row_hash)
+                                if len(recent_rows) > 100:
+                                    # Remove oldest row
+                                    oldest_hash = recent_rows.pop(0)
+                                    # Decrease counter for the removed hash
+                                    if oldest_hash in row_stats:
+                                        row_stats[oldest_hash][0] -= 1
+                                        # If counter reaches 0, remove from stats
+                                        if row_stats[oldest_hash][0] <= 0:
+                                            del row_stats[oldest_hash]
+                                
+                                # Update stats for current row
                                 if row_hash in row_stats:
                                     row_stats[row_hash][0] += 1
-                                    # Check if this row has been repeated 200 or more times
-                                    if row_stats[row_hash][0] >= 200:
-                                        print(f"Breaking due to row being repeated {row_stats[row_hash][0]} times")
-                                        ret = full_response
-                                        return ret  # Exit the entire function immediately
                                 else:
                                     row_stats[row_hash] = [1, row_length]
-                            # Print out details for the completed row
-                            print(f"Completed row: '{row}'")
+                                
+                                # Check for repetition threshold
+                                if (sum(row_stats[k][0] * math.log(row_stats[k][0]) for k in row_stats) / (len(recent_rows))) >= 1.6:
+                                    print(f"#### Breaking due to row being repeated {row_stats[row_hash][0]} times / high Entropy-Based Repetition Score.")
+                                    print(f"total unique rows {len(row_stats)}, recent row count: {len(recent_rows)}")
+                                    print("# Last known Statistics histogram:", end="")
+                                    print_histogram(row_stats)
+                                    entropy_based_repetition_density_score = sum(row_stats[k][0] * math.log(row_stats[k][0]) for k in row_stats) / (len(recent_rows))
+                                    print(f"#_# Entropy-Based Repetition Density Score: {entropy_based_repetition_density_score:.4f}")
 
+
+                                    ret = full_response
+                                    return ret
+                            
+                            print(f"Completed row: '{row}'")
                 
                     # Every 60 seconds, display the statistics block
                     if time.time() - last_stat_time >= 60:
-                        print("# 60 seconds Statistics histogram:", end="")
+                        print(f"#_# 60 seconds Statistics histogram: {request_returns_characters} characters, {request_returns_characters / (time.time() - last_stat_time):.2f} char/s, {request_returns_characters / (time.time() - last_stat_time) * 60:.2f} char/min.")
+                        request_returns_characters = 0 # reset measured message response chunk 
+
                         print_histogram(row_stats)
+                        #Build a Entropy-Based Repetition Density Score for row_stats
+                        entropy_based_repetition_density_score = sum(row_stats[k][0] * math.log(row_stats[k][0]) for k in row_stats) / (len(recent_rows))
+
+                        print(f"#_# Entropy-Based Repetition Density Score: {entropy_based_repetition_density_score:.4f}")
+                        
                         last_stat_time = time.time()  # reset timer
 
                 # Optionally, handle any leftover incomplete row
                 if current_row:
-                    print(f"Incomplete row: '{current_row}'")
+                    print(f"final row: '{current_row}'")
 
                 print("### Final Statistics histogram:", end="")
                 print_histogram(row_stats)
+                print(f"### total unique rows {len(row_stats)}, recent row count: {len(recent_rows)}")
+                #Build a Entropy-Based Repetition Density Score for row_stats
+                entropy_based_repetition_density_score = sum(row_stats[k][0] * math.log(row_stats[k][0]) for k in row_stats) / (len(recent_rows))
+                print(f"### Entropy-Based Repetition Density Score: {entropy_based_repetition_density_score:.4f}")
 
                 ret = full_response
             else:
