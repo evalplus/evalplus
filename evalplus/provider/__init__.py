@@ -27,6 +27,7 @@ def make_model(
     # gptqmodel only
     gptqmodel_backend: str = 'auto',
     gguf_file: str = None,
+    use_fast_tokenizer: bool = False
 ) -> DecoderBase:
     if backend == "vllm":
         from evalplus.provider.vllm import VllmDecoder
@@ -44,7 +45,8 @@ def make_model(
             enable_prefix_caching=enable_prefix_caching,
             enable_chunked_prefill=enable_chunked_prefill,
             dtype=dtype,
-            gguf_file=gguf_file
+            gguf_file=gguf_file,
+            use_fast_tokenizer= use_fast_tokenizer
         )
     elif backend == "hf":
         from evalplus.provider.hf import HuggingFaceDecoder

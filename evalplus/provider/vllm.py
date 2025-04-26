@@ -20,6 +20,7 @@ class VllmDecoder(DecoderBase):
         enable_prefix_caching=False,
         enable_chunked_prefill=False,
         gguf_file: str = None,
+        use_fast_tokenizer: bool = False,
         **kwargs
     ) -> None:
         super().__init__(name, **kwargs)
@@ -36,7 +37,7 @@ class VllmDecoder(DecoderBase):
         # gguf format embeds tokenizer and is not compatible with hf tokenizer `use_fast` param
         tokenizer_kwargs = {}
         if gguf_file is None:
-            tokenizer_kwargs["use_fast"] = False
+            tokenizer_kwargs["use_fast"] = use_fast_tokenizer
         else:
             tokenizer_kwargs["gguf_file"] = gguf_file
         self.tokenizer = AutoTokenizer.from_pretrained(self.name, **tokenizer_kwargs)
