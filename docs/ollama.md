@@ -52,4 +52,9 @@ WantedBy=default.target
 
 
 > [!Tip]
-> Please note that you are
+> Inside evalplus/gen/util/ollama_request.py, you could probably fine tune: 
+> connection (receive-) timeouts: 
+> If your system is extremly slow, it could help to add longer timeouts. However the default timing is tested and proofed working quite well on several systems. 
+> Repetion-Detection:
+> The detection for repeating texts based on a simple sliding window check of normalized repeating words in comparison with the overall amount of words. This method shown to be very effective of ollama models.  
+> There are two ways to fine-tune the repetition detection: The size ( min_buffer_size ) of the sliding window (content_buffer) and    
