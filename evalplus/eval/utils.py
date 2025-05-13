@@ -113,18 +113,27 @@ def reliability_guard(maximum_memory_bytes: Optional[int] = None):
     """
 
     if maximum_memory_bytes is not None:
-        import resource
+        underlying_platform = platform.uname().system
 
-        resource.setrlimit(
-            resource.RLIMIT_AS, (maximum_memory_bytes, maximum_memory_bytes)
-        )
-        resource.setrlimit(
-            resource.RLIMIT_DATA, (maximum_memory_bytes, maximum_memory_bytes)
-        )
-        if not platform.uname().system == "Darwin":
+        if underlying_platform != "Windows":
+            import resource
+
             resource.setrlimit(
-                resource.RLIMIT_STACK, (maximum_memory_bytes, maximum_memory_bytes)
+                resource.RLIMIT_AS, (maximum_memory_bytes, maximum_memory_bytes)
             )
+            resource.setrlimit(
+                resource.RLIMIT_DATA, (maximum_memory_bytes, maximum_memory_bytes)
+            )
+            if not underlying_platform == "Darwin":
+                resource.setrlimit(
+                    resource.RLIMIT_STACK, (maximum_memory_bytes, maximum_memory_bytes)
+                )
+        else:
+            """
+            WARNING
+            Memory limit enforcement (setrlimit) is not supported on Windows.
+            The code will run without restricting memory usage.
+            """
 
     faulthandler.disable()
 
