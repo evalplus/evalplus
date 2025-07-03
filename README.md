@@ -284,6 +284,14 @@ To run hf backend for Intel Gaudi [optimum-habana](https://github.com/huggingfac
 
 ```bash
 pip install git+https://github.com/huggingface/optimum-habana.git
+evalplus.evaluate --model "qwen/CodeQwen1.5-7B-Chat" \
+                  --dataset [humaneval|mbpp]                          \
+                  --backend hf_gaudi                                   \
+                  --greedy
+                  --torch_compile
+```
+OR in Lazy Mode:
+```bash
 PT_HPU_LAZY_MODE=1 evalplus.evaluate --model "qwen/CodeQwen1.5-7B-Chat" \
                   --dataset [humaneval|mbpp]                          \
                   --backend hf_gaudi                                   \
