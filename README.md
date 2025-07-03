@@ -286,7 +286,7 @@ To run hf backend for Intel Gaudi [optimum-habana](https://github.com/huggingfac
 pip install git+https://github.com/huggingface/optimum-habana.git
 evalplus.evaluate --model "qwen/CodeQwen1.5-7B-Chat" \
                   --dataset [humaneval|mbpp]                          \
-                  --backend gaudi_hf                                   \
+                  --backend hf_gaudi                                   \
                   --greedy
 ```
 
