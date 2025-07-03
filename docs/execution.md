@@ -6,7 +6,7 @@ LLM solutions are regarded as **failed** on timeout and OOM etc.
 
 We set the timeout $T=\max(T_{base}, T_{gt}\times k)$ where:
 
-- $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 1s);
+- $T_{base}$ is the minimal timeout (configurable by `--min-time-limit`; default to 4s);
 - $T_{gt}$ is the runtime of the ground-truth solutions (achieved via profiling);
 - $k$ is a configurable factor `--gt-time-limit-factor` (default to 4);
 

@@ -129,7 +129,7 @@ HUMANEVAL_OVERRIDE_PATH="/path/to/HumanEvalPlus.jsonl.gz" evalplus.evaluate --da
 
 > [!Tip]
 >
-> Program execution can be configured. See [Program Execution in EvalPlus and EvalPerf](./docs/execution.md).
+> Program execution can be configured. See [Program Execution in EvalPlus and EvalPerf](./execution.md).
 
 <details><summary>🤔 Evaluate with local GitHub repo? <i>:: click to expand ::</i></summary>
 <div>
