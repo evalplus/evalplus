@@ -20,6 +20,7 @@ def make_model(
     enable_chunked_prefill=False,
     # openai only
     base_url=None,
+    verify_certificate=True,
     # hf only
     attn_implementation="eager",
     device_map=None,
@@ -71,6 +72,7 @@ def make_model(
             batch_size=batch_size,
             temperature=temperature,
             base_url=base_url,
+            verify_certificate=verify_certificate,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
         )
