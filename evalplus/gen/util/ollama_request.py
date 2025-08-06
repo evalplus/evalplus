@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 def make_request(
@@ -26,8 +26,7 @@ def make_request(
     
     options = {
         "temperature": temperature,
-        "num_predict": max_tokens,   # based on llama.cpp: -1 is infinite , -2 until context is filled
-        "timeout": timeout
+        "num_predict": max_tokens   # based on llama.cpp: -1 is infinite , -2 until context is filled
     }
     if num_ctx is not None:
         options["num_ctx"] = num_ctx  # Add Context length, if provided. should be a multiple of 8 and never larger than the trained context length (see ollama show modelname)
@@ -96,11 +95,6 @@ def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
                             logger.debug(f"[{datetime.now()}] Received {len(chunk_buffer)} characters (total: {request_returns_characters})")
                             logger.debug(f"{chunk_buffer}")
                             
-                            # Log performance metrics every 30 seconds
-                            if current_time - last_stat_time > 30:
-                                logger.warning(f"[{datetime.now()}] Streaming progress: {request_returns_characters} characters in {elapsed_time:.2f} seconds")
-                                last_stat_time = current_time
-                            
                             # Check for repetitions using unique word ratio when buffer is large enough
                             ratio = unique_word_ratio(chunk_buffer)
                             firsthalfbuffer_ratio = unique_word_ratio(chunk_buffer[:len(chunk_buffer)//2])
@@ -120,7 +114,7 @@ def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
                                     return ret
                             else:
                                 repeating_loop_penalty_counter = 0 # Reset the penalty counter if the ratio is higher again. 
-                            logger.debug(f"\n[{datetime.now()}] Current Ratio: {ratio:.3f}, First Half Buffer Ratio: {firsthalfbuffer_ratio:.3f}, Second Half Buffer Ratio: {secondhalfbuffer_ratio:.3f}, Last Quarter Buffer Ratio: {lastquarterbuffer_ratio:.3f}")
+                            logger.debug(f"[{datetime.now()}] Current Ratio: {ratio:.3f}, First Half Buffer Ratio: {firsthalfbuffer_ratio:.3f}, Second Half Buffer Ratio: {secondhalfbuffer_ratio:.3f}, Last Quarter Buffer Ratio: {lastquarterbuffer_ratio:.3f}")
                             # Keep a reasonable buffer size by removing oldest content
                             chunk_buffer = ""  # Reset the buffer
 
@@ -132,9 +126,9 @@ def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
 
                 # Optionally, handle any leftover incomplete row
                 if len(chunk_buffer) > 0:
-                    logger.debug(f"[{datetime.now()}] final chunk_buffer: '{chunk_buffer}'")
-                logger.debug(f"[{datetime.now()}] elapsed time between make_request and finaly returning the response: {time.time() - request_start_time} seconds")
-                ret = full_response
+                    #logger.debug(f"[{datetime.now()}] final chunk_buffer: '{chunk_buffer}'")
+                    logger.debug(f"[{datetime.now()}] elapsed time between make_request and finaly returning the response: {time.time() - request_start_time} seconds")
+                    ret = full_response
             else:
                 # If stream is False, return the response immediately
                 ret = response
