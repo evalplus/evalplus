@@ -49,8 +49,9 @@ class HuggingFaceDecoder(DecoderBase):
             self.eos += ["\n```\n"]
 
         print(f"{self.eos = }")
-        self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
-        self.model = self.model.to(self.device)
+        self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs) 
+        if device_map is None:
+            self.model = self.model.to(self.device)
 
     def is_direct_completion(self) -> bool:
         return self.force_base_prompt or self.tokenizer.chat_template is None
@@ -70,9 +71,9 @@ class HuggingFaceDecoder(DecoderBase):
                 prompt, self.instruction_prefix, self.response_prefix, self.tokenizer
             )
         )
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
-            self.device
-        )
+        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt")
+        if device_map is None:
+            input_tokens.to(self.device)
         kwargs = {}
         if do_sample:
             kwargs["top_p"] = 0.95
