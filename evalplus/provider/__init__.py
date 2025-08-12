@@ -1,5 +1,7 @@
-from evalplus.provider.base import DecoderBase
 from typing import Optional
+
+from evalplus.provider.base import DecoderBase
+
 
 def make_model(
     model: str,

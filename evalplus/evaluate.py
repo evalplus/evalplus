@@ -14,7 +14,6 @@ import numpy as np
 from termcolor import cprint
 from tqdm import tqdm
 
-
 from evalplus.codegen import run_codegen
 from evalplus.config import *
 from evalplus.data import (

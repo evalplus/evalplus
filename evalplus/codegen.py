@@ -208,7 +208,9 @@ def run_codegen(
         print(f"Setting batch size to {bs}")
 
     if backend != "ollama" and num_ctx is not None:
-        print("Warning --num_ctx can be set on ollama backend only. num_ctx will be ignored.")
+        print(
+            "Warning --num_ctx can be set on ollama backend only. num_ctx will be ignored."
+        )
 
     # Make project dir
     os.makedirs(root, exist_ok=True)
