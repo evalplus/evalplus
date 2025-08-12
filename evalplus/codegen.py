@@ -1,3 +1,4 @@
+import gc
 import json
 import os
 from typing import Dict, List, Optional
@@ -138,7 +139,7 @@ def run_codegen(
     enable_chunked_prefill: bool = False,
     dtype: str = "bfloat16",
     gptqmodel_backend: str = "auto",  # For GPTQModel
-    gguf_file: Optional[str] = None
+    gguf_file: Optional[str] = None,
 ):
     assert dataset in ["humaneval", "mbpp", "evalperf"], f"Invalid dataset {dataset}"
     assert evalperf_type is None or evalperf_type in [
@@ -257,7 +258,6 @@ def run_codegen(
 
     # force shutdown the model runner
     del model_runner
-    import gc
 
     gc.collect()
 

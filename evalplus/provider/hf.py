@@ -29,7 +29,7 @@ class HuggingFaceDecoder(DecoderBase):
             "trust_remote_code": self.trust_remote_code,
             "torch_dtype": getattr(torch, self.dtype),
             "attn_implementation": attn_implementation,  # "eager", "flash_attention_2", "sdpa"
-            "gguf_file": gguf_file
+            "gguf_file": gguf_file,
         }
 
         self.skip_special_tokens = True
@@ -49,7 +49,7 @@ class HuggingFaceDecoder(DecoderBase):
             self.eos += ["\n```\n"]
 
         print(f"{self.eos = }")
-        self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs) 
+        self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
         if device_map is None:
             self.model = self.model.to(self.device)
 

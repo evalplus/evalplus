@@ -23,17 +23,29 @@ class GPTQModelDecoder(DecoderBase):
         self,
         name: str,
         dataset: str,
-        gptqmodel_backend: str = 'auto',
+        gptqmodel_backend: str = "auto",
         force_base_prompt: bool = False,
         **kwargs,
     ):
         super().__init__(name=name, **kwargs)
 
-        if hasattr(torch, "mps") and hasattr(torch.mps, "is_available") and torch.mps.is_available():
+        if (
+            hasattr(torch, "mps")
+            and hasattr(torch.mps, "is_available")
+            and torch.mps.is_available()
+        ):
             device = torch.device("mps")
-        elif hasattr(torch, "xpu") and hasattr(torch.xpu, "is_available") and torch.xpu.is_available():
+        elif (
+            hasattr(torch, "xpu")
+            and hasattr(torch.xpu, "is_available")
+            and torch.xpu.is_available()
+        ):
             device = torch.device("xpu")
-        elif hasattr(torch, "cuda") and hasattr(torch.cuda, "is_available") and torch.cuda.is_available():
+        elif (
+            hasattr(torch, "cuda")
+            and hasattr(torch.cuda, "is_available")
+            and torch.cuda.is_available()
+        ):
             device = torch.device("cuda")
         else:
             device = torch.device("cpu")
@@ -44,11 +56,13 @@ class GPTQModelDecoder(DecoderBase):
             "model_id_or_path": name,
             "trust_remote_code": self.trust_remote_code,
             "backend": gptqmodel_backend,
-            "device": device
+            "device": device,
         }
         self.skip_special_tokens = True
         self.force_base_prompt = force_base_prompt
-        self.tokenizer = AutoTokenizer.from_pretrained(name, trust_remote_code=self.trust_remote_code)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            name, trust_remote_code=self.trust_remote_code
+        )
         if self.is_direct_completion():  # no chat template
             self.eos += extra_eos_for_direct_completion(dataset)
         else:  # with chat template
@@ -70,14 +84,18 @@ class GPTQModelDecoder(DecoderBase):
                 prompt, self.instruction_prefix, self.response_prefix, self.tokenizer
             )
         )
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
+        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
+            self.device
+        )
 
-        outputs = self.model.generate(input_ids=input_tokens,
-                                      pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
-                                      max_new_tokens=self.max_new_tokens)
+        outputs = self.model.generate(
+            input_ids=input_tokens,
+            pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
+            max_new_tokens=self.max_new_tokens,
+        )
 
         gen_strs = self.tokenizer.batch_decode(
-            outputs[:, input_tokens.size(-1):],
+            outputs[:, input_tokens.size(-1) :],
             skip_special_tokens=self.skip_special_tokens,
         )
 

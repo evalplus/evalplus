@@ -10,7 +10,9 @@ from evalplus.provider.utility import concurrent_call
 
 
 class OpenAIChatDecoder(DecoderBase):
-    def __init__(self, name: str, base_url=None, verify_certificate=True, **kwargs) -> None:
+    def __init__(
+        self, name: str, base_url=None, verify_certificate=True, **kwargs
+    ) -> None:
         super().__init__(name, **kwargs)
         self.base_url = base_url
         self.verify_certificate = verify_certificate
@@ -33,9 +35,7 @@ class OpenAIChatDecoder(DecoderBase):
         client = openai.OpenAI(
             api_key=os.getenv("OPENAI_API_KEY", "none"),
             base_url=self.base_url,
-            http_client= httpx.Client(
-                verify=self.verify_certificate
-            )
+            http_client=httpx.Client(verify=self.verify_certificate),
         )
 
         ret = openai_request.make_auto_request(
