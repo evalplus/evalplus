@@ -27,3 +27,6 @@ transformers
 
 # bedrock
 boto3
+
+# ollama
+ollama

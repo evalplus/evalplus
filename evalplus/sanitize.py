@@ -2,6 +2,7 @@
 
 import os
 import pathlib
+import re
 from typing import Dict, Generator, List, Optional, Set, Tuple
 
 import tree_sitter_python
@@ -28,6 +29,10 @@ ASSIGNMENT_TYPE = "assignment"
 
 
 def code_extract(text: str) -> str:
+    # Remove ANSI escape sequences, which was caused by ollama (small qwen3 models, but may be others as well)
+    ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    text = ansi_escape.sub("", text)
+
     lines = text.split("\n")
     longest_line_pair = (0, 0)
     longest_so_far = 0
