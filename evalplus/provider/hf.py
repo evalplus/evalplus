@@ -23,6 +23,7 @@ class HuggingFaceDecoder(DecoderBase):
     ):
         super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device_map = device_map
 
         kwargs = {
             "device_map": device_map,
@@ -72,7 +73,7 @@ class HuggingFaceDecoder(DecoderBase):
             )
         )
         input_tokens = self.tokenizer.encode(prompt, return_tensors="pt")
-        if device_map is None:
+        if self.device_map is None:
             input_tokens.to(self.device)
         kwargs = {}
         if do_sample:
