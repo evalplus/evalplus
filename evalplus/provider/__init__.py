@@ -1,3 +1,5 @@
+from typing import Optional
+
 from evalplus.provider.base import DecoderBase
 
 
@@ -18,13 +20,16 @@ def make_model(
     tp=1,
     enable_prefix_caching=False,
     enable_chunked_prefill=False,
-    # openai only
+    # openai and ollama only
     base_url=None,
+    verify_certificate=True,
+    # ollama only
+    num_ctx: Optional[int] = None,
     # hf only
     attn_implementation="eager",
     device_map=None,
     # gptqmodel only
-    gptqmodel_backend: str = 'auto',
+    gptqmodel_backend: str = "auto",
     gguf_file: str = None,
     **kwargs,
 ) -> DecoderBase:
@@ -44,7 +49,7 @@ def make_model(
             enable_prefix_caching=enable_prefix_caching,
             enable_chunked_prefill=enable_chunked_prefill,
             dtype=dtype,
-            gguf_file=gguf_file
+            gguf_file=gguf_file,
         )
     elif backend == "hf":
         from evalplus.provider.hf import HuggingFaceDecoder
@@ -88,6 +93,20 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            base_url=base_url,
+            verify_certificate=verify_certificate,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
+        )
+    elif backend == "ollama":
+        from evalplus.provider.ollama import OllamaChatDecoder
+
+        assert not force_base_prompt, f"{backend} backend does not serve base model"
+        return OllamaChatDecoder(
+            name=model,
+            batch_size=batch_size,
+            temperature=temperature,
+            num_ctx=num_ctx,
             base_url=base_url,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
@@ -137,4 +156,3 @@ def make_model(
             trust_remote_code=trust_remote_code,
             gptqmodel_backend=gptqmodel_backend,
         )
-

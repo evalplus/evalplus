@@ -23,13 +23,14 @@ class HuggingFaceDecoder(DecoderBase):
     ):
         super().__init__(name=name, **kwargs)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device_map = device_map
 
         kwargs = {
             "device_map": device_map,
             "trust_remote_code": self.trust_remote_code,
             "torch_dtype": getattr(torch, self.dtype),
             "attn_implementation": attn_implementation,  # "eager", "flash_attention_2", "sdpa"
-            "gguf_file": gguf_file
+            "gguf_file": gguf_file,
         }
 
         self.skip_special_tokens = True
@@ -50,7 +51,8 @@ class HuggingFaceDecoder(DecoderBase):
 
         print(f"{self.eos = }")
         self.model = AutoModelForCausalLM.from_pretrained(name, **kwargs)
-        self.model = self.model.to(self.device)
+        if device_map is None:
+            self.model = self.model.to(self.device)
 
     def is_direct_completion(self) -> bool:
         return self.force_base_prompt or self.tokenizer.chat_template is None
@@ -70,9 +72,9 @@ class HuggingFaceDecoder(DecoderBase):
                 prompt, self.instruction_prefix, self.response_prefix, self.tokenizer
             )
         )
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
-            self.device
-        )
+        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt")
+        if self.device_map is None:
+            input_tokens.to(self.device)
         kwargs = {}
         if do_sample:
             kwargs["top_p"] = 0.95
