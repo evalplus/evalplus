@@ -31,6 +31,7 @@ def make_model(
     # gptqmodel only
     gptqmodel_backend: str = "auto",
     gguf_file: str = None,
+    **kwargs,
 ) -> DecoderBase:
     if backend == "vllm":
         from evalplus.provider.vllm import VllmDecoder
@@ -66,6 +67,23 @@ def make_model(
             trust_remote_code=trust_remote_code,
             dtype=dtype,
             gguf_file=gguf_file,
+        )
+    elif backend == "hf_gaudi":
+        from evalplus.provider.hf_gaudi import HuggingFaceDecoder
+
+        return HuggingFaceDecoder(
+            name=model,
+            batch_size=batch_size,
+            temperature=temperature,
+            dataset=dataset,
+            force_base_prompt=force_base_prompt,
+            instruction_prefix=instruction_prefix,
+            response_prefix=response_prefix,
+            device_map=device_map,
+            trust_remote_code=trust_remote_code,
+            dtype=dtype,
+            gguf_file=gguf_file,
+            **kwargs,
         )
     elif backend == "openai":
         from evalplus.provider.openai import OpenAIChatDecoder
