@@ -291,25 +291,25 @@ evalplus.evaluate --model "mistral:7b" \
 
 - [Intel® Gaudi®](https://docs.habana.ai/en/latest/index.html)
 
-To run hf backend for Intel Gaudi [optimum-habana](https://github.com/huggingface/optimum-habana) must be installed.
+To run `hf` backend for Intel Gaudi [optimum-habana](https://github.com/huggingface/optimum-habana) must be installed.
 
 ```bash
 pip install git+https://github.com/huggingface/optimum-habana.git
 evalplus.evaluate --model "qwen/CodeQwen1.5-7B-Chat" \
-                  --dataset [humaneval|mbpp]                          \
-                  --backend hf_gaudi                                   \
-                  --greedy
+                  --dataset [humaneval|mbpp]         \
+                  --backend hf_gaudi                 \
+                  --greedy                           \
                   --torch_compile
 ```
 OR in Lazy Mode:
 ```bash
 PT_HPU_LAZY_MODE=1 evalplus.evaluate --model "qwen/CodeQwen1.5-7B-Chat" \
-                  --dataset [humaneval|mbpp]                          \
-                  --backend hf_gaudi                                   \
+                  --dataset [humaneval|mbpp]                            \
+                  --backend hf_gaudi                                    \
                   --greedy
 ```
 
-To run vllm backend for Intel Gaudi [HabanaAI vllm](https://github.com/HabanaAI/vllm-fork) must be installed.
+To run `vllm` backend for Intel Gaudi [HabanaAI vllm](https://github.com/HabanaAI/vllm-fork) must be installed.
 
 ```bash
 git clone https://github.com/HabanaAI/vllm-fork.git
