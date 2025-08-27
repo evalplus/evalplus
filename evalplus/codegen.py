@@ -8,6 +8,7 @@ from evalplus.provider import DecoderBase, make_model
 from evalplus.sanitize import sanitize
 from evalplus.utils import progress
 
+
 def codegen(
     target_path: str,
     model: DecoderBase,

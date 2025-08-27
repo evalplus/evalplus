@@ -1,23 +1,20 @@
 import copy
+import os
 import time
 from typing import List
-import os
 
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
+import habana_frameworks.torch.core as htcore
 import habana_frameworks.torch.hpu as torch_hpu
+import torch
+from optimum.habana.transformers.modeling_utils import adapt_transformers_to_gaudi
+from optimum.habana.transformers.trainer import _is_peft_model
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from evalplus.provider.base import DecoderBase
 from evalplus.provider.utility import (
     extra_eos_for_direct_completion,
     make_raw_chat_prompt,
 )
-
-import habana_frameworks.torch.core as htcore
-from optimum.habana.transformers.modeling_utils import adapt_transformers_to_gaudi
-
-from optimum.habana.transformers.trainer import _is_peft_model
 
 adapt_transformers_to_gaudi()
 
@@ -26,17 +23,28 @@ def get_torch_compiled_model(model):
     # for gpt_bigcode, mpt, bloom, gpt2 model_type
     if hasattr(model, "transformer"):
         model.transformer = torch.compile(
-            model.transformer, backend="hpu_backend", options={"keep_input_mutations": True}
+            model.transformer,
+            backend="hpu_backend",
+            options={"keep_input_mutations": True},
         )
     # for gpt_neox
     elif hasattr(model, "gpt_neox"):
-        model.gpt_neox = torch.compile(model.gpt_neox, backend="hpu_backend", options={"keep_input_mutations": True})
+        model.gpt_neox = torch.compile(
+            model.gpt_neox,
+            backend="hpu_backend",
+            options={"keep_input_mutations": True},
+        )
     # for llama, mistral, mixtral, qwen2
     elif hasattr(model, "model"):
-        model.model = torch.compile(model.model, backend="hpu_backend", options={"keep_input_mutations": True})
+        model.model = torch.compile(
+            model.model, backend="hpu_backend", options={"keep_input_mutations": True}
+        )
     else:
-        model = torch.compile(model, backend="hpu_backend", options={"keep_input_mutations": True})
+        model = torch.compile(
+            model, backend="hpu_backend", options={"keep_input_mutations": True}
+        )
     return model
+
 
 class HuggingFaceDecoder(DecoderBase):
     def __init__(
@@ -48,13 +56,13 @@ class HuggingFaceDecoder(DecoderBase):
         gguf_file: str = None,
         **kwargs,
     ):
-        
+
         print("Kwargs: {}".format(kwargs))
         super().__init__(name=name, **kwargs)
-        #self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.device = torch.device("hpu")
-        self.dtype =  "bfloat16"
-        
+        self.dtype = "bfloat16"
+
         if kwargs.get("torch_compile", False):
             self.torch_compile = True
             self.lazy_mode = False
@@ -68,7 +76,7 @@ class HuggingFaceDecoder(DecoderBase):
             "device_map": device_map,
             "trust_remote_code": self.trust_remote_code,
             "torch_dtype": getattr(torch, self.dtype),
-            "gguf_file": gguf_file
+            "gguf_file": gguf_file,
         }
 
         self.skip_special_tokens = True
@@ -83,9 +91,9 @@ class HuggingFaceDecoder(DecoderBase):
             tokenizer_kwargs["use_fast"] = False
         else:
             tokenizer_kwargs["gguf_file"] = gguf_file
-        self.tokenizer = AutoTokenizer.from_pretrained(name,
-                                                       torch_dtype=self.dtype,
-                                                        **tokenizer_kwargs)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            name, torch_dtype=self.dtype, **tokenizer_kwargs
+        )
         if self.is_direct_completion():  # no chat template
             self.eos += extra_eos_for_direct_completion(dataset)
         else:  # with chat template
@@ -94,39 +102,51 @@ class HuggingFaceDecoder(DecoderBase):
         self.model = AutoModelForCausalLM.from_pretrained(name, **model_kwargs)
         self.model = self.model.eval().to(self.device)
 
-        
         if self.torch_compile:
             self.model = get_torch_compiled_model(self.model)
         else:
             from habana_frameworks.torch.hpu import wrap_in_hpu_graph
+
             self.model = wrap_in_hpu_graph(self.model)
 
             if _is_peft_model(self.model):
                 self.model.base_model = wrap_in_hpu_graph(self.model.base_model)
                 if self.model.peft_type == "ADAPTION_PROMPT":
-                    self.model.base_model.model = wrap_in_hpu_graph(self.model.base_model.model)
+                    self.model.base_model.model = wrap_in_hpu_graph(
+                        self.model.base_model.model
+                    )
 
         self.generation_config = copy.deepcopy(self.model.generation_config)
         self.generation_config.use_cache = kwargs.get("use_cache", True)
         self.generation_config.attn_softmax_bf16 = kwargs.get("attn_softmax_bf16", True)
         self.generation_config.reuse_cache = kwargs.get("reuse_cache", True)
-        self.generation_config.use_flash_attention = kwargs.get("use_flash_attention", True)
-        self.generation_config.flash_attention_recompute = kwargs.get("flash_attention_recompute", True)
-        self.generation_config.flash_attention_causal_mask = kwargs.get("flash_attention_causal_mask", True)
-        self.generation_config.flash_attention_fast_softmax = kwargs.get("flash_attention_fast_softmax", True)
+        self.generation_config.use_flash_attention = kwargs.get(
+            "use_flash_attention", True
+        )
+        self.generation_config.flash_attention_recompute = kwargs.get(
+            "flash_attention_recompute", True
+        )
+        self.generation_config.flash_attention_causal_mask = kwargs.get(
+            "flash_attention_causal_mask", True
+        )
+        self.generation_config.flash_attention_fast_softmax = kwargs.get(
+            "flash_attention_fast_softmax", True
+        )
         self.generation_config.reduce_recompile = kwargs.get("reduce_recompile", False)
-        self.generation_config.clear_hpu_graphs_cache = kwargs.get("clear_hpu_graphs_cache", False)
+        self.generation_config.clear_hpu_graphs_cache = kwargs.get(
+            "clear_hpu_graphs_cache", False
+        )
 
     def is_direct_completion(self) -> bool:
         return self.force_base_prompt or self.tokenizer.chat_template is None
-    
+
     def codegen(
         self, prompt: str, do_sample: bool = True, num_samples: int = 200
     ) -> List[str]:
         if self.temperature == 0:
             assert not do_sample
             assert num_samples == 1
-        
+
         prompt = (
             prompt
             if self.is_direct_completion()
@@ -134,7 +154,9 @@ class HuggingFaceDecoder(DecoderBase):
                 prompt, self.instruction_prefix, self.response_prefix, self.tokenizer
             )
         )
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
+        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
+            self.device
+        )
         kwargs = {}
         if do_sample:
             kwargs["top_p"] = 0.95

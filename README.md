@@ -314,7 +314,7 @@ To run vllm backend for Intel Gaudi [HabanaAI vllm](https://github.com/HabanaAI/
 ```bash
 git clone https://github.com/HabanaAI/vllm-fork.git
 cd vllm-fork
-python setup.py develop 
+python setup.py develop
 ```
 
 You can checkout the generation and results at `evalplus_results/[humaneval|mbpp]/`
