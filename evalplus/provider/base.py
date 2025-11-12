@@ -21,7 +21,7 @@ class DecoderBase(ABC):
         self.name = name
         self.batch_size = batch_size
         self.temperature = temperature
-        self.eos = EOS
+        self.eos = list(EOS)
         self.skip_special_tokens = False
         self.max_new_tokens = max_new_tokens
         self.dtype = dtype
