@@ -74,7 +74,7 @@ class HuggingFaceDecoder(DecoderBase):
         )
         input_tokens = self.tokenizer.encode(prompt, return_tensors="pt")
         if self.device_map is None:
-            input_tokens.to(self.device)
+            input_tokens = input_tokens.to(self.device)
         kwargs = {}
         if do_sample:
             kwargs["top_p"] = 0.95
