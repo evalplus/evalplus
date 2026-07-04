@@ -140,6 +140,7 @@ def run_codegen(
     enable_prefix_caching: bool = False,
     enable_chunked_prefill: bool = False,
     dtype: str = "bfloat16",
+    max_new_tokens: int = 768,
     gptqmodel_backend: str = "auto",  # For GPTQModel
     gguf_file: Optional[str] = None,
     **kwargs,
@@ -251,6 +252,7 @@ def run_codegen(
         enable_prefix_caching=enable_prefix_caching,
         enable_chunked_prefill=enable_chunked_prefill,
         dtype=dtype,
+        max_new_tokens=max_new_tokens,
         gptqmodel_backend=gptqmodel_backend,
         gguf_file=gguf_file,
         **kwargs,

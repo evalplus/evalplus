@@ -19,15 +19,13 @@ class OllamaChatDecoder(DecoderBase):
         base_url=None,
         num_ctx: Optional[int] = None,
         temperature: Optional[float] = 0.7,
+        max_new_tokens: int = -1,
         **kwargs,
     ) -> None:
-        super().__init__(name, **kwargs)
+        super().__init__(name, max_new_tokens=max_new_tokens, **kwargs)
         self.base_url = base_url
         self.temperature = temperature
         self.num_ctx = num_ctx
-        self.max_new_tokens = (
-            -1
-        )  # In Ollama -1 means unlimited. -2 the context-length is the limit. It also accepts any int values as a limit similar to tokens
         self.max_retries = 3
         self.retry_delay = 5  # seconds
 

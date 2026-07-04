@@ -1,5 +1,6 @@
 import logging
 import math
+import os
 import re
 import time
 from datetime import datetime
@@ -69,8 +70,22 @@ def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
     chunk_buffer = ""  # Buffer for checking repetitions without newlines
 
     model = kwargs.get("model")
-    timeout = kwargs.get("timeout", 180)
+    timeout = float(kwargs.get("timeout", os.getenv("EVALPLUS_OLLAMA_TIMEOUT", 180)))
+    max_attempts = int(os.getenv("EVALPLUS_OLLAMA_MAX_ATTEMPTS", 4))
+    max_total_seconds = float(os.getenv("EVALPLUS_OLLAMA_MAX_TOTAL_SECONDS", 900))
+    overall_start = time.time()
+    attempts = 0
     while ret is None:
+        attempts += 1
+        if attempts > max_attempts:
+            raise TimeoutError(
+                f"Ollama request exceeded max attempts ({max_attempts}) for model '{model}'"
+            )
+        if time.time() - overall_start > max_total_seconds:
+            raise TimeoutError(
+                f"Ollama request exceeded max total time ({max_total_seconds}s) for model '{model}'"
+            )
+
         request_start_time = time.time()
         try:
             response = make_request(*args, **kwargs)
@@ -87,13 +102,14 @@ def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
                 for chunk in response:
                     current_time = time.time()
                     elapsed_time = current_time - last_chunk_time
+                    elapsed_request_time = current_time - request_start_time
                     if elapsed_time > 10:
                         logger.debug(
                             f"[{datetime.now()}] inside for-chunk-loop: elapsed_time over 10 seconds: {elapsed_time:.2f} seconds"
                         )
-                    if elapsed_time > timeout:
+                    if elapsed_request_time > timeout:
                         logger.error(
-                            f"[{datetime.now()}] inside for-chunk-loop: Request timeout after {elapsed_time:.2f} seconds"
+                            f"[{datetime.now()}] inside for-chunk-loop: Request timeout after {elapsed_request_time:.2f} seconds"
                         )
                         raise TimeoutError(
                             f"Ollama request timeout after {timeout} seconds"
@@ -154,6 +170,9 @@ def make_auto_request(*args, **kwargs) -> ollama.ChatResponse:
                     logger.debug(
                         f"[{datetime.now()}] elapsed time between make_request and finaly returning the response: {time.time() - request_start_time} seconds"
                     )
+                    ret = full_response
+                elif ret is None:
+                    # Stream ended without buffered tail; still return what we collected.
                     ret = full_response
             else:
                 # If stream is False, return the response immediately
