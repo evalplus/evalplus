@@ -15,6 +15,7 @@ def make_model(
     response_prefix=None,
     # non-server only
     dtype="bfloat16",
+    max_new_tokens: int = 768,
     trust_remote_code=False,
     # vllm only
     tp=1,
@@ -40,6 +41,7 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            max_new_tokens=max_new_tokens,
             dataset=dataset,
             force_base_prompt=force_base_prompt,
             tensor_parallel_size=tp,
@@ -58,6 +60,7 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            max_new_tokens=max_new_tokens,
             dataset=dataset,
             force_base_prompt=force_base_prompt,
             instruction_prefix=instruction_prefix,
@@ -75,6 +78,7 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            max_new_tokens=max_new_tokens,
             dataset=dataset,
             force_base_prompt=force_base_prompt,
             instruction_prefix=instruction_prefix,
@@ -93,6 +97,7 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            max_new_tokens=max_new_tokens,
             base_url=base_url,
             verify_certificate=verify_certificate,
             instruction_prefix=instruction_prefix,
@@ -106,6 +111,7 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            max_new_tokens=max_new_tokens,
             num_ctx=num_ctx,
             base_url=base_url,
             instruction_prefix=instruction_prefix,
@@ -119,6 +125,7 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            max_new_tokens=max_new_tokens,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
         )
@@ -130,6 +137,7 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            max_new_tokens=max_new_tokens,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
         )
@@ -141,6 +149,7 @@ def make_model(
             name=model,
             batch_size=batch_size,
             temperature=temperature,
+            max_new_tokens=max_new_tokens,
             instruction_prefix=instruction_prefix,
             response_prefix=response_prefix,
         )
@@ -149,6 +158,7 @@ def make_model(
 
         return GPTQModelDecoder(
             name=model,
+            max_new_tokens=max_new_tokens,
             dataset=dataset,
             force_base_prompt=force_base_prompt,
             instruction_prefix=instruction_prefix,
