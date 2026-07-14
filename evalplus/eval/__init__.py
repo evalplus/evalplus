@@ -153,7 +153,19 @@ def unsafe_execute(
                         with swallow_io():
                             out = fn(*inp)
 
+                    # Return-value deception defense: verify the output type
+                    # matches the expected type. A model can return a custom
+                    # object whose __eq__ always returns True to bypass all
+                    # comparisons without solving the problem. Use type()
+                    # identity to reject dunder-overriding subclasses.
                     exp = expected[i]
+                    if exp is not None and type(out) is not type(exp):
+                        # Allow int/float cross-comparison (common in math tasks)
+                        if not (isinstance(out, (int, float)) and isinstance(exp, (int, float))):
+                            stat.append(0)  # treat as mismatch
+                            details.append({"output": str(out), "expected": str(exp)})
+                            continue
+
                     exact_match = out == exp
 
                     # ================================================ #
