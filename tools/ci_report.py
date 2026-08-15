@@ -11,6 +11,12 @@ and prints:
 With ``--compare``, runs an exact paired McNemar test between two result
 files on their shared task set, using the per-task resolved (base) outcomes.
 
+A paired comparison is only valid under matched measurement conditions, so
+``--compare`` aborts by default when any shared task has a different sample
+count in the two files (e.g. 1 trial per task vs. 10 trials per task would
+give the 10-trial run ten chances to resolve a task as passed). Pass
+``--allow-unmatched-samples`` to compare anyway.
+
 Examples::
 
     python tools/ci_report.py --results path/to/eval_results.json
@@ -27,6 +33,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results", required=True, help="eval_results.json")
     parser.add_argument("--compare", help="second eval_results.json for McNemar")
+    parser.add_argument(
+        "--allow-unmatched-samples",
+        action="store_true",
+        help="compare even if shared tasks have different per-task sample counts",
+    )
     args = parser.parse_args()
 
     with open(args.results, encoding="utf-8") as f:
@@ -50,6 +61,15 @@ def main():
             other = json.load(f)
         other_per_task = load_per_task(other)
         c = compare(per_task, other_per_task)
+        if c["sample_count_mismatches"] and not args.allow_unmatched_samples:
+            shown = ", ".join(c["sample_count_mismatches"][:5])
+            raise SystemExit(
+                f"error: {len(c['sample_count_mismatches'])} shared task(s) "
+                f"have different per-task sample counts ({shown}"
+                f"{', ...' if len(c['sample_count_mismatches']) > 5 else ''}); "
+                "the measurement conditions are not paired. Re-run with "
+                "--allow-unmatched-samples to compare anyway."
+            )
         print(f"paired comparison on {c['shared']} shared tasks "
               f"(resolved base): both {c['both']} | A-only {c['a_only']} | "
               f"B-only {c['b_only']} | McNemar p {c['p']:.4f}")

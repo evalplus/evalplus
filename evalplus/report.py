@@ -70,12 +70,25 @@ def compare(
     per_task_a: Dict[str, List[SampleOutcome]],
     per_task_b: Dict[str, List[SampleOutcome]],
 ) -> dict:
-    """Exact paired McNemar on per-task resolved (base) outcomes."""
+    """Exact paired McNemar on per-task resolved (base) outcomes.
+
+    Paired comparison is only meaningful when each shared task was measured
+    under the same conditions, so this also reports shared tasks whose sample
+    counts differ between the two result files (e.g. A ran 1 trial per task,
+    B ran 10: ``resolved`` would then give B ten chances to pass). Callers
+    should treat ``sample_count_mismatches`` as a hard guardrail unless they
+    explicitly accept unmatched conditions.
+    """
     resolved_a = {t: any(ok for ok, _ in s) for t, s in per_task_a.items()}
     resolved_b = {t: any(ok for ok, _ in s) for t, s in per_task_b.items()}
+    counts_a = {t: len(s) for t, s in per_task_a.items()}
+    counts_b = {t: len(s) for t, s in per_task_b.items()}
     shared = [t for t in resolved_a if t in resolved_b]
     if not shared:
         raise ValueError("no shared tasks between the two result files")
+    mismatched = sorted(
+        t for t in shared if counts_a[t] != counts_b[t]
+    )
     both = sum(1 for t in shared if resolved_a[t] and resolved_b[t])
     a_only = sum(1 for t in shared if resolved_a[t] and not resolved_b[t])
     b_only = sum(1 for t in shared if resolved_b[t] and not resolved_a[t])
@@ -85,4 +98,5 @@ def compare(
         "a_only": a_only,
         "b_only": b_only,
         "p": paired_mcnemar(a_only, b_only),
+        "sample_count_mismatches": mismatched,
     }

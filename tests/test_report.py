@@ -62,6 +62,28 @@ def test_pass1_matches_upstream_estimator():
     assert abs(s["pass1_base"] - expected) < 1e-12
 
 
+def test_compare_detects_unmatched_sample_counts():
+    a = make_results(
+        {"t1": [(PASS, PASS)], "t2": [(PASS, PASS)], "t3": [(FAIL, FAIL)]}
+    )
+    b = make_results(
+        {
+            "t1": [(PASS, PASS), (PASS, PASS)],
+            "t2": [(PASS, PASS)],
+            "t3": [(FAIL, FAIL)],
+        }
+    )
+    c = compare(load_per_task(a), load_per_task(b))
+    assert c["sample_count_mismatches"] == ["t1"]
+    assert c["shared"] == 3
+
+    d = make_results(
+        {"t1": [(PASS, PASS)], "t2": [(PASS, PASS)], "t3": [(FAIL, FAIL)]}
+    )
+    e = compare(load_per_task(a), load_per_task(d))
+    assert e["sample_count_mismatches"] == []
+
+
 def test_compare_counts_and_p():
     a = make_results(
         {"t1": [(PASS, PASS)], "t2": [(PASS, PASS)], "t3": [(FAIL, FAIL)]}
