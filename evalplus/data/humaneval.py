@@ -20,9 +20,7 @@ def _ready_human_eval_plus_path(mini=False, noextreme=False, version="default") 
         return HUMANEVAL_OVERRIDE_PATH
 
     version = HUMANEVAL_PLUS_VERSION if version == "default" else version
-    url, plus_path = get_dataset_metadata(
-        "HumanEvalPlus", HUMANEVAL_PLUS_VERSION, mini, noextreme
-    )
+    url, plus_path = get_dataset_metadata("HumanEvalPlus", version, mini, noextreme)
     make_cache(url, plus_path)
 
     return plus_path
@@ -33,7 +31,7 @@ def get_human_eval_plus_hash(mini=False, noextreme=False, version="default") -> 
     Returns:
         str: The hash of HumanEvalPlus
     """
-    plus_path = _ready_human_eval_plus_path(mini, noextreme, version="default")
+    plus_path = _ready_human_eval_plus_path(mini, noextreme, version=version)
     with open(plus_path, "rb") as f:
         plus = f.read()
     return hashlib.md5(plus).hexdigest()
