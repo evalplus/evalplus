@@ -21,6 +21,31 @@
 evalplus.codegen --model "mistralai/Mistral-7B-Instruct-v0.3" --greedy --root [result_path] --dataset [mbpp|humaneval] --backend [vllm|hf|openai|...]
 ```
 
+### OpenAI-compatible endpoints
+
+For a remote or local OpenAI-compatible Chat Completions server, select
+`--backend openai` explicitly. The default backend is `vllm`, which loads a local
+model rather than calling your server.
+
+Set `--base-url` to the API root documented by your server. For example, if the
+chat endpoint is `http://localhost:8000/v1/chat/completions`, use
+`http://localhost:8000/v1`. The OpenAI client appends `/chat/completions`; do not
+include that suffix in `--base-url`. Some providers use an API root without
+`/v1`, so follow the provider's documentation rather than adding it everywhere.
+
+```shell
+export OPENAI_API_KEY="your-server-api-key"
+evalplus.codegen --model "your-server-model-id" \
+                 --dataset humaneval --greedy \
+                 --backend openai \
+                 --base-url http://localhost:8000/v1
+```
+
+Replace the model ID with one your server accepts. For servers that require no
+key, EvalPlus uses `none` when `OPENAI_API_KEY` is unset. To generate and evaluate
+in one command, use `evalplus.evaluate` with the same flags. Evaluation executes
+the generated code; use the sandbox described in [Code Evaluation](#code-evaluation).
+
 To perform code generation using user-defined tasks and datasets:
 
 ```shell
