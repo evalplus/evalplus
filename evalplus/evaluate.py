@@ -26,12 +26,15 @@ from evalplus.data import (
 from evalplus.data.mbpp import mbpp_serialize_inputs
 from evalplus.data.utils import CACHE_DIR
 from evalplus.eval import (
+    FAIL,
     PASS,
+    TIMEOUT,
     compatible_eval_result,
     estimate_pass_at_k,
     untrusted_check,
 )
 from evalplus.eval._special_oracle import MBPP_OUTPUT_NOT_NONE_TASKS
+from evalplus.eval.bayes import estimate_bayes_at_n
 from evalplus.gen.util import trusted_exec
 
 # 1st item: the status
@@ -139,6 +142,7 @@ def evaluate(
     output_file: Optional[str] = None,
     gguf_file: Optional[str] = None,
     num_ctx: Optional[int] = None,
+    bayes_at_n: bool = False,
     **model_kwargs,
 ):
     if model_kwargs:
@@ -170,10 +174,14 @@ def evaluate(
     if output_file is not None:
         result_path = output_file
 
+    cached_results = None
     if os.path.isfile(result_path) and not i_just_wanna_run:
         print(f"Load from previous results from {result_path}")
         with open(result_path, "r") as f:
             results = json.load(f)
+
+        if bayes_at_n:
+            cached_results = json.loads(json.dumps(results))
 
         results = compatible_eval_result(results)
     else:
@@ -308,6 +316,19 @@ def evaluate(
                     }
                 )
 
+    if bayes_at_n:
+        if not results["eval"] or any(not row for row in results["eval"].values()):
+            raise ValueError("Bayes@N needs at least one sample for every task")
+        for task_id, row in results["eval"].items():
+            for sample in row:
+                fields = ["base_status"]
+                if not base_only:
+                    fields.append("plus_status")
+                if any(
+                    sample.get(field) not in (PASS, FAIL, TIMEOUT) for field in fields
+                ):
+                    raise ValueError(f"Bayes@N needs evaluated statuses for {task_id}")
+
     # Calculate pass@k.
     total = np.array([len(r) for r in results["eval"].values()])
     base_correct = []
@@ -347,6 +368,21 @@ def evaluate(
         for k, v in pass_at_k.items():
             cprint(f"{k}:\t{v:.3f}", "green")
         results["pass_at_k"]["plus"] = pass_at_k
+
+    if bayes_at_n:
+        posterior = {"base": estimate_bayes_at_n(total, base_correct)}
+        if not base_only:
+            posterior["plus"] = estimate_bayes_at_n(total, new_correct)
+        results["bayes_at_n"] = posterior
+        for regime, moments in posterior.items():
+            print(
+                f"{dataset} ({regime}) Bayes@N: "
+                f"mean={moments['mean']:.6f}, std={moments['std']:.6f}"
+            )
+        if cached_results is not None:
+            cached_results.setdefault("bayes_at_n", {}).update(posterior)
+            with open(result_path, "w") as f:
+                json.dump(cached_results, f)
 
     # save results
     if os.path.isfile(result_path) and i_just_wanna_run:

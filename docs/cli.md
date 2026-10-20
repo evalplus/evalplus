@@ -108,6 +108,36 @@ evalplus.syncheck --samples /path/to/vicuna-[??]b_temp_[??] --dataset [humaneval
 
 ## Code Evaluation
 
+### Bayes@N posterior summaries
+
+Add `--bayes_at_n` to report the posterior mean and posterior standard deviation
+of the average success probability over the evaluated tasks:
+
+```shell
+evalplus.evaluate --dataset humaneval --samples samples.jsonl --bayes_at_n
+```
+
+The result JSON gains `bayes_at_n.base` and `bayes_at_n.plus`, each with `mean`
+and `std` on the [0, 1] scale. With `--base_only`, only `base` is calculated.
+The plus summary counts a program as correct only when both test suites pass.
+An existing results file can be used without rerunning programs; opting in adds
+the summaries to that file and preserves its other fields. Defaults and pass@k
+reporting are unchanged.
+
+This implements the binary, uniform-prior case of
+[Bayes@N](https://arxiv.org/abs/2510.04265): each task has a separate Beta(1, 1)
+prior. For `c` passing programs out of `N`, its posterior is
+Beta(`c + 1`, `N - c + 1`). The corpus mean averages task posterior means;
+its standard deviation is the square root of the sum of task posterior variances,
+divided by the number of tasks. It describes uncertainty about the fixed task
+set's latent success probability, rather than variability across benchmark tasks.
+
+Every task must have the same positive sample count and evaluated statuses.
+Missing grades and unequal counts raise `ValueError`. Use independent generations
+under a fixed sampling configuration, and include every intended task: a cached
+file cannot reveal tasks omitted entirely. Historical observations and categorical
+rubrics are outside this option's scope.
+
 You are strongly recommended to use a sandbox such as [docker](https://docs.docker.com/get-docker/):
 
 ```bash
