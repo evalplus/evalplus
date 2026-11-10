@@ -123,7 +123,7 @@ def load_solutions(sample_path: PathLike) -> Iterable[Dict]:
             for solution_id in os.listdir(task_path):
                 solution_path = os.path.join(task_path, solution_id)
                 if os.path.isfile(solution_path) and solution_path.endswith(".py"):
-                    with open(solution_path, "r") as f:
+                    with open(solution_path, "r", encoding="utf-8") as f:
                         completion = f.read()
                     yield {
                         "_identifier": solution_path,
@@ -144,7 +144,7 @@ def write_directory(directory: PathLike, data: Iterable[Dict]):
         if task_id not in counters:
             counters[task_id] = 0
         sample_id = counters[task_id]
-        with open(os.path.join(task_dir, f"{sample_id}.py"), "w") as f:
+        with open(os.path.join(task_dir, f"{sample_id}.py"), "w", encoding="utf-8") as f:
             f.write(sample["solution"])
         counters[task_id] += 1
 
