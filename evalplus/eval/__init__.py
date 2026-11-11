@@ -109,14 +109,27 @@ def query_maximum_memory_bytes() -> Optional[int]:
 
 
 def is_floats(x) -> bool:
-    # check if it is float; List[float]; Tuple[float]
+    # Check for floats, including inside mixed or nested sequences.
     if isinstance(x, float):
         return True
     if isinstance(x, (list, tuple)) and x:
-        return all(isinstance(i, float) for i in x)
+        return any(is_floats(i) for i in x)
     if isinstance(x, np.ndarray):
         return x.dtype == np.float64 or x.dtype == np.float32
     return False
+
+
+def _close_with_inferred_tolerance(out, exp):
+    if isinstance(exp, (list, tuple)):
+        return (
+            type(out) == type(exp)
+            and len(out) == len(exp)
+            and all(_close_with_inferred_tolerance(o, e) for o, e in zip(out, exp))
+        )
+    if is_floats(exp):
+        return np.allclose(out, exp, rtol=1e-07, atol=1e-6)
+    # Inferring float tolerance must not relax integer or other exact values.
+    return out == exp
 
 
 def unsafe_execute(
@@ -192,9 +205,10 @@ def unsafe_execute(
                     # ============== special oracles ================= #
                     # ================================================ #
 
-                    if atol == 0 and is_floats(exp):
-                        atol = 1e-6  # enforce atol for float comparison
-                    if not exact_match and atol != 0:
+                    if not exact_match and atol == 0 and is_floats(exp):
+                        assert type(out) == type(exp)
+                        assert _close_with_inferred_tolerance(out, exp)
+                    elif not exact_match and atol != 0:
                         # explicitly set rtol=1e-07
                         # to match `np.testing.assert_allclose`'s default values
                         assert type(out) == type(exp)
