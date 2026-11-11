@@ -192,15 +192,16 @@ def unsafe_execute(
                     # ============== special oracles ================= #
                     # ================================================ #
 
-                    if atol == 0 and is_floats(exp):
-                        atol = 1e-6  # enforce atol for float comparison
-                    if not exact_match and atol != 0:
+                    cur_atol = atol
+                    if cur_atol == 0 and is_floats(exp):
+                        cur_atol = 1e-6  # enforce atol for float comparison
+                    if not exact_match and cur_atol != 0:
                         # explicitly set rtol=1e-07
                         # to match `np.testing.assert_allclose`'s default values
                         assert type(out) == type(exp)
                         if isinstance(exp, (list, tuple)):
                             assert len(out) == len(exp)
-                        assert np.allclose(out, exp, rtol=1e-07, atol=atol)
+                        assert np.allclose(out, exp, rtol=1e-07, atol=cur_atol)
                     else:
                         assert exact_match
                 except BaseException:
