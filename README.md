@@ -10,6 +10,11 @@
 </p>
 
 <p align="center">
+    <b>English</b> •
+    <a href="https://github.com/evalplus/evalplus/blob/master/README.zh.md">简体中文</a>
+</p>
+
+<p align="center">
     <a href="#-about">📙About</a> •
     <a href="#-quick-start">🔥Quick Start</a> •
     <a href="#-llm-backends">🚀LLM Backends</a> •
